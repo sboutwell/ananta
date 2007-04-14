@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<commodities>
+	<shipparts>		<!-- commodity type: SHIPPARTS (special type) -->
+		<hulls>			<!-- ship hulls -->
+			<samplehull1>  <!-- Hull ID -->
+				<name>Raptor</name>			<!-- hull name -->
+				<unit>piece</unit>			<!-- unit of measurement (piece or kg) -->
+				<mass>12000</mass>  		<!-- empty hull mass in kg -->
+				<avgprice>1200</avgprice>	<!-- average price -->
+				<volume>600</volume>		<!-- hull external volume in m^3 (note: not INTERNAL volume!) -->
+				
+				<image>ship1.png</image>	<!-- the pic representing this hull -->
+				<scale>0.3</scale>			<!-- the scale of the visual image (1 = full resolution of the image) -->
+				<size>20</size>				<!-- the diameter of the hull in meters (for radar blip size, rotational physics and rough collision detection) -->
+				<thrusterpos>20</thrusterpos>	<!-- distance (in meters) of the rotation thrusters from the center of the mass -->
+				<maxspeed>100</maxspeed>	<!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
+				<maxrotspd>180</maxrotspd>	<!-- the maximum rotational speed (deg/s) allowed for this hull -->
+				<reverser>0.6</reverser>	<!-- the portion of the main engine thrust that can be directed forward -->
+		
+				<slots>
+					<leftrotthruster>			<!-- slot ID -->
+						<type>rotthruster</type>		<!-- slot type -->
+						<volume>1</volume>				<!-- the volume of the slot in m^3 -->
+						<exposure>left</exposure>		<!-- exposure to space: left, right, nose, tail. Remove if no exposure -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</leftrotthruster>
+					<rightrotthruster>			<!-- slot ID -->
+						<type>rotthruster</type>		<!-- slot type -->
+						<volume>1</volume>				<!-- the volume of the slot in m^3 -->
+						<exposure>right</exposure>		<!-- exposure to space: left, right, nose, tail. Remove if no exposure -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</rightrotthruster>
+					<transright>				<!-- slot ID -->
+						<type>thruster</type>
+						<volume>1</volume>
+						<exposure>right</exposure>		<!-- exposure to the right -> movement to the left -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</transright>
+					<transleft>					<!-- slot ID -->
+						<type>thruster</type>
+						<volume>1</volume>
+						<exposure>left</exposure>		<!-- exposure to the left -> movement to the right -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</transleft>
+					<transnose>					<!-- slot ID -->
+						<type>thruster</type>
+						<volume>1</volume>
+						<exposure>nose</exposure>		<!-- exposure to the front -> movement backward -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</transnose>
+					<transtail>					<!-- slot ID -->
+						<type>thruster</type>
+						<volume>1</volume>
+						<exposure>tail</exposure>		<!-- exposure to the back -> movement forward -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</transtail>
+					<engineslot1>				<!-- slot ID -->
+						<type>engine</type>
+						<volume>5</volume>				<!-- the volume of the slot in m^3 -->
+						<exposure>tail</exposure>		<!-- main engines always point behind... other directions have no effect -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</engineslot1>
+					<equipmentslot1>			<!-- slot ID -->
+						<type>equipment</type>
+						<volume>100</volume>			<!-- volume of the slot in m^3 -->
+						<location>internal</location>	<!-- internal/external, affects received damage -->
+					</equipmentslot1>
+				</slots>					
+			</samplehull1>
+			
+			<samplehull2>  <!-- Hull ID -->
+				<name>Cruiser</name>		<!-- hull name -->
+				<unit>piece</unit>			<!-- unit of measurement (piece or kg) -->
+				<mass>420000</mass>  		<!-- empty hull mass in kg -->
+				<avgprice>12000</avgprice>	<!-- average price -->
+				<volume>9600</volume>		<!-- hull external volume in m^3 (note: not INTERNAL volume!) -->
+				
+				<image>cruiser.png</image>	<!-- the pic representing this hull -->
+				<scale>1</scale>			<!-- the scale of the visual image (1 = full resolution of the image) -->
+				<size>200</size>			<!-- the diameter of the hull in meters (for radar blip size, rotational physics and rough collision detection) -->
+				<thrusterpos>200</thrusterpos>	<!-- distance (in meters) of the rotation thrusters from the center of the mass -->
+				<maxspeed>60</maxspeed>		<!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
+				<maxrotspd>5</maxrotspd>	<!-- the maximum rotational speed (deg/s) allowed for this hull -->
+				<reverser>0.6</reverser>	<!-- the portion of the main engine thrust that can be directed forward -->
+		
+				<slots>
+					<leftrotthruster>			<!-- slot ID -->
+						<type>rotthruster</type>		<!-- slot type -->
+						<volume>1</volume>				<!-- the volume of the slot in m^3 -->
+						<exposure>left</exposure>		<!-- exposure to space: left, right, nose, tail. Remove if no exposure -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</leftrotthruster>
+					<rightrotthruster>			<!-- slot ID -->
+						<type>rotthruster</type>		<!-- slot type -->
+						<volume>1</volume>				<!-- the volume of the slot in m^3 -->
+						<exposure>right</exposure>		<!-- exposure to space: left, right, nose, tail. Remove if no exposure -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</rightrotthruster>
+					<transright>				<!-- slot ID -->
+						<type>thruster</type>
+						<volume>1</volume>
+						<exposure>right</exposure>		<!-- exposure to the right -> movement to the left -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</transright>
+					<transleft>					<!-- slot ID -->
+						<type>thruster</type>
+						<volume>1</volume>
+						<exposure>left</exposure>		<!-- exposure to the left -> movement to the right -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</transleft>
+					<transnose>					<!-- slot ID -->
+						<type>thruster</type>
+						<volume>1</volume>
+						<exposure>nose</exposure>		<!-- exposure to the front -> movement backward -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</transnose>
+					<transtail>					<!-- slot ID -->
+						<type>thruster</type>
+						<volume>1</volume>
+						<exposure>tail</exposure>		<!-- exposure to the back -> movement forward -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</transtail>
+					<engineslot1>				<!-- slot ID -->
+						<type>engine</type>
+						<volume>5</volume>				<!-- the volume of the slot in m^3 -->
+						<exposure>tail</exposure>		<!-- main engines always point behind... other directions have no effect -->
+						<location>external</location>	<!-- internal/external, affects received damage -->
+					</engineslot1>
+					<equipmentslot1>			<!-- slot ID -->
+						<type>equipment</type>
+						<volume>100</volume>			<!-- volume of the slot in m^3 -->
+						<location>internal</location>	<!-- internal/external, affects received damage -->
+					</equipmentslot1>
+				</slots>					
+			</samplehull2>
+		</hulls>
+
+		<propulsion>	<!-- all propulsion equipment -->
+			<trilliumengine1> 		<!-- ID -->
+				<name>Impulse engine</name>			<!-- engine name -->
+				<unit>piece</unit>					<!-- unit of measurement (piece or kg) -->
+				<mass>1000</mass>					<!-- engine mass in kg -->
+				<avgprice>500</avgprice>			<!-- average price -->
+				<volume>5</volume>					<!-- engine volume in m^3 -->
+				<thrust>30000</thrust>				<!-- thrust in newtons -->
+				<fueltype>trillium</fueltype>		<!-- the type of fuel this engine burns -->
+				<efficiency>0.3</efficiency>		<!-- the portion of fuel energy that is converted into thrust -->
+			</trilliumengine1>
+			<trilliumthruster1>		<!-- ID -->
+				<name>Impulse thruster</name>		<!-- thruster name -->
+				<unit>piece</unit>					<!-- unit of measurement (piece or kg) -->
+				<mass>120</mass>					<!-- thruster mass in kg -->
+				<avgprice>80</avgprice>				<!-- average price -->
+				<volume>1</volume>					<!-- thruster volume in m^3 -->
+				<thrust>800</thrust>				<!-- thrust in newtons -->
+				<fueltype>trillium</fueltype>		<!-- the type of fuel this thruster burns -->
+				<efficiency>0.6</efficiency>		<!-- the portion of fuel energy that is converted into thrust -->
+			</trilliumthruster1>
+			<jetthruster1>			<!-- ID -->
+				<name>Jet thruster</name>			<!-- thruster name -->
+				<unit>piece</unit>					<!-- unit of measurement (piece or kg) -->
+				<mass>100</mass>					<!-- thruster mass in kg -->
+				<avgprice>10</avgprice>				<!-- average price -->
+				<volume>1</volume>					<!-- thruster volume in m^3 -->
+				<thrust>1000</thrust>				<!-- thrust in newtons -->
+				<fueltype>rocketfuel</fueltype>		<!-- the type of fuel this thruster burns -->
+				<efficiency>0.4</efficiency>		<!-- the portion of fuel energy that is converted into thrust -->
+			</jetthruster1>
+		</propulsion>
+		<fueltanks>		<!-- ship fuel tanks -->
+			<tank20k>			<!-- ID -->
+				<name>20000 liter tank</name>		<!-- tank name -->
+				<unit>piece</unit>					<!-- unit of measurement (piece or kg) -->
+				<mass>200</mass>					<!-- EMPTY mass in kg -->
+				<avgprice>250</avgprice>			<!-- average price -->
+				<volume>20</volume>					<!-- tank volume in m^3 -->
+			</tank20k>
+		</fueltanks>
+	</shipparts>
+
+	<fuels>			<!-- commodity type: FUEL (special type) -->
+		<trillium>							<!-- commodity ID -->
+			<name>Liquid trillium fuel</name>	<!-- commodity name -->
+			<unit>kg</unit>						<!-- unit of measurement (piece or kg) -->
+			<mass>1</mass>				  		<!-- mass per unit (kg) -->
+			<avgprice>18</avgprice> 			<!-- average price per kg -->
+			<volume>0.0003</volume>				<!-- volume per unit (m^3) -->
+			
+			<energy>100</energy>				<!-- MJ (megajoules) produced by kilogram of fuel -->
+		</trillium>
+		<rocketfuel>						<!-- commodity ID -->
+			<name>Standard rocket fuel</name>	<!-- commodity name -->
+			<unit>kg</unit>						<!-- unit of measurement (piece or kg) -->
+			<mass>12000</mass>  				<!-- mass per unit (kg) -->
+			<avgprice>12</avgprice> 			<!-- average price per kg -->
+			<volume>0.0008</volume>				<!-- volume per unit (m^3) -->
+			
+			<energy>50</energy>					<!-- MJ (megajoules) produced by kilogram of fuel -->
+		</rocketfuel>
+	</fuels>
+
+
+	<standard>		<!-- commodity type: STANDARD -->
+		<food>
+			<name>Foodstuffs</name>				<!-- commodity name -->
+			<unit>kg</unit>						<!-- unit of measurement (piece or kg) -->
+			<mass>1</mass>						<!-- mass per unit (kg) -->
+			<volume>0.0006</volume>				<!-- volume per unit (m^3) -->
+			<avgprice>2.5</avgprice> 			<!-- average price per kg -->
+		</food>
+		<water>
+			<name>Water</name>				<!-- commodity name -->
+			<unit>kg</unit>						<!-- unit of measurement (piece or kg) -->
+			<mass>1</mass>						<!-- mass per unit (kg) -->
+			<volume>0.001</volume>				<!-- volume per unit (m^3) -->
+			<avgprice>0.1</avgprice> 			<!-- average price per kg -->
+		</water>
+		<sidearm>
+			<name>Side arm</name>				<!-- commodity name -->
+			<unit>piece</unit>					<!-- unit of measurement (piece or kg) -->
+			<mass>2.5</mass>					<!-- mass per unit (kg) -->
+			<volume>0.05</volume>				<!-- volume per unit (m^3) -->
+			<avgprice>2500</avgprice> 			<!-- average price per kg -->
+		</sidearm>
+		<computer>
+			<name>Computer</name>				<!-- commodity name -->
+			<unit>piece</unit>					<!-- unit of measurement (piece or kg) -->
+			<mass>15</mass>						<!-- mass per one unit (kg) -->
+			<volume>0.2</volume>				<!-- volume per unit (m^3) -->
+			<avgprice>1000</avgprice> 			<!-- average price per kg -->
+		</computer>
+	</standard>
+</commodities>

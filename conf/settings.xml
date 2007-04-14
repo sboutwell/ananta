@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<graphics>
+		<!--The framerate the game tries to run at -->
+		<framerate>60</framerate>
+		
+		<resolution>
+			<x>1024</x>
+			<y>768</y>
+		</resolution>
+		
+		<!-- main viewport marginals in pixels -->
+		<viewportmarginals>
+			<top>5</top>
+			<bottom>5</bottom>
+			<left>5</left>
+			<right>200</right>
+		</viewportmarginals>
+		
+		<!-- the border around the viewport -->
+		<border>
+			<width>3</width> 	<!-- line width -->
+			<color> 			<!-- line color -->
+				<r>0</r>
+				<g>100</g>
+				<b>255</b>
+			</color>
+		</border>
+		
+		<!-- 16 or 32 for fullscreen, 0 for windowed -->
+		<bitdepth>0</bitdepth>
+		
+		<!-- The refresh rate for fullscreen mode. Must be equal or greater than desired framerate. Zero for defaults.-->
+		<refreshrate>60</refreshrate>
+		
+		<!-- Flag for screen offset (camera leading in front of the moving ship) -->
+		<screenoffset>True</screenoffset>
+		
+		<!-- The bigger the magnitude the less offset there is-->
+		<screenoffsetmagnitude>4</screenoffsetmagnitude>
+		
+		<!-- Elasticity factor (how smooth camera transitions for offset are)-->
+		<screenelasticity>0.08</screenelasticity>		
+	</graphics>
+</settings>
