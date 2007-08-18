@@ -27,6 +27,18 @@
 			</color>
 		</border>
 		
+		<!-- font properties of message window -->
+		<messagefont>
+			<ttl>5</ttl>				<!-- time in seconds before a line of text fades -->
+			<maxlenght>40</maxlenght>	<!-- max chars fitting a single line before wrapping occurs -->
+			<scale>1</scale>			<!-- font scale -->
+			<color> 					<!-- default font color -->
+				<r>255</r>
+				<g>255</g>
+				<b>255</b>
+			</color>
+		</messagefont>
+		
 		<!-- 16 or 32 for fullscreen, 0 for windowed -->
 		<bitdepth>0</bitdepth>
 		
@@ -40,6 +52,6 @@
 		<screenoffsetmagnitude>4</screenoffsetmagnitude>
 		
 		<!-- Elasticity factor (how smooth camera transitions for offset are)-->
-		<screenelasticity>0.08</screenelasticity>		
+		<screenelasticity>0.08</screenelasticity>
 	</graphics>
 </settings>

@@ -31,25 +31,10 @@ Type TCommodity
 	
 	' loads all commodities from the XML file
 	Function LoadAllCommodities()
+	
 		Local rootElement:String = "commodities"
+		Local node:TxmlNode = LoadXMLFile(rootElement,c_commoditiesFile)
 
-		Print "Reading " + c_commoditiesFile + "..."
-
-		Local xmlfile:TxmlDoc = parseXMLdoc(c_commoditiesFile)	' load the commodities.xml into memory
-		Local rootnode:TxmlNode = xmlfile.GetRootElement()
-
-		' Root element: COMMODITIES
-		If rootnode = Null Or rootnode.getName() <> rootElement Then
-			If rootnode = Null Print c_commoditiesFile + " is empty!"
-			If rootnode.getName() <> rootElement Then Print c_commoditiesFile + ": Root element <> " + rootElement + "!"
-			xmlfile.free()
-			Return	
-		End If
-		
-		Local node:TxmlNode = rootnode.copy() ' do a copy of the root node so that we can discard the document
-		xmlfile.free ' now that we've saved the root node, we can free the memory reseved by the document
-		' (root node alone takes less memory than the whole XML document)
-		
 		Local searchnode:TxmlNode ' define a node used for searching root element's child nodes
 		searchnode = xmlGetNode(node, "shipparts") ' find and return the "shipparts" node
 		If searchnode <> Null Then TShippart.LoadAll(searchnode)

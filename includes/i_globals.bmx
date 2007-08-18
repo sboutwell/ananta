@@ -8,4 +8,3 @@ Global G_media_jupiter:TImage
 Global CalcFrameTimer:Float
 Global CalcFrameRate:Int
 Global FrameCounter:Int
-

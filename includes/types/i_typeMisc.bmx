@@ -71,3 +71,63 @@ Type TComponent Final
 		c.damage = 0
 	End Function
 End Type
+
+Type TColor Final
+	Global g_L_Colors:TList ' list containing all colors
+	Field name:String		' name of the color
+	Field red:Int			' red component
+	Field green:Int			' green component
+	Field blue:Int			' blue component
+
+	Function FindColor:TColor(colorname:String)
+		If Not g_L_Colors Then Print "FindColor: no colors defined" ; Return Null	' return if the list is empty
+		
+		For Local color:TColor = EachIn g_L_Colors
+			If color.name = colorname Then Return color
+		Next
+
+		Print "FindColor: no color matching the name '" + colorname + " found"
+		Return Null
+	End Function
+	
+	Function SetNamedColor:Int(colorname:String)
+		Local color:TColor = FindColor(colorname)
+		If color = Null Then Return -1
+		SetColor(color.red,color.green,color.blue)
+		Return 0
+	End Function
+
+	Function LoadAll()
+		Print "    Loading color info..."
+		Local colornode:TxmlNode = LoadXMLFile("colors",c_colorsFile)
+		' ------------------------------------------------------------------------------------
+		' Creating instance of each found color
+		' ------------------------------------------------------------------------------------
+		Local children:TList = colornode.getChildren() 			' get all color names
+		For colornode = EachIn children							' iterate through colors
+			Print "      Color found: " + colornode.GetName()
+			Local color:TColor = TColor.Create(colornode.GetName())	' create a color prototype instance
+			
+			Local colorChildren:TList = colornode.getChildren()
+			' search the color node to find RGB info and save them into fields
+			For Local value:TxmlNode = EachIn colorChildren	' iterate through values
+				If value.GetName() = "red"		Then color.red		= value.GetText().ToInt()
+				If value.GetName() = "green"	Then color.green 	= value.GetText().ToInt()
+				If value.GetName() = "blue" 	Then color.blue		= value.GetText().ToInt()
+			Next
+		Next
+		
+		Return
+	EndFunction
+
+	Function Create:TColor(colorname:String)
+		Local c:TColor = New TColor ' create an instance
+		c.name = colorname			' give a name
+
+		If Not g_L_Colors Then g_L_Colors = CreateList()	' create a list if necessary
+		g_L_Colors.AddLast c	' add the newly created object to the end of the list
+		
+		Return c	' return the pointer to this specific object instance
+	End Function
+
+End Type

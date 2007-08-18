@@ -7,6 +7,7 @@ Include "includes\functions\f_parseXMLDoc.bmx"		'Function that loads, parses an 
 Include "includes\functions\f_xmlGetNode.bmx"		'Function that searches and returns a specified child under a specified node
 Include "includes\functions\f_xmlFindValues.bmx"	'Functions that do XML file searching using X-Path standard
 Include "includes\functions\f_mathfunctions.bmx"	'General math related functions
+Include "includes\functions\f_stringfunctions.bmx"	'Functions related to string manipulation
 
 ' Type definitions
 Include "includes\types\i_typeSpaceObjects.bmx"			'All spaceborne objects
@@ -17,16 +18,20 @@ Include "includes\types\i_typeMisc.bmx"					'Miscellaneous type definitions
 
 AutoImageFlags MASKEDIMAGE|FILTEREDIMAGE|MIPMAPPEDIMAGE	' flags for LoadImage()
 
-TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
+TColor.LoadAll()	' load all color info from colors.xml
 
+TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
 'End
 
 ' create the screen and initialize the graphics mode
-Local viewport:TViewport = TViewport.Create()
+Global viewport:TViewport = TViewport.Create()
 viewport.InitViewportVariables()
 TViewport.InitGraphicsMode()
 
 LoadMedia()
+
+viewport.CreateMsg("Test")
+viewport.CreateMsg("This string is more than 80 characters long, and should wrap around on three lines altogether")
 
 ' generate a sector
 Local sector1:TSector = TSector.Create(0,0,"Sol")
@@ -44,16 +49,17 @@ pl2.size = 100
 Local p1:TPlayer = TPlayer.Create("Da Playah")
 Local s1:TShip = TShip.Create(500,0,"samplehull1",sector1,"Da Ship")
 
-'s1.mass = s1.hull.mass
-'s1.engineThrust = 25000
+s1.mass = s1.hull.mass
+s1.engineThrust = 25000
 
 ' ******** test to load up some equipment into slots ******
 For Local eSlot:TSlot = EachIn s1.hull.L_engineSlots
-	Local engine:TPropulsion = TPropulsion.FindEngine("trilliumengine1")
-	Local component:TComponent = TComponent.Create(engine)
+
+	Local engine:TPropulsion = TPropulsion.FindEngine("trilliumengine1") ' find and return the specs of "trilliumengine1" into a type variable
+	Local component:TComponent = TComponent.Create(engine) ' create an actual component based on the specs saved in the type variable
 	
-	If Not eSlot.L_parts Then eSlot.L_parts = CreateList()
-	eSlot.L_parts.AddLast component
+	If Not eSlot.L_parts Then eSlot.L_parts = CreateList() ' create a list if needed
+	eSlot.L_parts.AddLast component							' add the component to the list
 Next
 ' ********************************************************
 
@@ -63,7 +69,7 @@ s1.PreCalcPhysics()
 ' assign the ship for the player to control
 s1.AssignPilot(p1)
 
-Rem 
+rem
 Local ai1:TAIPlayer = TAIPlayer.Create("Da AI Playah")
 Local s2:TShip = TShip.Create(1000,50,"samplehull2",sector1,"AI ship")
 s2.rotation=180
@@ -75,7 +81,7 @@ s2.mass = s2.hull.mass
 s2.engineThrust = 25000
 s2.rotThrust = 45000
 s2.PreCalcPhysics()
-EndRem
+endrem
 
 ' Main loop
 While Not KeyHit(KEY_ESCAPE)
@@ -100,12 +106,15 @@ While Not KeyHit(KEY_ESCAPE)
 	' draw each object in the currently active sector
 	activeSector.DrawAllInSector(viewport)
 
+	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
+	viewport.DrawMisc()
+
 	Flip;Cls
 	'	GCCollect() ' Garbage collection
 	
 Wend
 
-' LoadMedia is a temporary function. Will be replaced by a type function reading all ship part values from an XML files
+' LoadMedia is a temporary function. Will be replaced by a type function reading all values from an XML files
 Function LoadMedia()
 	AutoMidHandle True
 	SetRotation 0  
