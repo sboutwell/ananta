@@ -19,25 +19,19 @@
 		
 		<!-- the border around the viewport -->
 		<border>
-			<width>3</width> 	<!-- line width -->
-			<color> 			<!-- line color -->
-				<r>0</r>
-				<g>100</g>
-				<b>255</b>
-			</color>
+			<width>3</width> 		<!-- line width -->
+			<color>skyblue</color>	<!-- line color -->
 		</border>
 		
-		<!-- font properties of message window -->
-		<messagefont>
-			<ttl>5</ttl>				<!-- time in seconds before a line of text fades -->
-			<maxlenght>40</maxlenght>	<!-- max chars fitting a single line before wrapping occurs -->
-			<scale>1</scale>			<!-- font scale -->
-			<color> 					<!-- default font color -->
-				<r>255</r>
-				<g>255</g>
-				<b>255</b>
-			</color>
-		</messagefont>
+		<!-- font properties of the main message window -->
+		<messagewindow>
+			<ttl>5</ttl>					<!-- time in seconds before a line of text fades -->
+			<maxlenght>40</maxlenght>		<!-- max chars fitting a single line before wrapping occurs -->
+			<scale>1</scale>				<!-- font scale -->
+			<defaultcolor>lime</defaultcolor>	<!-- default font color -->
+			<x>10</x>					<!-- window x coordinate (top left corner) -->
+			<y>10</y>					<!-- window y coordinate (top left corner) -->
+		</messagewindow>
 		
 		<!-- 16 or 32 for fullscreen, 0 for windowed -->
 		<bitdepth>0</bitdepth>

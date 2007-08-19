@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <colors>
+	<!-- For color reference, see docs/500col.htm. Courtesy of cloford.com. -->
+	
 	<!-- 16 basic VGA colors -->
 	<!--	<r>red</r>	<g>green</g>	<b>blue</b> -->
 	<white>

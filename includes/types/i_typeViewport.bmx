@@ -40,23 +40,29 @@ Type TViewport
 	Field marginalLeft:Int
 	Field marginalRight:Int
 	Field borderWidth:Int
-	Field borderColorR:Int
-	Field borderColorG:Int
-	Field borderColorB:Int
-	Field msgWindow:TMessageWindow = TMessageWindow.Create()
-
+	Field borderColor:TColor
+	Field msgWindow:TMessageWindow = TMessageWindow.Create() ' create a message window for the viewport
+	
 	Method InitViewportVariables()
 		TViewPort.InitViewportGlobals()	' first load the global values from settings.xml file
 
 		Local xmlfile:TxmlDoc = parseXMLdoc(c_settingsFile)
-			marginalTop			= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/top").ToInt()
-			marginalBottom		= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/bottom").ToInt()
-			marginalLeft		= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/left").ToInt()
-			marginalRight		= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/right").ToInt()
-			borderWidth			= XMLFindFirstMatch(xmlfile,"settings/graphics/border/width").ToInt()
-			borderColorR		= XMLFindFirstMatch(xmlfile,"settings/graphics/border/color/r").ToInt()
-			borderColorG		= XMLFindFirstMatch(xmlfile,"settings/graphics/border/color/g").ToInt()
-			borderColorB		= XMLFindFirstMatch(xmlfile,"settings/graphics/border/color/b").ToInt()
+			' Viewport marginals
+			marginalTop				= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/top").ToInt()
+			marginalBottom			= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/bottom").ToInt()
+			marginalLeft			= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/left").ToInt()
+			marginalRight			= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/right").ToInt()
+			' Border surrounding the viewport
+			borderWidth				= XMLFindFirstMatch(xmlfile,"settings/graphics/border/width").ToInt()
+			borderColor 			= TColor.FindColor(XMLFindFirstMatch(xmlfile,"settings/graphics/border/color").ToString())
+			' Message window
+			msgWindow.defaultColor 	= TColor.FindColor(XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/defaultcolor").ToString())
+			msgWindow.timeToLive 	= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/ttl").ToInt()
+			msgWindow.maxLineLength = XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/maxlenght").ToInt()
+			msgWindow.fontscale 	= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/scale").ToFloat()
+			msgWindow.x 			= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/x").ToFloat()
+			msgWindow.y		 		= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/y").ToFloat()
+
 		xmlfile.free()
 
 		startX = marginalLeft
@@ -69,35 +75,37 @@ Type TViewport
 	EndMethod
 
 	Method DrawLevel(o:TSpaceObject)
-	  'using the object{o} position and direction to draw the map
+	 	'using the object{o} position and direction to draw the map
 	
-	Rem
-		Local TargetScreenOffsetX:Float = (o.xVel) * (C_ScreenWidth/ScreenOffsetMagnitude)  / o.maxSpd
-		Local TargetScreenOffsetY:Float = (o.yVel) * (C_ScreenHeight/ScreenOffsetMagnitude) / o.maxSpd
+		Rem
+			Local TargetScreenOffsetX:Float = (o.xVel) * (C_ScreenWidth/ScreenOffsetMagnitude)  / o.maxSpd
+			Local TargetScreenOffsetY:Float = (o.yVel) * (C_ScreenHeight/ScreenOffsetMagnitude) / o.maxSpd
+			
+			If TargetScreenOffsetX > C_ScreenWidth/ScreenOffsetMagnitude Then TargetScreenOffsetX = C_ScreenWidth/ScreenOffsetMagnitude
+			If TargetScreenOffsetY > C_ScreenHeight/ScreenOffsetMagnitude Then TargetScreenOffsetY = C_ScreenHeight/ScreenOffsetMagnitude
+			If TargetScreenOffsetX < -(C_ScreenWidth/ScreenOffsetMagnitude) Then TargetScreenOffsetX = -(C_ScreenWidth/ScreenOffsetMagnitude)
+			If TargetScreenOffsetY < -(C_ScreenHeight/ScreenOffsetMagnitude) Then TargetScreenOffsetY = -(C_ScreenHeight/ScreenOffsetMagnitude)
+			
+			If ScreenOffset = False Then 
+				TargetScreenOffsetX = 0
+				TargetScreenOffsetY = 0
+			EndIf
 		
-		If TargetScreenOffsetX > C_ScreenWidth/ScreenOffsetMagnitude Then TargetScreenOffsetX = C_ScreenWidth/ScreenOffsetMagnitude
-		If TargetScreenOffsetY > C_ScreenHeight/ScreenOffsetMagnitude Then TargetScreenOffsetY = C_ScreenHeight/ScreenOffsetMagnitude
-		If TargetScreenOffsetX < -(C_ScreenWidth/ScreenOffsetMagnitude) Then TargetScreenOffsetX = -(C_ScreenWidth/ScreenOffsetMagnitude)
-		If TargetScreenOffsetY < -(C_ScreenHeight/ScreenOffsetMagnitude) Then TargetScreenOffsetY = -(C_ScreenHeight/ScreenOffsetMagnitude)
+			Smooth out the offset transitions to happen over several frames (using globals ScreenOffsetX and Y)
+			Elasticity coefficient controls the smoothness factor
+			ScreenOffsetX :+ (TargetScreenOffsetX - ScreenOffsetX) * ScreenElasticity*(o.MaxSpd/10)
+			ScreenOffsetY :+ (TargetScreenOffsetY - ScreenOffsetY) * ScreenElasticity*(o.MaxSpd/10)
 		
-		If ScreenOffset = False Then 
-			TargetScreenOffsetX = 0
-			TargetScreenOffsetY = 0
-		EndIf
-	EndRem
 	
-		' Smooth out the offset transitions to happen over several frames (using globals ScreenOffsetX and Y)
-		' Elasticity coefficient controls the smoothness factor
-	'	ScreenOffsetX :+ (TargetScreenOffsetX - ScreenOffsetX) * ScreenElasticity*(o.MaxSpd/10)
-	'	ScreenOffsetY :+ (TargetScreenOffsetY - ScreenOffsetY) * ScreenElasticity*(o.MaxSpd/10)
+			CameraPosition_X = o.x + ScreenOffsetX
+			CameraPosition_Y = o.y + ScreenOffsetY
 	
-		SetViewport(startX ,startY, width, height)  ' limit the drawing area to viewport margins
+		EndRem
 
-	'	CameraPosition_X = o.x + ScreenOffsetX
-	'	CameraPosition_Y = o.y + ScreenOffsetY
-	
 		CameraPosition_X = o.x
 		CameraPosition_Y = o.y
+
+		SetViewport(startX ,startY, width, height)  ' limit the drawing area to viewport margins
 	
 		SetScale 1,1
 		SetBlend AlphaBlend
@@ -110,16 +118,16 @@ Type TViewport
 		TileImage G_media_spacedust,CameraPosition_X,CameraPosition_Y
 		
 		' draw a colored border around the viewport
-		DrawBorder(borderWidth, borderColorR, borderColorG, borderColorB)
+		DrawBorder(borderWidth, borderColor)
 		
 	EndMethod
 
-	Method DrawBorder(w:Int,r:Int,g:Int,b:Int)
+	Method DrawBorder(w:Int,color:TColor)
 		AutoMidHandle False
 		SetViewport(0,0, g_ResolutionX, g_ResolutionY)  ' drawing area (whole screen)
 		SetBlend SolidBlend
 		SetLineWidth(w)
-		SetColor(r,g,b)
+		TColor.SetTColor(color)
 		SetRotation(0)
 		SetScale(1,1)
 		' top border
@@ -132,9 +140,9 @@ Type TViewport
 		DrawLine(startX+width+w, startY-w, startX+width+w, startY+height+w)
 	EndMethod
 
-	Method CreateMsg(str:String)
-		msgWindow.CreateLine(str)
-		TMessageWindow.DrawAll()	' draw message windows
+	Method CreateMsg(str:String,colString:String="")
+		msgWindow.CreateLine(str,colString)
+		TMessageWindow.DrawAll()	' update message windows
 	EndMethod
 		
 	Method DrawMisc()
@@ -168,23 +176,30 @@ Type TViewport
 
 EndType
 
+' TMessageWindow is a transparent text area on the screen that shows various messages to the player
 Type TMessageWindow
-	Global g_L_MessageWindows:TList ' a list to hold all message windows
-	Global g_fontScale:Float = 1		' font size used in the message window
-	Global g_timeToLive:Int = 10			' time in seconds before a line of text fades
-	Global g_maxLineLength:Int	= 20	' max lenght of a single line before wrapping occurs
-	'Global maxLines:Int = 10			' max number of simultaneous lines
-	Field L_MessageLines:TList		' a list to hold this window's text lines
-	Field xCoord:Float = 10			' starting x-coordinate for the window
+	Global g_L_MessageWindows:TList 	' a list to hold all message windows
+	Field fontScale:Float = 1			' font size used in the message window
+	Field timeToLive:Int = 40			' time in seconds before a line of text fades
+	Field maxLineLength:Int	= 30		' max lenght of a single line before wrapping occurs
+	'Field maxLines:Int = 10			' max number of simultaneous lines
+	Field L_MessageLines:TList			' a list to hold this window's text lines
+	Field x:Float = 10					' starting x-coordinate for the window
+	Field y:Float = 10					' starting y-coordinate for the window
+	Field defaultColor:TColor			' default font color
 	
 	' NewLine() creates a new text line into the message window
-	Method CreateLine(str:String)
+	Method CreateLine(str:String,colString:String)
+		Local col:TColor = Null
+		If colSTring <> "" Then col = TColor.FindColor(colString) ' find a color matching the search string
+		If col = null Then col = defaultColor ' if no valid color is specified, use the default
+
 		str = "* " + str		' add * to the beginning of the string to indicate starting of a new message
 		
-		Local L_LineStrings:TList = StringSplitLength(str,g_maxLineLength) 	' splits the string into chunks of maximum of g_maxLineLength characters
+		Local L_LineStrings:TList = StringSplitLength(str,maxLineLength) 	' splits the string into chunks of maximum of g_maxLineLength characters
 		
 		For Local linestring:String = EachIn L_LineStrings
-			Local line:TMessageLine = TMessageLine.Create(linestring)
+			Local line:TMessageLine = TMessageLine.Create(linestring,col)
 			If Not L_MessageLines Then L_MessageLines = CreateList()	' create a list if necessary
 			L_MessageLines.AddLast line	' add the newly created object to the end of the list
 		Next
@@ -195,7 +210,7 @@ Type TMessageWindow
 		If Not L_MessageLines Then Return
 		Local lineNr:Int = 0
 		For Local line:TMessageLine = EachIn L_Messagelines
-			line.Draw(xCoord,10+ (15 * lineNr * g_fontScale))
+			line.Draw(x,y + (15 * lineNr * fontScale))
 			lineNr = lineNr + 1
 		Next
 	End Method
@@ -210,27 +225,15 @@ Type TMessageWindow
 		SetRotation(0)
 		
 		For Local window:TMessageWindow = EachIn g_L_MessageWindows
-			SetScale(window.g_fontScale,window.g_fontScale)
+			SetScale(window.fontScale,window.fontScale)
 			window.DrawAllLines()
 		Next
-	End Function
-	
-	Function GetMessageWindowVariables()
-		' load message window properties from an xml file
-		Local xmlfile:TxmlDoc 	= parseXMLdoc(c_settingsFile)	' load the file into memory
-			TMessageWindow.g_timeToLive = XMLFindFirstMatch(xmlfile,"settings/graphics/messagefont/ttl").ToInt()
-			TMessageWindow.g_maxLineLength = XMLFindFirstMatch(xmlfile,"settings/graphics/messagefont/maxlenght").ToInt()
-			TMessageWindow.g_fontscale = XMLFindFirstMatch(xmlfile,"settings/graphics/messagefont/scale").ToFloat()
-		xmlfile.free()	' free up the memory
 	End Function
 	
 	Function Create:TMessageWindow()
 		Local mw:TMessageWindow = New TMessageWindow
 
-		If Not g_L_MessageWindows Then 
-			g_L_MessageWindows = CreateList()	' create a list if necessary
-			TMessageWindow.GetMessageWindowVariables()
-		EndIf
+		If Not g_L_MessageWindows Then g_L_MessageWindows = CreateList()	' create a list if necessary
 		g_L_MessageWindows.AddLast mw	' add the newly created object to the end of the list
 		Return mw	' returns a pointer to the newly created message window
 	End Function
@@ -240,15 +243,18 @@ End Type
 Type TMessageLine
 	Field lineString:String		' string containing the actual text data
 	Field age:Int				' age of the message line in frames
+	Field color:TColor			' color of the line
 	
 	Method Draw(x#,y#)
+		SetColor(color.red,color.green,color.blue)
 		DrawText(lineString,x,y)
 	EndMethod
 	
 	' Creates a new instance of a message line
-	Function Create:TMessageLine(str:String)
+	Function Create:TMessageLine(str:String,col:TColor)
 		Local ml:TMessageLine = New TMessageLine
 		ml.lineString = str
+		ml.color = col
 		Return ml	' returns a pointer to the newly created line
 	End Function
 EndType

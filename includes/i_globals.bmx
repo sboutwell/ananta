@@ -8,3 +8,7 @@ Global G_media_jupiter:TImage
 Global CalcFrameTimer:Float
 Global CalcFrameRate:Int
 Global FrameCounter:Int
+
+' create the screen and initialize the graphics mode
+' Make it global so that viewport:TViewport is accessible everywhere
+Global viewport:TViewport = TViewport.Create()

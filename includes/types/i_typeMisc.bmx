@@ -69,9 +69,11 @@ Type TComponent Final
 		Local c:TComponent = New TComponent
 		c.ShipPart = SPart
 		c.damage = 0
+		Return c
 	End Function
 End Type
 
+' TColor is a type handling mapping of named colors (colors.xml) into their equivalent RGB values
 Type TColor Final
 	Global g_L_Colors:TList ' list containing all colors
 	Field name:String		' name of the color
@@ -79,25 +81,27 @@ Type TColor Final
 	Field green:Int			' green component
 	Field blue:Int			' blue component
 
-	Function FindColor:TColor(colorname:String)
+	' SetTColor() is a SetColor replacement that uses named colors instead of RGB values
+	Function SetTColor(color:TColor)
+		SetColor(color.red,color.green,color.blue)
+		Return
+	End Function
+
+	' FindColor takes the color name as a search string and returns the matching TColor object
+	Function FindColor:TColor(colorname:String) 
 		If Not g_L_Colors Then Print "FindColor: no colors defined" ; Return Null	' return if the list is empty
 		
 		For Local color:TColor = EachIn g_L_Colors
-			If color.name = colorname Then Return color
+			If color.name = colorname Then Return color	' Matching color found, return the object
 		Next
 
-		Print "FindColor: no color matching the name '" + colorname + " found"
+		Print "FindColor: no color matching the name '" + colorname + "' found"
 		Return Null
 	End Function
-	
-	Function SetNamedColor:Int(colorname:String)
-		Local color:TColor = FindColor(colorname)
-		If color = Null Then Return -1
-		SetColor(color.red,color.green,color.blue)
-		Return 0
-	End Function
 
-	Function LoadAll()
+	
+	' LoadAll() parses colors.xml and creates a TColor type instance for each color found in the file
+	Function LoadAll() 
 		Print "    Loading color info..."
 		Local colornode:TxmlNode = LoadXMLFile("colors",c_colorsFile)
 		' ------------------------------------------------------------------------------------
@@ -105,18 +109,18 @@ Type TColor Final
 		' ------------------------------------------------------------------------------------
 		Local children:TList = colornode.getChildren() 			' get all color names
 		For colornode = EachIn children							' iterate through colors
-			Print "      Color found: " + colornode.GetName()
+			'Print "      Color found: " + colornode.GetName()
 			Local color:TColor = TColor.Create(colornode.GetName())	' create a color prototype instance
 			
 			Local colorChildren:TList = colornode.getChildren()
 			' search the color node to find RGB info and save them into fields
 			For Local value:TxmlNode = EachIn colorChildren	' iterate through values
-				If value.GetName() = "red"		Then color.red		= value.GetText().ToInt()
-				If value.GetName() = "green"	Then color.green 	= value.GetText().ToInt()
-				If value.GetName() = "blue" 	Then color.blue		= value.GetText().ToInt()
+				If value.GetName() = "r" Then color.red		= value.GetText().ToInt()
+				If value.GetName() = "g" Then color.green 	= value.GetText().ToInt()
+				If value.GetName() = "b" Then color.blue	= value.GetText().ToInt()
 			Next
 		Next
-		
+		Print "    Colors loaded."
 		Return
 	EndFunction
 

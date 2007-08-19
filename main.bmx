@@ -2,8 +2,8 @@ SuperStrict
 Import BaH.Libxml		' the open-source XML parser library
 
 Include "includes\i_constants.bmx"					'Global constants. All constants must begin with C_
-Include "includes\i_globals.bmx"					'Global variables. All globals must begin with G_
-Include "includes\functions\f_parseXMLDoc.bmx"		'Function that loads, parses an returns and XML file for processing
+Include "includes\i_globals.bmx"					'Global variables and types. All globals must begin with G_
+Include "includes\functions\f_parseXMLDoc.bmx"		'Function that loads, parses an returns an XML file for processing
 Include "includes\functions\f_xmlGetNode.bmx"		'Function that searches and returns a specified child under a specified node
 Include "includes\functions\f_xmlFindValues.bmx"	'Functions that do XML file searching using X-Path standard
 Include "includes\functions\f_mathfunctions.bmx"	'General math related functions
@@ -18,20 +18,16 @@ Include "includes\types\i_typeMisc.bmx"					'Miscellaneous type definitions
 
 AutoImageFlags MASKEDIMAGE|FILTEREDIMAGE|MIPMAPPEDIMAGE	' flags for LoadImage()
 
-TColor.LoadAll()	' load all color info from colors.xml
-
+TColor.LoadAll()					' load all color info from colors.xml (must be loaded before initializing the viewport)
+viewport.InitViewportVariables() 	' load various viewport-related settings from settings.xml and precalc some other values
+TViewport.InitGraphicsMode()		' lets go graphical using the values read from the xml file
 TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
 'End
 
-' create the screen and initialize the graphics mode
-Global viewport:TViewport = TViewport.Create()
-viewport.InitViewportVariables()
-TViewport.InitGraphicsMode()
+LoadMedia()	' temporary function
 
-LoadMedia()
-
-viewport.CreateMsg("Test")
-viewport.CreateMsg("This string is more than 80 characters long, and should wrap around on three lines altogether")
+viewport.CreateMsg("Test","pink")
+viewport.CreateMsg("This string is more than 80 characters long, and should wrap around on three lines altogether") 
 
 ' generate a sector
 Local sector1:TSector = TSector.Create(0,0,"Sol")
@@ -49,8 +45,6 @@ pl2.size = 100
 Local p1:TPlayer = TPlayer.Create("Da Playah")
 Local s1:TShip = TShip.Create(500,0,"samplehull1",sector1,"Da Ship")
 
-s1.mass = s1.hull.mass
-s1.engineThrust = 25000
 
 ' ******** test to load up some equipment into slots ******
 For Local eSlot:TSlot = EachIn s1.hull.L_engineSlots
@@ -63,6 +57,8 @@ For Local eSlot:TSlot = EachIn s1.hull.L_engineSlots
 Next
 ' ********************************************************
 
+s1.mass = s1.hull.mass
+s1.engineThrust = 25000
 s1.rotThrust = 4500
 s1.PreCalcPhysics()
 
