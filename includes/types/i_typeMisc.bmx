@@ -88,6 +88,7 @@ Type TColor Final
 	End Function
 
 	' FindColor takes the color name as a search string and returns the matching TColor object
+	' FindColor is a relatively slow function, so don't call it in the main loop
 	Function FindColor:TColor(colorname:String) 
 		If Not g_L_Colors Then Print "FindColor: no colors defined" ; Return Null	' return if the list is empty
 		

@@ -14,6 +14,7 @@ Include "includes\types\i_typeSpaceObjects.bmx"			'All spaceborne objects
 Include "includes\types\i_typePilot.bmx"				'Pilot entities and methods for AI routines
 Include "includes\types\i_typeViewport.bmx"				'Draw-to-screen related stuff
 Include "includes\types\i_typeCommodity.bmx"			'Tradeable/usable commodities (contents read from an xml file)
+Include "includes\types\i_typeMessageWindow.bmx"		'Messagewindow and messageline types
 Include "includes\types\i_typeMisc.bmx"					'Miscellaneous type definitions
 
 AutoImageFlags MASKEDIMAGE|FILTEREDIMAGE|MIPMAPPEDIMAGE	' flags for LoadImage()
@@ -24,10 +25,8 @@ TViewport.InitGraphicsMode()		' lets go graphical using the values read from the
 TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
 'End
 
-LoadMedia()	' temporary function
 
-viewport.CreateMsg("Test","pink")
-viewport.CreateMsg("This string is more than 80 characters long, and should wrap around on three lines altogether") 
+LoadMedia()	' temporary function
 
 ' generate a sector
 Local sector1:TSector = TSector.Create(0,0,"Sol")
@@ -37,13 +36,13 @@ Local activeSector:TSector = sector1 ' set the newly created sector as the "acti
 Local pl2:TPlanet = TPlanet.Create(-600,-100,sector1,100,10,"Jupiter")
 pl2.image=G_media_jupiter
 pl2.rotation=-90
-pl2.scaleX = 2
-pl2.scaleY = 2
+pl2.scaleX = 1
+pl2.scaleY = 1
 pl2.size = 100
 
 ' generate the player and player's ship
 Local p1:TPlayer = TPlayer.Create("Da Playah")
-Local s1:TShip = TShip.Create(500,0,"samplehull1",sector1,"Da Ship")
+Local s1:TShip = TShip.Create(500,0,"samplehull2",sector1,"Da Ship")
 
 
 ' ******** test to load up some equipment into slots ******
@@ -57,9 +56,8 @@ For Local eSlot:TSlot = EachIn s1.hull.L_engineSlots
 Next
 ' ********************************************************
 
-s1.mass = s1.hull.mass
-s1.engineThrust = 25000
-s1.rotThrust = 4500
+s1.engineThrust = 885000
+s1.rotThrust = 288500
 s1.PreCalcPhysics()
 
 ' assign the ship for the player to control
@@ -78,6 +76,10 @@ s2.engineThrust = 25000
 s2.rotThrust = 45000
 s2.PreCalcPhysics()
 endrem
+viewport.CreateMsg("Ship mass: " + FloatToFixedPoint(s1.mass,0))
+viewport.CreateMsg("Ship thrust: " + FloatToFixedPoint(s1.engineThrust,0),"pink")
+viewport.CreateMsg("Ship rot thrust: " + FloatToFixedPoint(s1.rotThrust,0))
+
 
 ' Main loop
 While Not KeyHit(KEY_ESCAPE)

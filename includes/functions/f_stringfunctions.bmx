@@ -53,3 +53,19 @@ Function StringSplit:TList(str:String,delim:String)
 
 	Return L_strings
 EndFunction
+
+' "Rounds" a float into a fixed-point string for display
+Function FloatToFixedPoint:String(f:Float, decimals:Int=2)
+	Local i:Long = (10^decimals)*f
+	Local value:String = String.fromlong(i)
+		
+	If value.length<=decimals
+		return "0."+(RSet("",decimals-value.length)).Replace(" ","0")+value
+	ElseIf decimals = 0
+		return value[0..value.length-decimals]
+	Else
+		return value[0..value.length-decimals] + "." + value[value.length-decimals..value.length]  
+	EndIf
+	
+End Function
+

@@ -57,8 +57,12 @@ Type TViewport
 			borderColor 			= TColor.FindColor(XMLFindFirstMatch(xmlfile,"settings/graphics/border/color").ToString())
 			' Message window
 			msgWindow.defaultColor 	= TColor.FindColor(XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/defaultcolor").ToString())
-			msgWindow.timeToLive 	= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/ttl").ToInt()
+			msgWindow.fadeEnabled	= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/fadeEnabled").ToInt()
+			msgWindow.timeToLive 	= (XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/ttl").ToInt()) * TViewport.g_FrameRate
+			msgWindow.fadeFactor 	= (XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/fadefactor").ToFloat()) / TViewport.g_FrameRate
 			msgWindow.maxLineLength = XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/maxlenght").ToInt()
+			msgWindow.maxLines 		= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/maxlines").ToInt()
+			msgWindow.alpha 		= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/alpha").ToFloat()
 			msgWindow.fontscale 	= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/scale").ToFloat()
 			msgWindow.x 			= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/x").ToFloat()
 			msgWindow.y		 		= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/y").ToFloat()
@@ -141,7 +145,7 @@ Type TViewport
 	EndMethod
 
 	Method CreateMsg(str:String,colString:String="")
-		msgWindow.CreateLine(str,colString)
+		msgWindow.CreateMsg(str,colString)
 		TMessageWindow.DrawAll()	' update message windows
 	EndMethod
 		
@@ -157,8 +161,8 @@ Type TViewport
 		Local xmlfile:TxmlDoc 	= parseXMLdoc(c_settingsFile)	' load the file into memory
 			TViewport.g_ResolutionX		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/x").ToInt()
 			TViewport.g_ResolutionY		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/y").ToInt()
-			TViewport.g_BitDepth			= XMLFindFirstMatch(xmlfile,"settings/graphics/bitdepth").ToInt()
-			TViewport.g_FrameRate			= XMLFindFirstMatch(xmlfile,"settings/graphics/framerate").ToInt()
+			TViewport.g_BitDepth		= XMLFindFirstMatch(xmlfile,"settings/graphics/bitdepth").ToInt()
+			TViewport.g_FrameRate		= XMLFindFirstMatch(xmlfile,"settings/graphics/framerate").ToInt()
 			TViewport.g_RefreshRate		= XMLFindFirstMatch(xmlfile,"settings/graphics/refreshrate").ToInt()
 			
 			TViewport.g_media_spacedust 	= LoadImage(c_mediaPath + "spacedust.png")
@@ -174,87 +178,4 @@ Type TViewport
 		Return vp
 	EndFunction
 
-EndType
-
-' TMessageWindow is a transparent text area on the screen that shows various messages to the player
-Type TMessageWindow
-	Global g_L_MessageWindows:TList 	' a list to hold all message windows
-	Field fontScale:Float = 1			' font size used in the message window
-	Field timeToLive:Int = 40			' time in seconds before a line of text fades
-	Field maxLineLength:Int	= 30		' max lenght of a single line before wrapping occurs
-	'Field maxLines:Int = 10			' max number of simultaneous lines
-	Field L_MessageLines:TList			' a list to hold this window's text lines
-	Field x:Float = 10					' starting x-coordinate for the window
-	Field y:Float = 10					' starting y-coordinate for the window
-	Field defaultColor:TColor			' default font color
-	
-	' NewLine() creates a new text line into the message window
-	Method CreateLine(str:String,colString:String)
-		Local col:TColor = Null
-		If colSTring <> "" Then col = TColor.FindColor(colString) ' find a color matching the search string
-		If col = null Then col = defaultColor ' if no valid color is specified, use the default
-
-		str = "* " + str		' add * to the beginning of the string to indicate starting of a new message
-		
-		Local L_LineStrings:TList = StringSplitLength(str,maxLineLength) 	' splits the string into chunks of maximum of g_maxLineLength characters
-		
-		For Local linestring:String = EachIn L_LineStrings
-			Local line:TMessageLine = TMessageLine.Create(linestring,col)
-			If Not L_MessageLines Then L_MessageLines = CreateList()	' create a list if necessary
-			L_MessageLines.AddLast line	' add the newly created object to the end of the list
-		Next
-
-	EndMethod
-
-	Method DrawAllLines()
-		If Not L_MessageLines Then Return
-		Local lineNr:Int = 0
-		For Local line:TMessageLine = EachIn L_Messagelines
-			line.Draw(x,y + (15 * lineNr * fontScale))
-			lineNr = lineNr + 1
-		Next
-	End Method
-	
-	Function DrawAll()
-		If Not g_L_MessageWindows Then Return
-		
-		AutoMidHandle False
-		'SetViewport(0,0, g_ResolutionX, g_ResolutionY)  ' drawing area (whole screen)
-		SetBlend AlphaBlend
-		'SetColor(r,g,b)
-		SetRotation(0)
-		
-		For Local window:TMessageWindow = EachIn g_L_MessageWindows
-			SetScale(window.fontScale,window.fontScale)
-			window.DrawAllLines()
-		Next
-	End Function
-	
-	Function Create:TMessageWindow()
-		Local mw:TMessageWindow = New TMessageWindow
-
-		If Not g_L_MessageWindows Then g_L_MessageWindows = CreateList()	' create a list if necessary
-		g_L_MessageWindows.AddLast mw	' add the newly created object to the end of the list
-		Return mw	' returns a pointer to the newly created message window
-	End Function
-	
-End Type
-
-Type TMessageLine
-	Field lineString:String		' string containing the actual text data
-	Field age:Int				' age of the message line in frames
-	Field color:TColor			' color of the line
-	
-	Method Draw(x#,y#)
-		SetColor(color.red,color.green,color.blue)
-		DrawText(lineString,x,y)
-	EndMethod
-	
-	' Creates a new instance of a message line
-	Function Create:TMessageLine(str:String,col:TColor)
-		Local ml:TMessageLine = New TMessageLine
-		ml.lineString = str
-		ml.color = col
-		Return ml	' returns a pointer to the newly created line
-	End Function
 EndType

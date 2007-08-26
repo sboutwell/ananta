@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--Stellar objects-->
+<celestialtypes>
+	<stars>
+		<sun1>	<!-- Stellar object ID -->
+			<image>sun1.png</image>	<!-- the pic representing this object -->
+			<description>A middle-aged yellow star.</description>
+			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>10000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+
+		</sun1>		
+	</stars>
+	
+	<planets>
+		<rocky1>	<!-- Stellar object ID -->
+			<image>planet1.png</image>	<!-- the pic representing this object -->
+			<description>A rocky planet with no atmosphere.</description>
+			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>100000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		</rocky1>
+	</planets>
+	
+</celestialtypes>

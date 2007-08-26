@@ -248,9 +248,13 @@ Type TShip Extends TMovingObject
 	EndMethod
 	
 	Method ApplyRotKill()
+		If rotationSpd = 0.0 Then Return
 		If rotationSpd < 0 Then	rotationSpd :+ (rotKillPercentage * rotAcceleration)
 		If rotationSpd > 0 Then	rotationSpd :- (rotKillPercentage * rotAcceleration)
-		If Abs(rotationSpd) <= rotAcceleration Then rotationSpd = 0.0	' Halt the rotation altogether if rotation speed is less than one impulse of the thruster
+		If Abs(rotationSpd) <= rotAcceleration Then 
+			rotationSpd = 0.0	' Halt the rotation altogether if rotation speed is less than one impulse of the thruster
+			viewport.CreateMsg("Rotation stopped","pink")
+		EndIf
 	EndMethod
 	
 	' AutoPilotRotation figures how to fire the turn thrusters in order to rotate into desired orientation
