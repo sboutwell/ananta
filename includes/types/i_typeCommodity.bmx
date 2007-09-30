@@ -22,18 +22,45 @@ EndRem
 ' ---------------------------------------------------------------------------------------
 Type TCommodity
 	Global g_L_Commodities:TList	' a list to hold all commodities
-	Field id:String					' ID of the commodity
-	Field name:String				' name of the commodity
-	Field unit:String				' unit of measurement (piece or kg)
-	Field mass:Float  				' mass per unit
-	Field volume:Float				' volume per unit (m^3)
-	Field avgPrice:Float			' average price of the commodity (per unit)
+	Field _id:String					' ID of the commodity
+	Field _name:String				' name of the commodity
+	Field _unit:String				' unit of measurement (piece or kg)
+	Field _mass:Float  				' mass per unit
+	Field _volume:Float				' volume per unit (m^3)
+	Field _avgPrice:Float			' average price of the commodity (per unit)
 	
+	Method GetMass:Float()
+		Return _mass
+	End Method
+
+	Method GetVol:Float()
+		Return _volume
+	End Method
+
+	Method GetID:String()
+		Return _id
+	End Method
+
+	Method GetName:String()
+		Return _name
+	End Method
+
+	Method GetAvgPrice:Float()
+		Return _avgPrice
+	End Method
+
+	Method GetUnit:String()
+		Return _unit
+	End Method
+	
+	Method SetMass(val:Float)
+		_mass = val
+	End Method
+
 	' loads all commodities from the XML file
 	Function LoadAllCommodities()
 	
-		Local rootElement:String = "commodities"
-		Local node:TxmlNode = LoadXMLFile(rootElement,c_commoditiesFile)
+		Local node:TxmlNode = LoadXMLFile(c_commoditiesFile)
 
 		Local searchnode:TxmlNode ' define a node used for searching root element's child nodes
 		searchnode = xmlGetNode(node, "shipparts") ' find and return the "shipparts" node
@@ -46,16 +73,16 @@ Type TCommodity
 		If searchnode <> Null Then TCommodity.LoadAll(searchnode)
 
 
-		Print "Finished reading and parsing " + c_commoditiesFile
+		If G_Debug Print "Finished reading and parsing " + c_commoditiesFile
 
 	EndFunction
 	
 	Function LoadAll(rootnode:TxmlNode)
-		Print "    Loading standard commodities..."
+		If G_Debug Print "    Loading standard commodities..."
 		
 		Local children:TList = rootnode.getChildren() 			
 		For rootnode = EachIn children							
-			Print "      Commodity found: " + rootnode.GetName()
+			If G_Debug Print "      Commodity found: " + rootnode.GetName()
 			Local comm:TCommodity = TCommodity.Create(rootnode.GetName())	
 			
 			Local commChildren:TList = rootnode.getChildren()
@@ -69,17 +96,17 @@ Type TCommodity
 
 	Function LoadValues(nodelist:TList,c:TCommodity)
 		For Local value:TxmlNode = EachIn nodelist	' iterate through node values
-			If value.GetName() = "name"		Then c.name		= value.GetText()	
-			If value.GetName() = "unit" 	Then c.unit		= value.GetText()
-			If value.GetName() = "mass" 	Then c.mass		= value.GetText().ToFloat()
-			If value.GetName() = "volume" 	Then c.volume	= value.GetText().ToFloat()
-			If value.GetName() = "avgprice"	Then c.avgprice = value.GetText().ToFloat()
+			If value.GetName() = "name"		Then c._name		= value.GetText()	
+			If value.GetName() = "unit" 	Then c._unit		= value.GetText()
+			If value.GetName() = "mass" 	Then c._mass		= value.GetText().ToFloat()
+			If value.GetName() = "volume" 	Then c._volume	= value.GetText().ToFloat()
+			If value.GetName() = "avgprice"	Then c._avgprice = value.GetText().ToFloat()
 		Next
 	End Function
 
 	Function Create:TCommodity(idString:String)
 		Local comm:TCommodity = New TCommodity		' create an instance
-		comm.id = idString							' give an ID
+		comm._id = idString							' give an ID
 
 		If Not g_L_Commodities Then g_L_Commodities = CreateList()	' create a list if necessary
 		g_L_Commodities.AddLast comm		' add the newly created object to the end of the list
@@ -94,13 +121,13 @@ EndType
 ' TFuel is a special commodity used as engine/thruster fuel
 Type TFuel Extends TCommodity
 	Global g_L_Fuels:TList		' a list to hold all fuel types
-	Field energy:Float			' energy (megajoules) produced by one kilogram of fuel
+	Field _energy:Float			' energy (megajoules) produced by one kilogram of fuel
 	
 	Function ReturnFuel:TFuel(idString:String)
 		If Not g_L_Fuels Then Print "ReturnFuel: no fuels defined" ; Return Null	' return if the list is empty
 		
 		For Local f:TFuel = EachIn g_L_Fuels
-			If f.id = idString Then Return f
+			If f._id = idString Then Return f
 		Next
 
 		Print "ReturnFuel: no fuel matching the ID '" + idString + " found"
@@ -108,16 +135,16 @@ Type TFuel Extends TCommodity
 	End Function
 	
 	Function LoadAll(rootnode:TxmlNode)
-		Print "    Loading fuels..."
+		If G_Debug Print "    Loading fuels..."
 		
 		Local children:TList = rootnode.getChildren() 			
 		For rootnode = EachIn children							
-			Print "      Fuel type found: " + rootnode.GetName()
+			If G_Debug Print "      Fuel type found: " + rootnode.GetName()
 			Local fuel:TFuel = TFuel.Create(rootnode.GetName())	
 			
 			Local fuelChildren:TList = rootnode.getChildren()
 			For Local value:TxmlNode = EachIn fuelChildren
-				If value.GetName() = "energy"		Then fuel.energy = value.GetText().ToFloat()
+				If value.GetName() = "energy"		Then fuel._energy = value.GetText().ToFloat()
 			Next
 
 			' Load all values common to all commodities and save them to corresponding fields of the object.
@@ -130,7 +157,7 @@ Type TFuel Extends TCommodity
 	
 	Function Create:TFuel(idString:String)
 		Local f:TFuel = New TFuel		' create an instance
-		f.id = idString					' give an ID
+		f._id = idString					' give an ID
 
 		If Not g_L_Fuels Then g_L_Fuels = CreateList()	' create a list if necessary
 		g_L_Fuels.AddLast f		' add the newly created object to the end of the list

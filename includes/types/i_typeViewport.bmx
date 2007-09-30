@@ -27,58 +27,50 @@ Type TViewport
 	Global g_media_spacedust:TImage		' image global for the "space dust" particle mask
 	Global g_media_spaceBG:TImage		' image global for the space background
 
-	Field startX:Int
-	Field startY:Int
-	Field width:Int
-	Field height:Int
-	Field midX:Int
-	Field midY:Int
-	Field cameraPosition_X:Float
-	Field cameraPosition_Y:Float
-	Field marginalTop:Int
-	Field marginalBottom:Int
-	Field marginalLeft:Int
-	Field marginalRight:Int
-	Field borderWidth:Int
-	Field borderColor:TColor
-	Field msgWindow:TMessageWindow = TMessageWindow.Create() ' create a message window for the viewport
+	Field _startX:Int
+	Field _startY:Int
+	Field _width:Int
+	Field _height:Int
+	Field _midX:Int
+	Field _midY:Int
+	Field _cameraPosition_X:Float
+	Field _cameraPosition_Y:Float
+	Field _centeredObject:TSpaceObject	' the object the camera is centered on
+	Field _marginalTop:Int
+	Field _marginalBottom:Int
+	Field _marginalLeft:Int
+	Field _marginalRight:Int
+	Field _borderWidth:Int
+	Field _borderColor:TColor
+	Field _msgWindow:TMessageWindow = TMessageWindow.Create() ' create a message window for the viewport
 	
 	Method InitViewportVariables()
-		TViewPort.InitViewportGlobals()	' first load the global values from settings.xml file
 
 		Local xmlfile:TxmlDoc = parseXMLdoc(c_settingsFile)
+			TViewPort.InitViewportGlobals(xmlfile)	' first load the global values from settings.xml file
 			' Viewport marginals
-			marginalTop				= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/top").ToInt()
-			marginalBottom			= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/bottom").ToInt()
-			marginalLeft			= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/left").ToInt()
-			marginalRight			= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/right").ToInt()
+			_marginalTop				= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/top").ToInt()
+			_marginalBottom			= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/bottom").ToInt()
+			_marginalLeft			= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/left").ToInt()
+			_marginalRight			= XMLFindFirstMatch(xmlfile,"settings/graphics/viewportmarginals/right").ToInt()
 			' Border surrounding the viewport
-			borderWidth				= XMLFindFirstMatch(xmlfile,"settings/graphics/border/width").ToInt()
-			borderColor 			= TColor.FindColor(XMLFindFirstMatch(xmlfile,"settings/graphics/border/color").ToString())
-			' Message window
-			msgWindow.defaultColor 	= TColor.FindColor(XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/defaultcolor").ToString())
-			msgWindow.fadeEnabled	= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/fadeEnabled").ToInt()
-			msgWindow.timeToLive 	= (XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/ttl").ToInt()) * TViewport.g_FrameRate
-			msgWindow.fadeFactor 	= (XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/fadefactor").ToFloat()) / TViewport.g_FrameRate
-			msgWindow.maxLineLength = XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/maxlenght").ToInt()
-			msgWindow.maxLines 		= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/maxlines").ToInt()
-			msgWindow.alpha 		= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/alpha").ToFloat()
-			msgWindow.fontscale 	= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/scale").ToFloat()
-			msgWindow.x 			= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/x").ToFloat()
-			msgWindow.y		 		= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/y").ToFloat()
+			_borderWidth				= XMLFindFirstMatch(xmlfile,"settings/graphics/border/width").ToInt()
+			_borderColor 			= TColor.FindColor(XMLFindFirstMatch(xmlfile,"settings/graphics/border/color").ToString())
+			' Call msgWindow's InitVariables -method
+			_msgWindow.InitVariables(xmlfile)
 
-		xmlfile.free()
+		xmlfile.free()	' free up memory
 
-		startX = marginalLeft
-		startY = marginalTop
+		_startX = _marginalLeft
+		_startY = _marginalTop
 
-		width		= (TViewport.g_ResolutionX - startX - marginalRight)
-		height		= (TViewport.g_ResolutionY - startY - marginalBottom)
-		midX		= width / 2
-		midY		= height / 2
+		_width		= (g_ResolutionX - _startX - _marginalRight)
+		_height		= (g_ResolutionY - _startY - _marginalBottom)
+		_midX		= _width / 2
+		_midY		= _height / 2
 	EndMethod
 
-	Method DrawLevel(o:TSpaceObject)
+	Method DrawLevel()
 	 	'using the object{o} position and direction to draw the map
 	
 		Rem
@@ -106,26 +98,31 @@ Type TViewport
 	
 		EndRem
 
-		CameraPosition_X = o.x
-		CameraPosition_Y = o.y
+		_CameraPosition_X = _centeredObject.GetX()
+		_CameraPosition_Y = _centeredObject.GetY()
 
-		SetViewport(startX ,startY, width, height)  ' limit the drawing area to viewport margins
+		SetViewport(_startX ,_startY, _width, _height)  ' limit the drawing area to viewport margins
 	
 		SetScale 1,1
 		SetBlend AlphaBlend
 		SetAlpha 0.7
-		TileImage G_media_spaceBG,CameraPosition_X/50,CameraPosition_Y/50
+		TileImage G_media_spaceBG,_CameraPosition_X/50,_CameraPosition_Y/50
 	
 		SetBlend AlphaBlend
 		SetAlpha 0.85
 		SetColor 255,255,255
-		TileImage G_media_spacedust,CameraPosition_X,CameraPosition_Y
+		TileImage G_media_spacedust,_CameraPosition_X,_CameraPosition_Y
 		
 		' draw a colored border around the viewport
-		DrawBorder(borderWidth, borderColor)
+		DrawBorder(_borderWidth, _borderColor)
 		
 	EndMethod
 
+	' CenterCamera sets an object for the camera to follow
+	Method CenterCamera(o:TSpaceObject)
+		_centeredObject = o
+	End Method
+	
 	Method DrawBorder(w:Int,color:TColor)
 		AutoMidHandle False
 		SetViewport(0,0, g_ResolutionX, g_ResolutionY)  ' drawing area (whole screen)
@@ -135,42 +132,72 @@ Type TViewport
 		SetRotation(0)
 		SetScale(1,1)
 		' top border
-		DrawLine(startX-w, startY-w, width+startX+w, startY-w)
+		DrawLine(_startX - w, _startY - w, _width + _startX + w, _startY - w)
 		' bottom border
-		DrawLine(startX-w, startY+height+w, startX+width+w, startY+height+w)
+		DrawLine(_startX - w, _startY + _height + w, _startX + _width + w, _startY + _height + w)
 		' left border
-		DrawLine(startX-w, startY-w, startX-w, startY+height+w)
+		DrawLine(_startX - w, _startY - w, _startX - w, _startY + _height + w)
 		' right border
-		DrawLine(startX+width+w, startY-w, startX+width+w, startY+height+w)
+		DrawLine(_startX + _width + w, _startY - w, _startX + _width + w, _startY + _height + w)
 	EndMethod
 
 	Method CreateMsg(str:String,colString:String="")
-		msgWindow.CreateMsg(str,colString)
+		_msgWindow.CreateMsg(str,colString)
 		TMessageWindow.DrawAll()	' update message windows
 	EndMethod
 		
 	Method DrawMisc()
 		TMessageWindow.DrawAll()	' draw message windows
 	EndMethod
-	
+
+	Method GetStartX:Int()
+		Return _startX
+	End Method
+
+	Method GetStartY:Int()
+		Return _startY
+	End Method
+
+	Method GetWidth:Int()
+		Return _width
+	End Method
+
+	Method GetHeight:Int()
+		Return _height
+	End Method
+
+	Method GetMidX:Int()
+		Return _MidX
+	End Method
+
+	Method GetMidY:Int()
+		Return _MidY
+	End Method
+
+	Method GetCameraPosition_X:Float()
+		Return _CameraPosition_X
+	End Method
+
+	Method GetCameraPosition_Y:Float()
+		Return _CameraPosition_Y
+	End Method
+		
 	Function InitGraphicsMode()
 		Graphics g_ResolutionX, g_ResolutionY, g_BitDepth, g_RefreshRate, 0
 	EndFunction
 
-	Function InitViewportGlobals()
-		Local xmlfile:TxmlDoc 	= parseXMLdoc(c_settingsFile)	' load the file into memory
-			TViewport.g_ResolutionX		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/x").ToInt()
-			TViewport.g_ResolutionY		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/y").ToInt()
-			TViewport.g_BitDepth		= XMLFindFirstMatch(xmlfile,"settings/graphics/bitdepth").ToInt()
-			TViewport.g_FrameRate		= XMLFindFirstMatch(xmlfile,"settings/graphics/framerate").ToInt()
-			TViewport.g_RefreshRate		= XMLFindFirstMatch(xmlfile,"settings/graphics/refreshrate").ToInt()
-			
-			TViewport.g_media_spacedust 	= LoadImage(c_mediaPath + "spacedust.png")
-			TViewport.g_media_spaceBG		= LoadImage(c_mediaPath + "space_bg.jpg")
+	Function InitViewportGlobals(xmlfile:TxmlDoc)
+		g_ResolutionX		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/x").ToInt()
+		g_ResolutionY		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/y").ToInt()
+		g_BitDepth			= XMLFindFirstMatch(xmlfile,"settings/graphics/bitdepth").ToInt()
+		g_FrameRate			= XMLFindFirstMatch(xmlfile,"settings/graphics/framerate").ToInt()
+		g_RefreshRate		= XMLFindFirstMatch(xmlfile,"settings/graphics/refreshrate").ToInt()
+		
+		g_media_spacedust 	= LoadImage(c_mediaPath + "spacedust.png")
+		g_media_spaceBG		= LoadImage(c_mediaPath + "space_bg.jpg")
 
-		xmlfile.free()	' free up the memory
 	
-		TViewport.g_TargetFrameLength = 1000/TViewport.g_FrameRate		' the lenght of the frame in ms
+		g_TargetFrameLength = 1000/g_FrameRate		' the lenght of the frame in ms
 	EndFunction
 
 	Function Create:TViewport()

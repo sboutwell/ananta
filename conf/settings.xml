@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<graphics>
+	<debug>1</debug>		<!-- debug mode on = 1 / of f = 0 -->
+	<graphics>	<!-- graphics-related settings -->
 		<!--The framerate the game tries to run at -->
 		<framerate>60</framerate>
 		
@@ -30,16 +31,15 @@
 			<maxlenght>40</maxlenght>		<!-- max chars fitting a single line before wrapping occurs -->
 			<maxlines>10</maxlines>			<!-- maximum number of simultaneous lines -->
 			<scale>1</scale>				<!-- font scale -->
-			<alpha>0.8</alpha>				<!-- default alpha for a new message line -->
-			<fadefactor>0.4</fadefactor>		<!-- alpha change per second when fading out -->
+			<alpha>0.8</alpha>			<!-- default alpha for a new message line -->
+			<fadefactor>0.3</fadefactor>		<!-- alpha change per second when fading out -->
 			<defaultcolor>lime</defaultcolor>	<!-- default font color -->
 			<x>10</x>					<!-- window x coordinate (top left corner) -->
 			<y>10</y>					<!-- window y coordinate (top left corner) -->
 		</messagewindow>
-		
+
 		<!-- 16 or 32 for fullscreen, 0 for windowed -->
 		<bitdepth>0</bitdepth>
-		
 		<!-- The refresh rate for fullscreen mode. Must be equal or greater than desired framerate. Zero for defaults.-->
 		<refreshrate>60</refreshrate>
 		
@@ -51,5 +51,6 @@
 		
 		<!-- Elasticity factor (how smooth camera transitions for offset are)-->
 		<screenelasticity>0.08</screenelasticity>
+
 	</graphics>
 </settings>

@@ -1,5 +1,5 @@
-Global G_debug:Int = True
-'Global G_debug:Int = False
+'read the Debug flag state from settings.xml
+Global G_debug:Int = XMLGetSingleValue(c_SettingsFile,"settings/debug").ToInt()
 
 'media globals
 Global G_media_jupiter:TImage

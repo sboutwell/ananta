@@ -33,54 +33,75 @@ Rem
 EndRem
 
 Type TSpaceObject Abstract
-	Field image:TImage					' The image to represent the object
-	Field x:Float,y:Float				' x-y coordinates of the object
-	Field sector:TSector				' the sector the object is in
-	Field rotation:Float				' rotation in degrees
-	Field mass:Long						' The mass of the object in kg
-	Field size:Int						' The visual diameter of the object, to display the object in correct scale in the minimap
-	Field scaleX:Float = 1				' The scale of the drawn image (1 being full resolution, 2 = double size, 0.5 = half size)
-	Field scaleY:Float = 1				
-	Field name:String	= "Nameless"	' The name of the object
-	Method DrawBody(viewport:TViewport)
-		SetViewport(viewport.startX ,viewport.startY, viewport.width, viewport.height)
-		If image Then 
+	Field _image:TImage					' The image to represent the object
+	Field _x:Float,_y:Float				' x-y coordinates of the object
+	Field _sector:TSector				' the sector the object is in
+	Field _rotation:Float				' rotation in degrees
+	Field _mass:Long						' The mass of the object in kg
+	Field _size:Int						' The visual diameter of the object, to display the object in correct scale in the minimap
+	Field _scaleX:Float = 1				' The scale of the drawn image (1 being full resolution, 2 = double size, 0.5 = half size)
+	Field _scaleY:Float = 1				
+	Field _name:String	= "Nameless"	' The name of the object
+	
+	Method DrawBody(vp:TViewport)
+		If _image Then 
+			' ********* preload values that are used more than once (-->_veeery_ slight performance boost)
+			Local startX:Int = vp.GetStartX()
+			Local startY:Int = vp.GetStartY()
+			Local midX:Int = vp.GetMidX()
+			Local midY:Int = vp.GetMidY()
+			' *********
+
+			SetViewport(startX, startY, vp.GetWidth(), vp.GetHeight())
 			SetAlpha 1
-			SetRotation rotation+90
+			SetRotation _rotation+90
 			SetBlend MASKBLEND
 			SetColor 255,255,255
-			SetScale scaleX, scaleY
-			DrawImage image, (viewport.cameraPosition_X-x) + viewport.midX + viewport.startX, (viewport.cameraPosition_Y-y) + viewport.midY + viewport.startY
-		Else
-			SetHandle( size/2,size/2 )
-			SetRotation rotation+90
-			SetBlend SOLIDBLEND
-			SetColor 155,255,155
-			DrawOval( (viewport.cameraPosition_X-x) + viewport.midX + viewport.startX, (viewport.cameraPosition_Y-y) + viewport.midY + viewport.startY, size, size)
-			'SetColor 255,255,155
-			'DrawLine(  (viewport.cameraPosition_X-x) + viewport.midX + viewport.startX, (viewport.cameraPosition_Y-y) + viewport.midY + viewport.startY,  (viewport.cameraPosition_X-x) + viewport.midX + viewport.startX, (viewport.cameraPosition_Y-y) + viewport.midY + viewport.startY + size)
-			SetHandle (0,0)
-			SetColor 255,255,155
+			SetScale _scaleX, _scaleY
+			DrawImage _image, (vp.GetCameraPosition_X()- _x) + midX + startX, (vp.GetCameraPosition_Y()- _y) + midY + startY
 		EndIf
 	EndMethod
+	
+	Method GetRot:Float()
+		Return _rotation
+	End Method
+
+	Method GetSize:Int()
+		Return _size
+	End Method
+	
+	Method GetX:Float()
+		Return _x
+	End Method
+	
+	Method GetY:Float()
+		Return _y
+	End Method
+
+	Method SetX(coord:Float)
+		_x = coord
+	End Method
+	
+	Method SetY(coord:Float)
+		_y = coord
+	End Method
 	
 EndType
 
 Type TJumpPoint Extends TSpaceObject
 	Global g_L_JumpPoints:TList		' a list to hold all JumpPoints
-	Field destinationJp:TJumpPoint	' the connected JumpPoint
+	Field _destinationJp:TJumpPoint	' the connected JumpPoint
 	
 	Function Create:TJumpPoint(x:Int,y:Int,sector:TSector,destination:TJumpPoint)
 		Local jp:TJumpPoint = New TJumpPoint		' create an instance
-		jp.x = x; jp.y = y									' coordinates
-		jp.sector = sector									' the sector
-		jp.destinationJp = destination					' the destination JumpPoint
+		jp._x = x; jp._y = y						' coordinates
+		jp._sector = sector									' the sector
+		jp._destinationJp = destination					' the destination JumpPoint
 
 		If Not g_L_JumpPoints Then g_L_JumpPoints = CreateList()	' create a list if necessary
 		g_L_JumpPoints.AddLast jp											' add the newly created object to the end of the list
 
-		If Not sector.L_SpaceObjects Then sector.L_SpaceObjects = CreateList()	' create a bodies-list for the SECTOR
-		sector.L_SpaceObjects.AddLast jp											' put this object inside the SECTOR
+		sector.AddSpaceObject(jp)		' add the jumppoint to the sector's space object list
 
 		Return jp																		' return the pointer to this specific object instance
 	EndFunction
@@ -90,23 +111,22 @@ EndType
 ' *** STATIONARY STELLAR OBJECTS
 Type TStellarObject Extends TSpaceObject Abstract
 	Global g_L_StellarObjects:TList			' a list to hold all major stellar bodies (Stars, planets and space stations)
-	Field hasGravity:Int	= False			' a true-false flag to indicate gravitational pull
+	Field _hasGravity:Int	= False			' a true-false flag to indicate gravitational pull
 EndType
 
 Type TStar Extends TStellarObject
 	Function Create:TStar(x:Int=0,y:Int=0,sector:TSector,mass:Long,size:Int,name:String)
 		Local st:TStar = New Tstar				' create an instance
-		st.name = name								' give a name
-		st.x = x; st.y = y							' coordinates
-		st.sector = sector							' the sector
-		st.mass = mass								' mass in kg
-		st.size = size								' size in pixels
+		st._name = name								' give a name
+		st._x = x; st._y = y							' coordinates
+		st._sector = sector							' the sector
+		st._mass = mass								' mass in kg
+		st._size = size								' size in pixels
 
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
 		g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list
-		
-		If Not sector.L_SpaceObjects Then sector.L_SpaceObjects = CreateList()	' create a bodies-list for the SECTOR
-		sector.L_SpaceObjects.AddLast st									' put this Object inside the SECTOR
+
+		sector.AddSpaceObject(st)		' add the body to sector's space objects list
 		
 		Return st																' Return the pointer To this specific Object instance
 	EndFunction
@@ -115,17 +135,16 @@ EndType
 Type TPlanet Extends TStellarObject
 	Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
 		Local pl:TPlanet = New TPlanet					' create an instance
-		pl.name = name										' give a name
-		pl.x = x; pl.y = y									' coordinates
-		pl.sector = sector									' the sector
-		pl.mass = mass										' mass in kg
-		pl.size = size										' size in pixels
+		pl._name = name										' give a name
+		pl._x = x; pl._y = y									' coordinates
+		pl._sector = sector									' the sector
+		pl._mass = mass										' mass in kg
+		pl._size = size										' size in pixels
 
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
 		g_L_StellarObjects.AddLast pl											' add the newly created object to the end of the list
 		
-		If Not sector.L_SpaceObjects Then sector.L_SpaceObjects = CreateList()	' create a bodies-list for the SECTOR
-		sector.L_SpaceObjects.AddLast pl										' put this object inside the SECTOR
+		sector.AddSpaceObject(pl)		' add the body to sector's space objects list
 		
 		Return pl																' return the pointer to this specific object instance
 	EndFunction
@@ -134,17 +153,16 @@ EndType
 Type TSpaceStation Extends TStellarObject
 	Function Create:TSpaceStation(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
 		Local ss:TSpaceStation = New TSpaceStation	' create an instance
-		ss.name = name										' give a name
-		ss.x = x; ss.y = y									' coordinates
-		ss.sector = sector									' the sector
-		ss.mass = mass										' mass in kg
-		ss.size = size										' size in pixels
+		ss._name = name										' give a name
+		ss._x = x; ss._y = y									' coordinates
+		ss._sector = sector									' the sector
+		ss._mass = mass										' mass in kg
+		ss._size = size										' size in pixels
 		
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
 		g_L_StellarObjects.AddLast ss												' add the newly created object to the end of the list
 		
-		If Not sector.L_SpaceObjects Then sector.L_SpaceObjects = CreateList()	' create a bodies-list for the SECTOR
-		sector.L_SpaceObjects.AddLast ss												' put this object inside the SECTOR
+		sector.AddSpaceObject(ss)		' add the body to sector's space objects list
 		
 		Return ss																			' return the pointer to this specific object instance
 	EndFunction
@@ -154,19 +172,23 @@ EndType
 ' *** MOVING SPACE OBJECTS
 Type TMovingObject Extends TSpaceObject Abstract
 	Global g_L_MovingObjects:TList			' a list to hold all moving objects
-	Field xVel:Float								' velocity vector x-component
-	Field yVel:Float								' velocity vector y-component
-	Field rotationSpd:Float					' rotation speed
+	Field _xVel:Float								' velocity vector x-component
+	Field _yVel:Float								' velocity vector y-component
+	Field _rotationSpd:Float					' rotation speed
+
+	Method GetRotSpd:Float()
+		Return _rotationSpd
+	End Method
 
 	Method Update()
 		' rotate the object
-		rotation :+ rotationSpd
-		If rotation<0 rotation:+360
-		If rotation>=360 rotation:-360
+		_rotation :+ _rotationSpd
+		If _rotation < 0 _rotation:+360
+		If _rotation>=360 _rotation:-360
 			
 		' update the position
-		x = x + xVel
-		y = y + yVel
+		_x = _x + _xVel
+		_y = _y + _yVel
 	EndMethod
 	
 	Function UpdateAll()
@@ -182,131 +204,137 @@ EndType
 Type TShip Extends TMovingObject
 	Global g_L_Ships:TList					' a list to hold all ships
 
-	Field hull:THull
-	Field forwardAcceleration:Float			' maximum forward acceleration (calculated by a routine)
-	Field reverseAcceleration:Float			' maximum reverse acceleration (calculated by a routine)
-	Field rotAcceleration:Float				' maximum rotation acceleration (calculated by a routine)
-	Field engineThrust:Float				' thrust (in newtons) given by the ship's engines
-	Field rotThrust:Float					' thrust (in newtons) given by the ship's rotation thrusters
-	Field maxRotationSpd:Float				' maximum rotation speed (degrees per frame)
-	Field rotKillPercentage:Float = 0.8		' the magnitude of the rotation damper. Values 0 to 1. 1 means max efficiency.
-	Field isSpeedLimited:Int = True			' a flag to indicate if speed limiter is functional
-	Field isRotationLimited:Int = True		' a flag to indicate if rotation limiter is functional
-	Field isLimiterOverrided:Int = False	' flag to indicate if speed and rotation limiters are overrided
+	Field _hull:THull
+	Field _forwardAcceleration:Float			' maximum forward acceleration (calculated by a routine)
+	Field _reverseAcceleration:Float			' maximum reverse acceleration (calculated by a routine)
+	Field _rotAcceleration:Float				' maximum rotation acceleration (calculated by a routine)
+	Field _engineThrust:Float				' thrust (in newtons) given by the ship's engines
+	Field _rotThrust:Float					' thrust (in newtons) given by the ship's rotation thrusters
+	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per frame)
+	Field _rotKillPercentage:Float = 0.8		' the magnitude of the rotation damper. Values 0 to 1. 1 means max efficiency.
+	Field _isSpeedLimited:Int = True			' a flag to indicate if speed limiter is functional
+	Field _isRotationLimited:Int = True		' a flag to indicate if rotation limiter is functional
+	Field _isLimiterOverrided:Int = False	' flag to indicate if speed and rotation limiters are overrided
 
-	Field throttlePosition:Float = 0		' -1 = full back, +1 = full forward
-	Field controllerPosition:Float = 0		' -1 = full left, +1 = full right
+	Field _throttlePosition:Float = 0		' -1 = full back, +1 = full forward
+	Field _controllerPosition:Float = 0		' -1 = full left, +1 = full right
 
-	Field fuel:Float						' on-board fuel for main engines (calculated by a routine)
-	Field oxygen:Float						' on-board oxygen
-	Field pilot:TPilot						' The pilot controlling this ship
+	Field _fuel:Float						' on-board fuel for main engines (calculated by a routine)
+	Field _oxygen:Float						' on-board oxygen
+	Field _pilot:TPilot						' The pilot controlling this ship
 	
 	Method Update()
 		' apply forward and reverse thrusts
-		If throttlePosition > 0 Then ApplyImpulse(throttlePosition * forwardAcceleration)
-		If throttlePosition < 0 Then ApplyImpulse(throttlePosition * reverseAcceleration)
+		If _throttlePosition > 0 Then ApplyImpulse(_throttlePosition * _forwardAcceleration)
+		If _throttlePosition < 0 Then ApplyImpulse(_throttlePosition * _reverseAcceleration)
 		
 		' apply rotation thrusters
-		ApplyRotation(controllerPosition * rotAcceleration)
+		ApplyRotation(_controllerPosition * _rotAcceleration)
 
-		If controllerPosition = 0 Then ApplyRotKill()		' if the "joystick" is centered, fire the rotKill thrusters
+		If _controllerPosition = 0 Then ApplyRotKill()		' if the "joystick" is centered, fire the rotKill thrusters
 
 		super.Update()  ' call update method of TMovingObject
 	EndMethod
 
-	Method ApplyThrottle(thr:Float)
-		throttlePosition = thr
+	Method GetRotAccel:Float()
+		Return _rotAcceleration
+	End Method
+	
+	Method SetThrottle(thr:Float)
+		_throttlePosition = thr
 	End Method
 
-	Method ApplyController(cnt:Float)
-		controllerPosition = cnt
+	Method SetController(cnt:Float)
+		_controllerPosition = cnt
 	End Method
 	
 	Method ApplyImpulse(Thrust:Float)
-		Local Ximpulse:Float = Thrust*(Cos(rotation))
-		Local Yimpulse:Float = Thrust*(Sin(rotation))
+		Local Ximpulse:Float = Thrust*(Cos(_rotation))
+		Local Yimpulse:Float = Thrust*(Sin(_rotation))
 
-		Xvel :+ Ximpulse
-		Yvel :+ Yimpulse
+		_Xvel :+ Ximpulse
+		_Yvel :+ Yimpulse
 	EndMethod
 	
 	Method ApplyRotation(rotAcceleration:Float)
-		rotationSpd:+rotAcceleration
-		If isRotationLimited And Not isLimiterOverrided Then ApplyRotationLimiter()
+		_rotationSpd:+rotAcceleration
+		If _isRotationLimited And Not _isLimiterOverrided Then ApplyRotationLimiter()
 	EndMethod
 
 	Method ApplyRotationLimiter()
-		If rotationSpd > maxRotationSpd Then	' we're rotating too fast to the RIGHT...
-			rotationSpd :- rotAcceleration		' ... so slow down the rotation by firing the LEFT thruster
-			If rotationSpd < maxRotationSpd Then rotationSpd = maxRotationSpd
+		If _rotationSpd > _maxRotationSpd Then	' we're rotating too fast to the RIGHT...
+			_rotationSpd :- _rotAcceleration		' ... so slow down the rotation by firing the LEFT thruster
+			If _rotationSpd < _maxRotationSpd Then _rotationSpd = _maxRotationSpd
 		EndIf
 
-		If rotationSpd < -maxRotationSpd Then	' we're rotating too fast to the LEFT
-			rotationSpd :+ rotAcceleration		' ... so slow down the rotation by firing the RIGHT thruster
-			If rotationSpd > maxRotationSpd Then rotationSpd = -maxRotationSpd
+		If _rotationSpd < -_maxRotationSpd Then	' we're rotating too fast to the LEFT
+			_rotationSpd :+ _rotAcceleration		' ... so slow down the rotation by firing the RIGHT thruster
+			If _rotationSpd > _maxRotationSpd Then _rotationSpd = -_maxRotationSpd
 		EndIf
 	EndMethod
 	
 	Method ApplyRotKill()
-		If rotationSpd = 0.0 Then Return
-		If rotationSpd < 0 Then	rotationSpd :+ (rotKillPercentage * rotAcceleration)
-		If rotationSpd > 0 Then	rotationSpd :- (rotKillPercentage * rotAcceleration)
-		If Abs(rotationSpd) <= rotAcceleration Then 
-			rotationSpd = 0.0	' Halt the rotation altogether if rotation speed is less than one impulse of the thruster
-			viewport.CreateMsg("Rotation stopped","pink")
+		If _rotationSpd = 0.0 Then Return
+		If _rotationSpd < 0 Then _rotationSpd :+ (_rotKillPercentage * _rotAcceleration)
+		If _rotationSpd > 0 Then _rotationSpd :- (_rotKillPercentage * _rotAcceleration)
+		If Abs(_rotationSpd) <= _rotAcceleration Then 
+			_rotationSpd = 0.0	' Halt the rotation altogether if rotation speed is less than one impulse of the thruster
 		EndIf
 	EndMethod
 	
 	' AutoPilotRotation figures how to fire the turn thrusters in order to rotate into desired orientation
 	Method AutoPilotRotation(desiredRotation:Float) 
-		Local diff:Float = GetAngleDiff(rotation,desiredRotation)  ' returns degrees between current and desired rotation
+		Local diff:Float = GetAngleDiff(_rotation,desiredRotation)  ' returns degrees between current and desired rotation
 
-		If Abs(diff) < 1 + rotAcceleration/2 Then		' if we're "close enough" to the desired rotation (take the rot thrust performance into account)...
-			controllerPosition = 0 						'... kill the rotation thrusters...
+		If Abs(diff) < 1 + _rotAcceleration/2 Then		' if we're "close enough" to the desired rotation (take the rot thrust performance into account)...
+			_controllerPosition = 0 						'... kill the rotation thrusters...
 			Return  											' ... and return without turning
 		EndIf
 		
 		' if diff < 0, the desired rotation is faster to reach by rotating to the right, diff > 0 vice versa
-		If diff > 0 Then controllerPosition = 1		' rotation thrusters full right
-		If diff < 0 Then controllerPosition = -1		' rotation thrusters full left
+		If diff > 0 Then _controllerPosition = 1		' rotation thrusters full right
+		If diff < 0 Then _controllerPosition = -1		' rotation thrusters full left
 		
 		' *********** calculates when to stop rotation ******************
 		' Calculate the number of degrees it takes for the ship to stop rotating
 		' The absolute value of rotational speed (degrees per frame):
-		Local rotSpd:Float = Abs(RotationSpd)
+		Local rotSpd:Float = Abs(_RotationSpd)
 		' The number of frames it takes for the rotation to stop: (time)
-		Local framesToStop:Int 	 = Abs(rotSpd) / (rotAcceleration)
+		Local framesToStop:Int 	 = Abs(rotSpd) / (_rotAcceleration)
 		' CalcAccelerationDistance:Float(speed:Float,time:Float,acceleration:Float)
 		' s = vt + at^2
-		Local degreesToStop:Float = CalcAccelerationDistance(rotSpd, framesToStop, -rotAcceleration)
+		Local degreesToStop:Float = CalcAccelerationDistance(rotSpd, framesToStop, -_rotAcceleration)
 		' stop rotating if it takes more degrees to stop than the angle difference is
 		If degreesToStop >= Abs(diff) Then
-			If diff > 0 And RotationSpd > 0 Then controllerPosition = -1		' fire the opposing (left)  rotation thrusters
-			If diff < 0 And RotationSpd < 0 Then controllerPosition = 1 		' fire the opposing (right) rotation thrusters
+			If diff > 0 And _RotationSpd > 0 Then _controllerPosition = -1		' fire the opposing (left)  rotation thrusters
+			If diff < 0 And _RotationSpd < 0 Then _controllerPosition = 1 		' fire the opposing (right) rotation thrusters
 		EndIf
 		' ***************************************************************
 	EndMethod
 	
 	' Precalcphysics calculates ship's mass and performance based on the on-board equipment
 	Method PreCalcPhysics()
-		For Local eSlot:TSlot = EachIn hull.L_engineSlots
-			For Local component:TComponent= EachIn eSlot.L_parts
-				'engineThrust = engineThrust + component.ShipPart.thrust
-				mass = mass + component.ShipPart.mass
-			Next
+		For Local eSlot:TSlot = EachIn _hull.GetEngineSlotList()
+			If eSlot.GetPartList() Then
+				For Local component:TComponent= EachIn eSlot.GetPartList()
+					'_engineThrust = _engineThrust + component._ShipPart._thrust
+					' problem here, can't access _thrust of _shippart, 'cause only engines have _thrust
+					_mass = _mass + component.GetShipPartMass()
+				Next
+			EndIf
 		Next
 	
-		mass = mass + hull.mass
+		_mass = _mass + _hull.GetMass()
 	
-		forwardAcceleration = ( engineThrust/mass ) / TViewport.g_frameRate
-		reverseAcceleration = ( (engineThrust*hull.reverserRatio)/mass ) / TViewport.g_frameRate
-		rotAcceleration = ( RadToDeg( CalcRotAcceleration(rotThrust,size,mass,hull.thrusterPos) ) ) / TViewport.g_frameRate
-		maxRotationSpd = hull.maxRotationSpd / TViewport.g_FrameRate
+		_forwardAcceleration = ( _engineThrust/_mass ) / TViewport.g_frameRate
+		_reverseAcceleration = ( (_engineThrust*_hull.GetReverserRatio())/_mass ) / TViewport.g_frameRate
+		_rotAcceleration = ( RadToDeg( CalcRotAcceleration(_rotThrust,_size,_mass,_hull.GetThrusterPos()) ) ) / TViewport.g_frameRate
+		_maxRotationSpd = _hull.GetMaxRotationSpd() / TViewport.g_FrameRate
 	EndMethod
 
 	Method AssignPilot(p:TPilot)
-		pilot = p				' assign the given pilot as the pilot for this ship
-		p.controlledShip = Self	' assign this ship as the controlled ship for the given pilot
+		_pilot = p					' assign the given pilot as the pilot for this ship
+		p.SetControlledShip(Self)	' assign this ship as the controlled ship for the given pilot
 	End Method
 
 	Function UpdateAll()
@@ -322,21 +350,20 @@ Type TShip Extends TMovingObject
 		Local sh:TShip = New TShip		' create an instance of the ship
 
 		' create the hull and copy a few hull fields to corresponding ship fields
-		sh.hull = THull.Create(hullID)
-		sh.image = sh.hull.image
-		sh.size = sh.hull.size
-		sh.scaleX = sh.hull.scale
-		sh.scaleY = sh.hull.scale
+		sh._hull = THull.Create(hullID)
+		sh._image = sh._hull._image
+		sh._size = sh._hull._size
+		sh._scaleX = sh._hull._scale
+		sh._scaleY = sh._hull._scale
 		
-		sh.name = name					' give a name
-		sh.x = x; sh.y = y				' coordinates
-		sh.sector = sector				' the sector
+		sh._name = name					' give a name
+		sh._x = x; sh._y = y				' coordinates
+		sh._sector = sector				' the sector
 		
 		If Not g_L_Ships Then g_L_Ships = CreateList()
 		g_L_Ships.AddLast sh
 		
-		If Not sector.L_SpaceObjects Then sector.L_SpaceObjects = CreateList()	' create a bodies-list for the SECTOR if necessary
-		sector.L_SpaceObjects.AddLast sh					' put this object inside the SECTOR
+		sector.AddSpaceObject(sh)		' add the body to sector's space objects list
 		
 		Return sh											' return the pointer to this specific object instance
 	EndFunction
