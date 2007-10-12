@@ -62,6 +62,10 @@ Type TSpaceObject Abstract
 		EndIf
 	EndMethod
 	
+	Method GetMass:Float() 
+		Return _mass
+	End Method
+	
 	Method GetRot:Float()
 		Return _rotation
 	End Method
@@ -312,14 +316,14 @@ Type TShip Extends TMovingObject
 		' ***************************************************************
 	EndMethod
 	
-	' Precalcphysics calculates ship's mass and performance based on the on-board equipment
+	' Precalcphysics calculates ship's performance based on the on-board equipment
 	Method PreCalcPhysics()
-		For Local eSlot:TSlot = EachIn _hull.GetEngineSlotList()
-			If eSlot.GetPartList() Then
-				For Local component:TComponent= EachIn eSlot.GetPartList()
-					'_engineThrust = _engineThrust + component._ShipPart._thrust
-					' problem here, can't access _thrust of _shippart, 'cause only engines have _thrust
-					_mass = _mass + component.GetShipPartMass()
+		For Local slot:TSlot = EachIn _hull.GetSlotList() 
+			If slot.GetComponentList() Then	' if this slot has components, iterate through all of them
+				For Local component:TComponent = EachIn slot.GetComponentList() 
+					If slot.isEngine() Then _engineThrust = _engineThrust + component.GetThrust() 
+					If slot.isRotThruster() Then _rotThrust = _rotThrust + component.GetThrust() 
+					_mass = _mass + component.GetShipPartMass() 
 				Next
 			EndIf
 		Next
@@ -336,8 +340,22 @@ Type TShip Extends TMovingObject
 		_pilot = p					' assign the given pilot as the pilot for this ship
 		p.SetControlledShip(Self)	' assign this ship as the controlled ship for the given pilot
 	End Method
+	
+	' AddComponentToSlotID installs a component into a ship's slot. The slot is given as ID string.
+	Method AddComponentToSlotID:Int(comp:TComponent, slotID:String) 
+		Local slot:TSlot = _hull.FindSlot(slotID) 
+		If not slot Return Null
+		Local result:Int = AddComponentToSlot(comp, slot) 
+		Return result
+	End Method
 
-	Function UpdateAll()
+	' As opposed to AddComponentToSlotID, AddComponentToSlot takes the actual slot (not ID) as a parameter
+	Method AddComponentToSlot:Int(comp:TComponent, slot:TSlot) 
+		Local result:Int = _hull.AddComponent(comp, slot) 
+		Return result
+	End Method
+	
+	Function UpdateAll() 
 		If Not g_L_Ships Then Return
 		For Local o:TShip = EachIn g_L_Ships
 			o.Update()

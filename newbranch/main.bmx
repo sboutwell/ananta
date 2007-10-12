@@ -44,37 +44,36 @@ Local s1:TShip = TShip.Create(500,0,"samplehull2",sector1,"Da Ship")
 
 
 ' ******* test to load up some equipment into slots ******
-For Local eSlot:TSlot = EachIn s1._hull._L_engineSlots
-
-	Local engine:TPropulsion = TPropulsion.FindEngine("trilliumengine1") ' find and return the specs of "trilliumengine1" into a type variable
-	Local component:TComponent = TComponent.Create(engine) ' create an actual component based on the specs saved in the type variable
-	
-	If Not eSlot._L_parts Then eSlot._L_parts = CreateList() 	' create a list if needed
-	eSlot._L_parts.AddLast component							' add the component to the list
-Next
+Local engine:TPropulsion = TPropulsion.FindEngine("trilliumengine1")    ' find and Return the specs of "trilliumengine1" into a Type variable
+Local component:TComponent = TComponent.Create(engine)   ' create an actual component based on the specs saved in the type variable
+s1.AddComponentToSlotID(component, "engineslot1") 
+engine:TPropulsion = TPropulsion.FindEngine("trilliumthruster1") 
+component:TComponent = TComponent.Create(engine) 
+s1.AddComponentToSlotID(component, "rightrotthruster") 
+component:TComponent = TComponent.Create(engine) 
+s1.AddComponentToSlotID(component, "leftrotthruster") 
 ' ********************************************************
 
-s1._engineThrust = 885000
-s1._rotThrust = 288500
-s1.PreCalcPhysics()
+s1.PreCalcPhysics() 
 
 viewport.CenterCamera(s1)		' select the player ship as the object for the camera to follow
 
 ' assign the ship for the player to control
 s1.AssignPilot(p1)
 
-	' set up an AI pilot for testing
-	Local ai1:TAIPlayer = TAIPlayer.Create("Da AI Playah")
-	Local s2:TShip = TShip.Create(1000,50,"samplehull2",sector1,"AI ship")
-	s2._rotation=180
-	s2.AssignPilot(ai1)
-	s2._engineThrust = 25000
-	s2._rotThrust = 45000
-	s2.PreCalcPhysics()
-	' make the player ship as the target ship for the AI
-	ai1.SetTarget(s1)
 
-viewport.CreateMsg("Test")
+' set up an AI pilot for testing
+Local ai1:TAIPlayer = TAIPlayer.Create("Da AI Playah")
+Local s2:TShip = TShip.Create(1000,50,"samplehull2",sector1,"AI ship")
+s2._rotation=180
+s2.AssignPilot(ai1)
+s2._engineThrust = 25000
+s2._rotThrust = 45000
+s2.PreCalcPhysics()
+' make the player ship as the target ship for the AI
+ai1.SetTarget(s1) 
+
+viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
 
 ' Main loop
 While Not KeyHit(KEY_ESCAPE)
@@ -82,7 +81,7 @@ While Not KeyHit(KEY_ESCAPE)
 	p1.GetInput()
 	
 	' Update every AI pilot and apply their control inputs to their controlled ships
-	TAIPlayer.UpdateAllAI()
+	TAIPlayer.UpdateAllAI() 
 
 	' update the positions of every moving object (except ships), including the ones in other sectors
 	TMovingObject.UpdateAll()

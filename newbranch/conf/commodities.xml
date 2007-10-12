@@ -3,7 +3,7 @@
 	<shipparts>		<!-- commodity type: SHIPPARTS (special type) -->
 		<hulls>			<!-- ship hulls -->
 			<samplehull1>  <!-- Hull ID -->
-				<name>Raptor</name>			<!-- hull name -->
+				<name>Nadia</name>			<!-- hull name -->
 				<unit>piece</unit>			<!-- unit of measurement (piece or kg) -->
 				<mass>12000</mass>  		<!-- empty hull mass in kg -->
 				<avgprice>1200</avgprice>	<!-- average price -->
@@ -142,7 +142,7 @@
 				<mass>1000</mass>					<!-- engine mass in kg -->
 				<avgprice>500</avgprice>			<!-- average price -->
 				<volume>5</volume>					<!-- engine volume in m^3 -->
-				<thrust>30000</thrust>				<!-- thrust in newtons -->
+				<thrust>885000</thrust>				<!-- thrust in newtons -->
 				<fueltype>trillium</fueltype>		<!-- the type of fuel this engine burns -->
 				<efficiency>0.3</efficiency>		<!-- the portion of fuel energy that is converted into thrust -->
 			</trilliumengine1>
@@ -152,7 +152,7 @@
 				<mass>120</mass>					<!-- thruster mass in kg -->
 				<avgprice>80</avgprice>				<!-- average price -->
 				<volume>1</volume>					<!-- thruster volume in m^3 -->
-				<thrust>800</thrust>				<!-- thrust in newtons -->
+				<thrust>180000</thrust>				<!-- thrust in newtons -->
 				<fueltype>trillium</fueltype>		<!-- the type of fuel this thruster burns -->
 				<efficiency>0.6</efficiency>		<!-- the portion of fuel energy that is converted into thrust -->
 			</trilliumthruster1>
@@ -162,7 +162,7 @@
 				<mass>100</mass>					<!-- thruster mass in kg -->
 				<avgprice>10</avgprice>				<!-- average price -->
 				<volume>1</volume>					<!-- thruster volume in m^3 -->
-				<thrust>1000</thrust>				<!-- thrust in newtons -->
+				<thrust>60000</thrust>				<!-- thrust in newtons -->
 				<fueltype>rocketfuel</fueltype>		<!-- the type of fuel this thruster burns -->
 				<efficiency>0.4</efficiency>		<!-- the portion of fuel energy that is converted into thrust -->
 			</jetthruster1>

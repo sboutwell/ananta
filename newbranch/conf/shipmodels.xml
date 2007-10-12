@@ -5,19 +5,16 @@
 		<hull>samplehull1</hull>
 		<name>Nadia</name>
 		<description>A small short-range exploration vessel.</description>
-		<equipment>
-			<mainengine1> <!-- equipment ID -->
+		<components>
+			<engineslot1> <!-- slot ID -->
 				<part>trilliumengine1</part>
-				<slot>engineslot1</slot>
 			</mainengine1>
-			<leftrotthruster> <!-- equipment ID -->
+			<leftrotthruster> <!-- slot ID -->
 				<part>trilliumthruster1</part>
-				<slot>leftrotthruster</slot>
 			</leftrotthruster>
-			<rightrotthruster> <!-- equipment ID -->
+			<rightrotthruster> <!-- slot ID -->
 				<part>trilliumthruster1</part>
-				<slot>rightrotthruster</slot>
 			</rightrotthruster>
-		</equipment>
+		</components>
 	</nadia>
 </ships>
