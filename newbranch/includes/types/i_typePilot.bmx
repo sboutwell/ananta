@@ -68,9 +68,9 @@ Type TAIPlayer Extends TPilot
 	
 
 	' "Think" is the main AI routine to be called
-	Method Think()
+	Method Think() 
 		If Not _controlledShip Return
-		_desiredRotation = DirectionTo(_controlledShip.GetX(),_controlledShip.GetY(),_targetObject.GetX(),_targetObject.GetY())
+		_desiredRotation = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
 		'controlledShip.AutoPilotRotation(desiredRotation)	' use the ship's autopilot function to rotate the ship as desired
 		RotateTo(_desiredRotation) 	' use the AI logic to manually turn to the desired rotation
 	EndMethod

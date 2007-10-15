@@ -21,7 +21,21 @@ Rem
 	volumes and each slot can take more than one piece of equipment provided they can fit there.
 ---------------------------------------------------------------------------------------
 EndRem
-Type TShippart Extends TCommodity Abstract
+Type TShippart Extends TCommodity
+	Global g_L_ShipParts:TList
+	
+	Function FindShipPart:TShippart(idString:String) 
+		If Not g_L_ShipParts Then Print "Error: No ship parts defined!" ; Return Null	' return if the list is empty
+		
+		For Local part:TShippart = EachIn g_L_ShipParts
+			If part.getID() = idString Then Return part
+		Next
+
+		Print "FindShipPart: no part matching the ID '" + idString + " found"
+		Return Null
+
+	End Function
+	
 	Function LoadAll(RootNode:TxmlNode) 
 		Local searchnode:TxmlNode = xmlGetNode(rootnode, "hulls") 	' find and return the "hulls" node
 		If searchnode <> Null Then THullPrototype.LoadAll(searchnode)		' pass the "hulls" node as a parameter to the LoadAll function
@@ -50,7 +64,10 @@ Type THull Extends TShippart
 
 	Method AddComponent(comp:TComponent, slot:TSlot) 
 		Local result:Int = slot.AddComponent(comp) 
-		
+	End Method
+
+	Method RemoveComponent(comp:TComponent, slot:TSlot) 
+		Local result:Int = slot.RemoveComponent(comp) 
 	End Method
 	
 	Method FindSlot:TSlot(slotID:String) 
@@ -272,6 +289,8 @@ Type THullPrototype Extends THull
 
 		If Not g_L_HullPrototypes Then g_L_HullPrototypes = CreateList()	' create a list if necessary
 		g_L_HullPrototypes.AddLast h	' add the newly created object to the end of the list
+		If Not g_L_ShipParts Then g_L_ShipParts = CreateList()
+		g_L_ShipParts.AddLast h
 		
 		Return h	' return the pointer to this specific object instance
 	EndFunction
@@ -352,6 +371,8 @@ Type TPropulsion Extends TShippart Final
 
 		If Not g_L_Engines Then g_L_Engines = CreateList()	' create a list if necessary
 		g_L_Engines.AddLast p	' add the newly created object to the end of the list
+		If Not g_L_ShipParts Then g_L_ShipParts = CreateList() 
+		g_L_ShipParts.AddLast p
 		
 		Return p	' return the pointer to this specific object instance
 	EndFunction
@@ -390,6 +411,8 @@ Type TFueltank Extends TShippart Final
 
 		If Not g_L_Tanks Then g_L_Tanks = CreateList()	' create a list if necessary
 		g_L_Tanks.AddLast t		' add the newly created object to the end of the list
+		If Not g_L_ShipParts Then g_L_ShipParts = CreateList() 
+		g_L_ShipParts.AddLast t
 		
 		Return t	' return the pointer to this specific object instance
 	EndFunction

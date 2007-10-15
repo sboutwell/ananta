@@ -317,17 +317,23 @@ Type TShip Extends TMovingObject
 	EndMethod
 	
 	' Precalcphysics calculates ship's performance based on the on-board equipment
-	Method PreCalcPhysics()
+	Method PreCalcPhysics() 
+		_mass = 0
+		_engineThrust = 0
+		_rotThrust = 0
+		
 		For Local slot:TSlot = EachIn _hull.GetSlotList() 
 			If slot.GetComponentList() Then	' if this slot has components, iterate through all of them
 				For Local component:TComponent = EachIn slot.GetComponentList() 
 					If slot.isEngine() Then _engineThrust = _engineThrust + component.GetThrust() 
 					If slot.isRotThruster() Then _rotThrust = _rotThrust + component.GetThrust() 
+					' add the mass of the component to the ship's total mass
 					_mass = _mass + component.GetShipPartMass() 
 				Next
 			EndIf
 		Next
-	
+		
+		' add the hull mass to the ship's total mass
 		_mass = _mass + _hull.GetMass()
 	
 		_forwardAcceleration = ( _engineThrust/_mass ) / TViewport.g_frameRate
@@ -346,6 +352,7 @@ Type TShip Extends TMovingObject
 		Local slot:TSlot = _hull.FindSlot(slotID) 
 		If not slot Return Null
 		Local result:Int = AddComponentToSlot(comp, slot) 
+		Self.PreCalcPhysics() 	' updates the ship performance after component installation
 		Return result
 	End Method
 
@@ -355,6 +362,22 @@ Type TShip Extends TMovingObject
 		Return result
 	End Method
 	
+	' RemoveComponentFromSlot removes a component from a specified slot.
+	Method RemoveComponentFromSlot:Int(comp:TComponent, slot:TSlot) 
+		Local result:Int = _hull.RemoveComponent(comp, slot) 
+		Self.PreCalcPhysics() 	' updates the ship performance after component removal
+		Return result
+	End Method
+	
+	Method SetSector(sect:TSector) 
+		_sector = sect
+		sect.AddSpaceObject(self) 		' add the ship to the sector's space objects list		
+	End Method
+
+	Method SetCoordinates(x:Int, y:Int) 
+		_x = x
+		_y = y
+	End Method
 	Function UpdateAll() 
 		If Not g_L_Ships Then Return
 		For Local o:TShip = EachIn g_L_Ships
@@ -363,7 +386,7 @@ Type TShip Extends TMovingObject
 	EndFunction
 
 
-	Function Create:TShip(x:Int,y:Int,hullID:String,sector:TSector,name:String)
+	Function Create:TShip(hullID:String, name:String = "Nameless") 
 
 		Local sh:TShip = New TShip		' create an instance of the ship
 
@@ -375,13 +398,9 @@ Type TShip Extends TMovingObject
 		sh._scaleY = sh._hull._scale
 		
 		sh._name = name					' give a name
-		sh._x = x; sh._y = y				' coordinates
-		sh._sector = sector				' the sector
 		
-		If Not g_L_Ships Then g_L_Ships = CreateList()
+		If Not g_L_Ships Then g_L_Ships = CreateList() 
 		g_L_Ships.AddLast sh
-		
-		sector.AddSpaceObject(sh)		' add the body to sector's space objects list
 		
 		Return sh											' return the pointer to this specific object instance
 	EndFunction

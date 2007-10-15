@@ -13,14 +13,16 @@ Include "includes\types\i_typePilot.bmx"				'Pilot entities and methods for AI r
 Include "includes\types\i_typeViewport.bmx"				'Draw-to-screen related stuff
 Include "includes\types\i_typeCommodity.bmx"			'Tradeable/usable commodities (contents read from an xml file)
 Include "includes\types\i_typeMessageWindow.bmx"		'Messagewindow and messageline types
+Include "includes\types\i_typeShipModel.bmx"			'Type describing ship models
 Include "includes\types\i_typeMisc.bmx"					'Miscellaneous type definitions
 
-AutoImageFlags MASKEDIMAGE|FILTEREDIMAGE|MIPMAPPEDIMAGE	' flags for LoadImage()
+AutoImageFlags MASKEDIMAGE | FILTEREDIMAGE | MIPMAPPEDIMAGE	' flags For LoadImage()
 
-TColor.LoadAll()					' load all color info from colors.xml (must be loaded before initializing the viewport)
+TColor.LoadAll()  					' load all color info from colors.xml (must be loaded before initializing the viewport)
 viewport.InitViewportVariables() 	' load various viewport-related settings from settings.xml and precalc some other values
 TViewport.InitGraphicsMode()		' lets go graphical using the values read from the xml file
 TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
+TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 'End
 
 
@@ -31,7 +33,7 @@ Local sector1:TSector = TSector.Create(0,0,"Sol")
 Local activeSector:TSector = sector1 ' set the newly created sector as the "active sector"
 
 'Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
-Local pl2:TPlanet = TPlanet.Create(-600,-100,sector1,100,10,"Jupiter")
+Local pl2:TPlanet = TPlanet.Create(0, 0, sector1, 100, 10, "Jupiter") 
 pl2._image=G_media_jupiter
 pl2._rotation=-90
 pl2._scaleX = 1
@@ -40,40 +42,26 @@ pl2._size = 100
 
 ' generate the player and player's ship
 Local p1:TPlayer = TPlayer.Create("Da Playah")
-Local s1:TShip = TShip.Create(500,0,"samplehull2",sector1,"Da Ship")
-
-
-' ******* test to load up some equipment into slots ******
-Local engine:TPropulsion = TPropulsion.FindEngine("trilliumengine1")    ' find and Return the specs of "trilliumengine1" into a Type variable
-Local component:TComponent = TComponent.Create(engine)   ' create an actual component based on the specs saved in the type variable
-s1.AddComponentToSlotID(component, "engineslot1") 
-engine:TPropulsion = TPropulsion.FindEngine("trilliumthruster1") 
-component:TComponent = TComponent.Create(engine) 
-s1.AddComponentToSlotID(component, "rightrotthruster") 
-component:TComponent = TComponent.Create(engine) 
-s1.AddComponentToSlotID(component, "leftrotthruster") 
-' ********************************************************
-
-s1.PreCalcPhysics() 
-
-viewport.CenterCamera(s1)		' select the player ship as the object for the camera to follow
-
+Local s1:TShip = TShipModel.BuildShipFromModel("olympus") 
+s1.SetSector(sector1) 
+s1.SetCoordinates(500, 0) 
 ' assign the ship for the player to control
-s1.AssignPilot(p1)
-
-
-' set up an AI pilot for testing
-Local ai1:TAIPlayer = TAIPlayer.Create("Da AI Playah")
-Local s2:TShip = TShip.Create(1000,50,"samplehull2",sector1,"AI ship")
-s2._rotation=180
-s2.AssignPilot(ai1)
-s2._engineThrust = 25000
-s2._rotThrust = 45000
-s2.PreCalcPhysics()
-' make the player ship as the target ship for the AI
-ai1.SetTarget(s1) 
+s1.AssignPilot(p1) 
 
 viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
+
+' set up bunch of AI pilots for testing
+
+For Local i:Int = 1 To 50
+	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
+	Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
+	ship.SetSector(sector1) 
+	ship.SetCoordinates(Rand(- 1000, 1000), Rand(- 1000, 1000)) 
+	ship.AssignPilot(ai) 	
+	ai.SetTarget(s1) 
+Next
+
+viewport.CenterCamera(s1)         		' select the player ship as the object for the camera to follow
 
 ' Main loop
 While Not KeyHit(KEY_ESCAPE)
@@ -84,7 +72,7 @@ While Not KeyHit(KEY_ESCAPE)
 	TAIPlayer.UpdateAllAI() 
 
 	' update the positions of every moving object (except ships), including the ones in other sectors
-	TMovingObject.UpdateAll()
+	TMovingObject.UpdateAll() 
 
 	' update the positions of every ship and calculate fuel and oxygen consumption
 	TShip.UpdateAll()
@@ -96,7 +84,7 @@ While Not KeyHit(KEY_ESCAPE)
 	activeSector.DrawAllInSector(viewport)
 
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
-	viewport.DrawMisc()
+	viewport.DrawMisc() 
 	
 	'Flip(0) 
 	Flip

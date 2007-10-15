@@ -116,6 +116,18 @@ Type TSlot Final
 		_SlotType = st
 	End Method
 	
+	Method RemoveComponent:Int(comp:TComponent) 
+		' return if the component is not loaded in this slot	
+		If Not _L_components.Contains(comp) Then
+			If G_debug Then Print "TSlot.RemoveComponent failed: The component is not loaded in this slot!"
+			Return Null
+		EndIf
+		
+		_L_components.remove(comp) 
+		comp.AssignSlot(Null)  	' tell the component it's no longer installed
+		Return True ' success
+	End Method
+	
 	Method AddComponent:Int(comp:TComponent) 
 		If not _slotType Then
 			' return if the type for this slot has not been defined
@@ -123,11 +135,18 @@ Type TSlot Final
 			Return Null
 		EndIf
 		
+		' Check if the component is already installed in some slot...
+		If Not comp.GetSlot() = Null Then
+			If G_debug Then Print "TSlot.AddComponent failed: The component is already installed in a slot!"
+			Return Null
+		EndIf
+		
 		' Check if this slot is of correct type...
 		Local compType:String = comp.getType() 
 		If compType = "engine" and ..
 			(_slotType = "engine" or _slotType = "rotthruster" or _slotType = "thruster") Then
-			_L_components.AddLast(comp) 
+			_L_components.AddLast(comp)  ' add the component to the slot
+			comp.assignSlot(Self)  		 ' tell the component that it's installed in this slot
 			Return True
 		EndIf
 		
@@ -149,6 +168,16 @@ Type TComponent
 	Field _ShipPart:TShippart 	' the ship part prototype this Component is based on
 	Field _L_Upgrades:TList		' a list holding possible upgrades
 	Field _damage:Float			' damage sustained by this component
+	Field _slot:TSlot			' the slot the component is installed in (if any)
+
+	Method GetSlot:TSlot() 
+		If _slot Then Return _slot
+		Return Null
+	End Method
+	
+	Method AssignSlot(slot:TSlot) 
+		_slot = slot
+	End Method
 	
 	Method GetShipPartMass:Float()
 		Return _ShipPart.GetMass()
@@ -162,8 +191,7 @@ Type TComponent
 	
 	Method getType:String() 
 		If TPropulsion(_shipPart) Then Return "engine"
-
-		Return Null		
+		Return Null
 	End Method
 	
 	Function Create:TComponent(SPart:TShipPart)
