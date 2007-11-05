@@ -56,6 +56,10 @@ Type TCommodity
 	Method SetMass(val:Float)
 		_mass = val
 	End Method
+	
+	Method FindCommodity(id:String) 
+		
+	End Method
 
 	' loads all commodities from the XML file
 	Function LoadAllCommodities()
