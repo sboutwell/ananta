@@ -176,9 +176,9 @@ EndType
 ' *** MOVING SPACE OBJECTS
 Type TMovingObject Extends TSpaceObject Abstract
 	Global g_L_MovingObjects:TList			' a list to hold all moving objects
-	Field _xVel:Float								' velocity vector x-component
-	Field _yVel:Float								' velocity vector y-component
-	Field _rotationSpd:Float					' rotation speed
+	Field _xVel:Float						' velocity vector x-component
+	Field _yVel:Float						' velocity vector y-component
+	Field _rotationSpd:Float				' rotation speed in degrees per second
 
 	Method GetRotSpd:Float()
 		Return _rotationSpd
@@ -186,13 +186,13 @@ Type TMovingObject Extends TSpaceObject Abstract
 
 	Method Update()
 		' rotate the object
-		_rotation :+ _rotationSpd
+		_rotation:+_rotationSpd * G_delta.GetDelta() 
 		If _rotation < 0 _rotation:+360
 		If _rotation>=360 _rotation:-360
 			
 		' update the position
-		_x = _x + _xVel
-		_y = _y + _yVel
+		_x = _x + _xVel * G_delta.GetDelta() 
+		_y = _y + _yVel * G_delta.GetDelta() 
 	EndMethod
 	
 	Function UpdateAll()
@@ -214,7 +214,7 @@ Type TShip Extends TMovingObject
 	Field _rotAcceleration:Float				' maximum rotation acceleration (calculated by a routine)
 	Field _engineThrust:Float				' thrust (in newtons) given by the ship's engines
 	Field _rotThrust:Float					' thrust (in newtons) given by the ship's rotation thrusters
-	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per frame)
+	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per second)
 	Field _rotKillPercentage:Float = 0.8		' the magnitude of the rotation damper. Values 0 to 1. 1 means max efficiency.
 	Field _isSpeedLimited:Int = True			' a flag to indicate if speed limiter is functional
 	Field _isRotationLimited:Int = True		' a flag to indicate if rotation limiter is functional
@@ -256,13 +256,13 @@ Type TShip Extends TMovingObject
 		Local Ximpulse:Float = Thrust*(Cos(_rotation))
 		Local Yimpulse:Float = Thrust*(Sin(_rotation))
 
-		_Xvel :+ Ximpulse
-		_Yvel :+ Yimpulse
+		_Xvel:+Ximpulse * G_delta.GetDelta() 
+		_Yvel:+Yimpulse * G_delta.GetDelta()
 	EndMethod
 	
 	Method ApplyRotation(rotAcceleration:Float)
-		_rotationSpd:+rotAcceleration
-		If _isRotationLimited And Not _isLimiterOverrided Then ApplyRotationLimiter()
+		_rotationSpd:+rotAcceleration * G_delta.GetDelta() 
+		If _isRotationLimited And Not _isLimiterOverrided Then ApplyRotationLimiter() 
 	EndMethod
 
 	Method ApplyRotationLimiter()
@@ -279,9 +279,9 @@ Type TShip Extends TMovingObject
 	
 	Method ApplyRotKill()
 		If _rotationSpd = 0.0 Then Return
-		If _rotationSpd < 0 Then _rotationSpd :+ (_rotKillPercentage * _rotAcceleration)
-		If _rotationSpd > 0 Then _rotationSpd :- (_rotKillPercentage * _rotAcceleration)
-		If Abs(_rotationSpd) <= _rotAcceleration Then 
+		If _rotationSpd < 0 Then _rotationSpd:+(_rotKillPercentage * _rotAcceleration * G_delta.GetDelta()) 
+		If _rotationSpd > 0 Then _rotationSpd:-(_rotKillPercentage * _rotAcceleration * G_delta.GetDelta()) 
+		If Abs(_rotationSpd) <= _rotAcceleration * G_delta.GetDelta() Then
 			_rotationSpd = 0.0	' Halt the rotation altogether if rotation speed is less than one impulse of the thruster
 		EndIf
 	EndMethod
@@ -290,7 +290,7 @@ Type TShip Extends TMovingObject
 	Method AutoPilotRotation(desiredRotation:Float) 
 		Local diff:Float = GetAngleDiff(_rotation,desiredRotation)  ' returns degrees between current and desired rotation
 
-		If Abs(diff) < 1 + _rotAcceleration/2 Then		' if we're "close enough" to the desired rotation (take the rot thrust performance into account)...
+		If Abs(diff) < 1 + _rotAcceleration / 2 Then		' if we're "close enough" to the desired rotation (take the rot thrust performance into account)...
 			_controllerPosition = 0 						'... kill the rotation thrusters...
 			Return  											' ... and return without turning
 		EndIf
@@ -301,13 +301,13 @@ Type TShip Extends TMovingObject
 		
 		' *********** calculates when to stop rotation ******************
 		' Calculate the number of degrees it takes for the ship to stop rotating
-		' The absolute value of rotational speed (degrees per frame):
-		Local rotSpd:Float = Abs(_RotationSpd)
-		' The number of frames it takes for the rotation to stop: (time)
-		Local framesToStop:Int 	 = Abs(rotSpd) / (_rotAcceleration)
+		' The absolute value of rotational speed (degrees per second):
+		Local rotSpd:Float = Abs(_RotationSpd) 
+		' The number of seconds it takes for the rotation to stop: (time)
+		Local secondsToStop:Int = Abs(rotSpd) / (_rotAcceleration) 
 		' CalcAccelerationDistance:Float(speed:Float,time:Float,acceleration:Float)
 		' s = vt + at^2
-		Local degreesToStop:Float = CalcAccelerationDistance(rotSpd, framesToStop, -_rotAcceleration)
+		Local degreesToStop:Float = CalcAccelerationDistance(rotSpd, secondsToStop, - _rotAcceleration) 
 		' stop rotating if it takes more degrees to stop than the angle difference is
 		If degreesToStop >= Abs(diff) Then
 			If diff > 0 And _RotationSpd > 0 Then _controllerPosition = -1		' fire the opposing (left)  rotation thrusters
@@ -336,10 +336,10 @@ Type TShip Extends TMovingObject
 		' add the hull mass to the ship's total mass
 		_mass = _mass + _hull.GetMass()
 	
-		_forwardAcceleration = ( _engineThrust/_mass ) / TViewport.g_frameRate
-		_reverseAcceleration = ( (_engineThrust*_hull.GetReverserRatio())/_mass ) / TViewport.g_frameRate
-		_rotAcceleration = ( RadToDeg( CalcRotAcceleration(_rotThrust,_size,_mass,_hull.GetThrusterPos()) ) ) / TViewport.g_frameRate
-		_maxRotationSpd = _hull.GetMaxRotationSpd() / TViewport.g_FrameRate
+		_forwardAcceleration = (_engineThrust / _mass) 
+		_reverseAcceleration = ((_engineThrust * _hull.GetReverserRatio()) / _mass) 
+		_rotAcceleration = (RadToDeg(CalcRotAcceleration(_rotThrust, _size, _mass, _hull.GetThrusterPos()))) 
+		_maxRotationSpd = _hull.GetMaxRotationSpd() 
 	EndMethod
 
 	Method AssignPilot(p:TPilot)

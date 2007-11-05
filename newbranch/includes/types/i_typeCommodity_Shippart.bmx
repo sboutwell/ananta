@@ -59,7 +59,7 @@ Type THull Extends TShippart
 
 	Field _thrusterPos:Float				' rotational thruster position (distance from the centre of mass). More distance gives more "leverage"
 	Field _maxSpd:Float						' maximum speed for fly-by-wire velocity limiter (read from xml)
-	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per frame) (calculated by a routine)
+	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per second) (calculated by a routine)
 	Field _reverserRatio:Float				' thrust percentage of main engines that can be directed backward (read from xml)
 
 	Method AddComponent(comp:TComponent, slot:TSlot) 

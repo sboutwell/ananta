@@ -115,7 +115,7 @@
         <!-- hull name -->
         <unit>piece</unit>
         <!-- unit of measurement (piece or kg) -->
-        <mass>420000</mass>
+        <mass>30000</mass>
         <!-- empty hull mass in kg -->
         <avgprice>12000</avgprice>
         <!-- average price -->
@@ -248,7 +248,7 @@
         <!-- average price -->
         <volume>1</volume>
         <!-- thruster volume in m^3 -->
-        <thrust>180000</thrust>
+        <thrust>380000</thrust>
         <!-- thrust in newtons -->
         <fueltype>trillium</fueltype>
         <!-- the type of fuel this thruster burns -->

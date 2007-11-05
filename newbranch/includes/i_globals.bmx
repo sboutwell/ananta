@@ -7,3 +7,5 @@ Global G_media_jupiter:TImage
 ' create the screen and initialize the graphics mode
 ' Make it global so that viewport:TViewport is accessible everywhere
 Global viewport:TViewport = TViewport.Create()
+
+Global G_delta:TDelta = TDelta.Create(XMLGetSingleValue(c_SettingsFile, "settings/graphics/framerate").ToInt()) 

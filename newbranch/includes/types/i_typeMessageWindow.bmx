@@ -40,22 +40,22 @@ Type TMessageWindow
 		Local L_LineStrings:TList = StringSplitLength(str,_maxLineLength) 	' splits the string into chunks of maximum of g_maxLineLength characters
 		
 		For Local linestring:String = EachIn L_LineStrings
-			Local line:TMessageLine = TMessageLine.Create(linestring,col,_alpha)
+			Local line:TMessageLine = TMessageLine.Create(linestring, col, _alpha) 
 			If Not _L_MessageLines Then _L_MessageLines = CreateList()	' create a list if necessary
 			_L_MessageLines.AddLast line	' add the newly created object to the end of the list
 			_nrLines = _nrLines + 1
 		Next
 
 	EndMethod
-
+	
 	Method DrawAllLines()
 		If Not _L_MessageLines Then Return
 		Local lineNr:Int = 0
 		For Local line:TMessageLine = EachIn _L_Messagelines
-			line.Draw(_x,_y + (15.0 * lineNr * _fontScale))
-			if _fadeEnabled And lineNr = 0 Then line.IncrementAge(1) 	' increase the age of the oldest line only (and only if fadeEnabled = true)
-			if line.GetAge() > _timeToLive Then ' start fading out the line
-				line.SetLineAlpha(line.GetLineAlpha() - _fadeFactor)
+			line.Draw(_x, _y + (15.0 * lineNr * _fontScale)) 
+			If _fadeEnabled And lineNr = 0 Then line.IncrementAge()  	' increase the age of the oldest line only (and only if fadeEnabled = true)
+			If line.GetAge() > _timeToLive Then ' start fading out the line
+				line.SetLineAlpha(line.GetLineAlpha() - _fadeFactor * G_delta.GetDelta()) 
 				If line.GetLinealpha() <= 0 Then
 					_L_MessageLines.RemoveFirst	' remove the line if it has completely faded out
 					_nrLines = _nrLines - 1
@@ -73,8 +73,8 @@ Type TMessageWindow
 	Method InitVariables(xmlfile:TXMLDoc)
 		_defaultColor 	= TColor.FindColor(XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/defaultcolor").ToString())
 		_fadeEnabled		= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/fadeEnabled").ToInt()
-		_timeToLive 		= (XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/ttl").ToInt()) * TViewport.g_FrameRate
-		_fadeFactor 		= (XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/fadefactor").ToFloat()) / TViewport.g_FrameRate
+		_timeToLive = (XMLFindFirstMatch(xmlfile, "settings/graphics/messagewindow/ttl").ToInt()) 
+		_fadeFactor = (XMLFindFirstMatch(xmlfile, "settings/graphics/messagewindow/fadefactor").ToFloat()) 
 		_maxLineLength 	= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/maxlenght").ToInt()
 		_maxLines 		= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/maxlines").ToInt()
 		_alpha 			= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/alpha").ToFloat()
@@ -111,13 +111,13 @@ Type TMessageLine
 	Field _lineString:String		' string containing the actual text data
 	Field _color:TColor			' color of the line
 	Field _alpha:Float = 1		' alpha blending factor of the line
-	Field _age:Int				' age of the line in frames (updated only if the line is the first line in the window)
+	Field _age:Float				' age of the line in seconds (updated only if the line is the first line in the window)
 	
 	Method Draw(x#,y#)
 		SetBlend(AlphaBlend)
 		SetAlpha(_alpha)
 		SetColor(_color.GetRed(),_color.GetGreen(),_color.GetBlue())
-		DrawText(_lineString,x,y)
+		DrawText(_lineString, x, y) 
 	EndMethod
 	
 	Method SetLineAlpha(a:Float)
@@ -129,8 +129,8 @@ Type TMessageLine
 	End Method
 	
 	' Add to the age of the line
-	Method IncrementAge(a:Int)
-		_age = _age + a
+	Method IncrementAge() 
+		_age = _age + 1 * G_delta.GetDelta() 
 	End Method
 	
 	Method GetAge:Int()

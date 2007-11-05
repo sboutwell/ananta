@@ -4,9 +4,8 @@
   <!-- debug mode on = 1 / off = 0 -->
   <graphics>
     <!-- graphics-related settings -->
-    <!--The framerate the game tries to run at -->
-    <!-- NOT FINISHED, 60 fps suggested -->
-    <framerate>60</framerate>
+    <!--Max framerate -->
+    <framerate>30</framerate>
     <resolution>
       <x>800</x>
       <y>600</y>

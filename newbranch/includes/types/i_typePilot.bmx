@@ -71,36 +71,34 @@ Type TAIPlayer Extends TPilot
 	Method Think() 
 		If Not _controlledShip Return
 		_desiredRotation = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
-		'controlledShip.AutoPilotRotation(desiredRotation)	' use the ship's autopilot function to rotate the ship as desired
-		RotateTo(_desiredRotation) 	' use the AI logic to manually turn to the desired rotation
+		'_controlledShip.AutoPilotRotation(_desiredRotation) 	' use the ship's autopilot function to rotate the ship as desired
+		RotateTo(_desiredRotation)  	' use the AI logic to manually turn to the desired rotation
 	EndMethod
 
 	Method SetTarget(obj:TSpaceObject)
 		_targetObject = obj
 	End Method
 	
-	Method RotateTo(heading:Float,aggressiveMode:Int=False) 
+	Method RotateTo(heading:Float, aggressiveMode:Int = False) 
 		Local diff:Float = GetAngleDiff(_controlledShip.GetRot(),heading)  ' returns degrees between current and desired rotation
-
-		If Abs(diff) < 1 + _controlledShip.GetRotAccel()/2 Then	' if we're "close enough" to the desired rotation (take the rot thrust performance into account)...
-			_controlledShip.SetController(0)	 					'... center the joystick...
+		' if we're "close enough" to the desired rotation (take the rot thrust performance into account)...
+		If Not aggressiveMode And Abs(diff) < 1 + _controlledShip.GetRotAccel() * G_delta.GetDelta() * 2 Then
+			_controlledShip.SetController(0)  	 					'... center the joystick...
 			Return  												' ... and return with no further action
 		EndIf
-		
 		' if diff < 0, the desired rotation is faster to reach by rotating to the right, diff > 0 vice versa
-		If diff > 0 Then _controlledShip.SetController(1) 		' rotation thrusters full right
+		If diff > 0 Then _controlledShip.SetController(1)  		' rotation thrusters full right
 		If diff < 0 Then _controlledShip.SetController(-1) 		' rotation thrusters full left
-		
 		If Not aggressiveMode Then	' in "aggressive mode" the AI does not slow down rotation speed before the desired heading has been reached
 			' *********** calculates when to stop rotation ******************
 			' Calculate the number of degrees it takes for the ship to stop rotating
-			' The absolute value of rotational speed (degrees per frame):
-			Local rotSpd:Float = Abs(_controlledShip.GetRotSpd())  
-			' The number of frames it takes for the rotation to stop: (time)
-			Local framesToStop:Int 	 = Abs(rotSpd) / (_controlledShip.GetRotAccel())
+			' The absolute value of rotational speed (degrees per second):
+			Local rotSpd:Float = Abs(_controlledShip.GetRotSpd()) 
+			' The number of seconds it takes for the rotation to stop: (time)
+			Local SecondsToStop:Float = Abs(rotSpd) / (_controlledShip.GetRotAccel()) 
 			' CalcAccelerationDistance:Float(speed:Float,time:Float,acceleration:Float)
 			' s = vt + at^2
-			Local degreesToStop:Float = CalcAccelerationDistance(rotSpd, framesToStop, -_controlledShip.GetRotAccel())
+			Local degreesToStop:Float = CalcAccelerationDistance(rotSpd, secondsToStop, - _controlledShip.GetRotAccel()) 
 			' stop rotating if it takes more degrees to stop than the angle difference is
 			If degreesToStop >= Abs(diff) Then
 				If diff > 0 And _controlledShip.GetRotSpd() > 0 Then _controlledShip.SetController(-1) 		' fire the opposing (left)  rotation thrusters
@@ -108,6 +106,7 @@ Type TAIPlayer Extends TPilot
 			EndIf
 			' ***************************************************************
 		EndIf
+		
 	EndMethod
 	
 	Function UpdateAllAI()

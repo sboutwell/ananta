@@ -1,20 +1,23 @@
 SuperStrict
-Import BaH.Libxml		' the open-source XML parser library
+Import bah.Libxml		' the open-source XML parser library
 
-Include "includes\i_constants.bmx"					'Global constants. All constants must begin with C_
-Include "includes\i_globals.bmx"					'Global variables and types. All globals must begin with G_
-Include "includes\functions\f_XMLfunctions.bmx"		'Functions related to XML loading, parsing and searching
-Include "includes\functions\f_mathfunctions.bmx"	'General math related functions
-Include "includes\functions\f_stringfunctions.bmx"	'Functions related to string manipulation
+SetGraphicsDriver GLMax2DDriver() 
+
+Include "includes/i_constants.bmx"					'Global constants. All constants must begin with C_
+Include "includes/i_globals.bmx"					'Global variables and types. All globals must begin with G_
+Include "includes/functions/f_XMLfunctions.bmx"		'Functions related to XML loading, parsing and searching
+Include "includes/functions/f_mathfunctions.bmx"	'General math related functions
+Include "includes/functions/f_stringfunctions.bmx"	'Functions related to string manipulation
 
 ' Type definitions
-Include "includes\types\i_typeSpaceObjects.bmx"			'All spaceborne objects
-Include "includes\types\i_typePilot.bmx"				'Pilot entities and methods for AI routines
-Include "includes\types\i_typeViewport.bmx"				'Draw-to-screen related stuff
-Include "includes\types\i_typeCommodity.bmx"			'Tradeable/usable commodities (contents read from an xml file)
-Include "includes\types\i_typeMessageWindow.bmx"		'Messagewindow and messageline types
-Include "includes\types\i_typeShipModel.bmx"			'Type describing ship models
-Include "includes\types\i_typeMisc.bmx"					'Miscellaneous type definitions
+Include "includes/types/i_typeSpaceObjects.bmx"			'All spaceborne objects
+Include "includes/types/i_typePilot.bmx"				'Pilot entities and methods for AI routines
+Include "includes/types/i_typeViewport.bmx"				'Draw-to-screen related stuff
+Include "includes/types/i_typeCommodity.bmx"			'Tradeable/usable commodities (contents read from an xml file)
+Include "includes/types/i_typeMessageWindow.bmx"		'Messagewindow and messageline types
+Include "includes/types/i_typeShipModel.bmx"			'Type describing ship models
+Include "includes/types/i_typeMisc.bmx"					'Miscellaneous type definitions
+Include "includes/types/i_typeDelta.bmx"				'Delta timer
 
 AutoImageFlags MASKEDIMAGE | FILTEREDIMAGE | MIPMAPPEDIMAGE	' flags For LoadImage()
 
@@ -52,11 +55,12 @@ viewport.CreateMsg("Total ship mass: " + s1.GetMass())
 
 ' set up bunch of AI pilots for testing
 
-For Local i:Int = 1 To 50
+For Local i:Int = 1 To 100
 	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
 	Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
 	ship.SetSector(sector1) 
 	ship.SetCoordinates(Rand(- 1000, 1000), Rand(- 1000, 1000)) 
+	'ship.SetCoordinates (600, 0) 
 	ship.AssignPilot(ai) 	
 	ai.SetTarget(s1) 
 Next
@@ -64,7 +68,8 @@ Next
 viewport.CenterCamera(s1)         		' select the player ship as the object for the camera to follow
 
 ' Main loop
-While Not KeyHit(KEY_ESCAPE)
+While Not KeyHit(KEY_ESCAPE) 
+	G_delta.Calc() 
 	' checks for keypresses (or other control inputs) and applies them to the player's controlled ship
 	p1.GetInput()
 	
@@ -85,12 +90,10 @@ While Not KeyHit(KEY_ESCAPE)
 
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
-	
-	'Flip(0) 
-	Flip
+	G_delta.LimitFPS() 
+	Flip(1) 
 	Cls
-	'	GCCollect() ' Garbage collection
-	
+
 Wend
 
 ' LoadMedia is a temporary function. Will be replaced by a type function reading all values from an XML file
