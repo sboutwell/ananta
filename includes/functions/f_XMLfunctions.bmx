@@ -11,7 +11,7 @@ Function parseXMLdoc:TxmlDoc(docname:String)
 EndFunction
 
 ' loadXMLFile loads an XML file and returns it's root node
-Function loadXMLFile:TxmlNode(file:String)
+Function loadXMLFile:TxmlNode(file:String) 
 		If G_Debug Then Print "Reading " + file + "..."
 
 		Local xmlfile:TxmlDoc = parseXMLdoc(file)	' load the .xml into memory
@@ -79,7 +79,7 @@ EndFunction
 ' XMLgetSingleValue combines all needed steps to fetch a single node from an XML file.
 ' It takes the filename and the X-path search string as parameters (see XMLFindFirstMatch)
 ' and returns the value of the node as a string.
-' As XMLgetSingleValue opens and closes the file, it's quite slow for reading a many values off the XML file,
+' As XMLgetSingleValue opens and closes the file, it's quite slow for reading many values off the XML file,
 ' so treat it as a convenience function only when you must read just one or two values at a time. 
 Function XMLGetSingleValue:String(file:String,keyword:String)
 	Local doc:TXMLDoc = parseXMLDoc(file)

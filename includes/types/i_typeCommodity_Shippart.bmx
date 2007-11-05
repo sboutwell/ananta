@@ -19,13 +19,24 @@ Rem
 	Ship design is modular: hull is the base of everything, hulls have slots (see i_typeMisc.bmx) for all ship parts
 	and ship parts must go into the slots, never directly onto the ship. Slots have maximum 
 	volumes and each slot can take more than one piece of equipment provided they can fit there.
-	
-	Engines and thrusters must occupy the specific engine and thruster slots. All other pieces 
-	of equipment can (but do not have to) go into the equipment slots.
 ---------------------------------------------------------------------------------------
 EndRem
-Type TShippart Extends TCommodity Abstract
-	Function LoadAll(rootnode:TxmlNode)		
+Type TShippart Extends TCommodity
+	Global g_L_ShipParts:TList
+	
+	Function FindShipPart:TShippart(idString:String) 
+		If Not g_L_ShipParts Then Print "Error: No ship parts defined!" ; Return Null	' return if the list is empty
+		
+		For Local part:TShippart = EachIn g_L_ShipParts
+			If part.getID() = idString Then Return part
+		Next
+
+		Print "FindShipPart: no part matching the ID '" + idString + " found"
+		Return Null
+
+	End Function
+	
+	Function LoadAll(RootNode:TxmlNode) 
 		Local searchnode:TxmlNode = xmlGetNode(rootnode, "hulls") 	' find and return the "hulls" node
 		If searchnode <> Null Then THullPrototype.LoadAll(searchnode)		' pass the "hulls" node as a parameter to the LoadAll function
 
@@ -37,59 +48,43 @@ Type TShippart Extends TCommodity Abstract
 	EndFunction
 EndType
 
-
-' THull is the "blueprint" of a ship. The hull data is saved as pure XML data.
-' The hull data is extracted from within the TShip type when a new ship is created.
+' THull is the actual hull instance of a created ship.
+' The hull data is extracted from a prototype hull when a new ship is created.
 Type THull Extends TShippart
-	Field _L_engineSlots:TList				' a list to hold this hull's engine slots
-	Field _L_rotThrusterSlots:TList			' a list to hold this hull's rotation thruster slots
-	Field _L_thrusterSlots:TList				' a list to hold this hull's thruster slots
-	Field _L_equipmentSlots:TList			' a list to hold this hull's equipment slots
+	Field _L_Slots:TList
 
 	Field _image:TImage						' visual representation of the hull
 	Field _scale:Float
 	Field _size:Float
 
-	Field _thrusterPos:Float					' rotational thruster position (distance from the centre of mass). More distance gives more "leverage"
+	Field _thrusterPos:Float				' rotational thruster position (distance from the centre of mass). More distance gives more "leverage"
 	Field _maxSpd:Float						' maximum speed for fly-by-wire velocity limiter (read from xml)
-	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per frame) (calculated by a routine)
+	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per second) (calculated by a routine)
 	Field _reverserRatio:Float				' thrust percentage of main engines that can be directed backward (read from xml)
 
-	
-	Method AddEngineSlot(slot:TSlot)					
-		If Not _L_engineSlots Then _L_engineSlots = CreateList()		' create a list if necessary
-		_L_engineSlots.AddLast slot								' add the slot to the end of the list
-	EndMethod
-	
-	Method AddRotThrusterSlot(slot:TSlot)					
-		If Not _L_rotThrusterSlots Then _L_rotThrusterSlots = CreateList()		' create a list if necessary
-		_L_rotThrusterSlots.AddLast slot								' add the slot to the end of the list
-	EndMethod
-	
-	Method AddThrusterSlot(slot:TSlot)					
-		If Not _L_thrusterSlots Then _L_thrusterSlots = CreateList()		' create a list if necessary
-		_L_thrusterSlots.AddLast slot								' add the slot to the end of the list
-	EndMethod
-	
-	Method AddEquipmentSlot(slot:TSlot)					
-		If Not _L_equipmentSlots Then _L_equipmentSlots = CreateList()		' create a list if necessary
-		_L_equipmentSlots.AddLast slot								' add the slot to the end of the list
-	EndMethod
+	Method AddComponent(comp:TComponent, slot:TSlot) 
+		Local result:Int = slot.AddComponent(comp) 
+	End Method
 
-	Method GetEngineSlotList:TList()
-		Return _L_engineSlots
+	Method RemoveComponent(comp:TComponent, slot:TSlot) 
+		Local result:Int = slot.RemoveComponent(comp) 
 	End Method
 	
-	Method GetRotThrusterSlotList:TList()
-		Return _L_rotThrusterSlots
+	Method FindSlot:TSlot(slotID:String) 
+		For Local slot:TSlot = EachIn _L_Slots
+			If slot.getID() = slotID Then Return slot
+		Next
+		Return Null
 	End Method
 	
-	Method GetThrusterSlotList:TList()
-		Return _L_thrusterSlots
+	Method AddSlot(slot:TSlot) 
+		If not _L_Slots Then _L_Slots = CreateList() 
+		_L_Slots.AddLast slot
 	End Method
-	
-	Method GetEquipmentSlotList:TList()
-		Return _L_equipmentSlots
+
+	Method GetSlotList:TList() 
+			If _L_Slots Then Return _L_Slots
+			Return Null
 	End Method
 	
 	Method GetImage:TImage()
@@ -128,7 +123,7 @@ Type THull Extends TShippart
 		_scale = val
 	End Method
 
-	Method SetSize(val:Float)
+	Method SetSize(val:Float) 
 		_size = val
 	End Method
 
@@ -172,33 +167,19 @@ Type THull Extends TShippart
 			hull.SetMaxRotationSpd(proto.GetMaxRotationSpd())
 			hull.SetReverserRatio(proto.GetReverserRatio())
 
-
+			
 			' iterate through prototype slots to create copies of them
-			For Local protoslot:TSlot = EachIn proto.GetEngineSlotList()
+			For Local protoslot:TSlot = EachIn proto.GetSlotList() 
 				Local slot:TSlot = TSlot.Create(protoslot.GetId())	' create a slot instance
-				hull.AddEngineSlot(slot)	' add the slot to the hull slot list
-				CopySlotValues(slot,protoslot)
-			Next
-			For Local protoslot:TSlot = EachIn proto.GetRotThrusterSlotList()
-				Local slot:TSlot = TSlot.Create(protoslot.GetId())	' create a slot instance
-				hull.AddRotThrusterSlot(slot)	' add the slot to the hull slot list
-				CopySlotValues(slot,protoslot)
-			Next
-			For Local protoslot:TSlot = EachIn proto.GetThrusterSlotList()
-				Local slot:TSlot = TSlot.Create(protoslot.GetId())	' create a slot instance
-				hull.AddThrusterSlot(slot)	' add the slot to the hull slot list
-				CopySlotValues(slot,protoslot)
-			Next
-			For Local protoslot:TSlot = EachIn proto.GetEquipmentSlotList()
-				Local slot:TSlot = TSlot.Create(protoslot.GetId())	' create a slot instance
-				hull.AddEquipmentSlot(slot)	' add the slot to the hull slot list
+				hull.AddSlot(slot) 	' add the slot to the hull slot list
 				CopySlotValues(slot,protoslot)
 			Next
 			
 			Function CopySlotValues(slot:TSlot,protoslot:TSlot)
 				slot.SetVolume(protoslot.GetVolume())
 				slot.SetExposedDir(protoslot.GetExposedDir())
-				slot.SetLocation(protoslot.GetLocation())
+				slot.SetLocation(protoslot.GetLocation()) 
+				slot.SetSlotType(protoslot.getSlotType()) 
 			End Function
 		End Function
 		
@@ -207,7 +188,18 @@ EndType
 
 Type THullPrototype Extends THull
 	Global g_L_HullPrototypes:TList		' a list to hold all ship hull prototypes
-
+	Field _L_SlotList:TList
+	
+	Method GetSlotList:TList() 
+		If _L_SlotList Then Return _L_SlotList
+		Return Null
+	End Method
+	
+	Method AddSlot(slot:TSlot) 
+		If not _L_SlotList Then _L_SlotList = New TList
+		_L_SlotList.AddLast(slot) 
+	End Method
+	
 	Method LoadSlots(node:TxmlNode)
 		If G_Debug Print "    Loading slots for hull '" + _ID + "'"
 
@@ -216,7 +208,7 @@ Type THullPrototype Extends THull
 			Return
 		EndIf
 		
-		Local children:TList = node.getChildren() 		' get all slot ID's
+		Local children:TList = NODE.getChildren()  		' get all slot ID's
 		For node = EachIn children							' iterate through each slot
 			If G_Debug Print "      Slot found: " + node.GetName()
 
@@ -227,19 +219,10 @@ Type THullPrototype Extends THull
 
 			Local slot:TSlot = TSlot.Create(node.GetName())			' create a slot instance
 			For Local value:TxmlNode = EachIn node.getChildren()	' iterate through hull values
-				If value.GetName() = "type" 	Then		' depending on the slot type, add the slot to a specific slot list
-					Local slottype:String = value.GetText()
-					Select slottype
-						Case "rotthruster"
-							AddRotThrusterSlot(slot)
-						Case "thruster" 	
-							AddThrusterSlot(slot)
-						Case "engine" 		
-							AddEngineSlot(slot)
-						Case "equipment"	
-							AddEquipmentSlot(slot)
-						Default Print "No valid slot type detected!"
-					End Select
+				If value.GetName() = "type" Then
+					Local slottype:String = value.GetText() 
+					slot.SetSlotType(slottype) 
+					AddSlot(slot) 
 				EndIf
 
 				' assign the rest of the slot characteristics to their corresponding fields
@@ -306,16 +289,14 @@ Type THullPrototype Extends THull
 
 		If Not g_L_HullPrototypes Then g_L_HullPrototypes = CreateList()	' create a list if necessary
 		g_L_HullPrototypes.AddLast h	' add the newly created object to the end of the list
+		If Not g_L_ShipParts Then g_L_ShipParts = CreateList()
+		g_L_ShipParts.AddLast h
 		
 		Return h	' return the pointer to this specific object instance
 	EndFunction
 
 EndType
 
-
-' -------------------------------------------------------
-' SPECIFIC EQUIPMENT NEEDING SPECIALIZED HULL SLOTS
-' -------------------------------------------------------
 
 ' All propulsion equipment (main engines and thrusters) fall under the TPropulsion type
 Type TPropulsion Extends TShippart Final
@@ -390,6 +371,8 @@ Type TPropulsion Extends TShippart Final
 
 		If Not g_L_Engines Then g_L_Engines = CreateList()	' create a list if necessary
 		g_L_Engines.AddLast p	' add the newly created object to the end of the list
+		If Not g_L_ShipParts Then g_L_ShipParts = CreateList() 
+		g_L_ShipParts.AddLast p
 		
 		Return p	' return the pointer to this specific object instance
 	EndFunction
@@ -428,6 +411,8 @@ Type TFueltank Extends TShippart Final
 
 		If Not g_L_Tanks Then g_L_Tanks = CreateList()	' create a list if necessary
 		g_L_Tanks.AddLast t		' add the newly created object to the end of the list
+		If Not g_L_ShipParts Then g_L_ShipParts = CreateList() 
+		g_L_ShipParts.AddLast t
 		
 		Return t	' return the pointer to this specific object instance
 	EndFunction

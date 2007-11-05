@@ -20,9 +20,7 @@ Type TViewport
 	Global g_ResolutionX:Int	
 	Global g_ResolutionY:Int	
 	Global g_BitDepth:Int
-	Global g_FrameRate:Int
 	Global g_RefreshRate:Int
-	Global g_TargetFrameLength:Int		' the lenght of the frame in milliseconds
 
 	Global g_media_spacedust:TImage		' image global for the "space dust" particle mask
 	Global g_media_spaceBG:TImage		' image global for the space background
@@ -114,7 +112,7 @@ Type TViewport
 		TileImage G_media_spacedust,_CameraPosition_X,_CameraPosition_Y
 		
 		' draw a colored border around the viewport
-		DrawBorder(_borderWidth, _borderColor)
+		DrawBorder(_borderWidth, _borderColor) 
 		
 	EndMethod
 
@@ -147,7 +145,13 @@ Type TViewport
 	EndMethod
 		
 	Method DrawMisc()
-		TMessageWindow.DrawAll()	' draw message windows
+		TMessageWindow.DrawAll() 	' draw message windows
+		
+		SetBlend(ALPHABLEND) 
+		SetAlpha(1) 
+		SetColor(255,255,255)
+
+		DrawText "FPS: " + G_Delta.GetFPS(), 500, 10
 	EndMethod
 
 	Method GetStartX:Int()
@@ -190,14 +194,10 @@ Type TViewport
 		g_ResolutionX		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/x").ToInt()
 		g_ResolutionY		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/y").ToInt()
 		g_BitDepth			= XMLFindFirstMatch(xmlfile,"settings/graphics/bitdepth").ToInt()
-		g_FrameRate			= XMLFindFirstMatch(xmlfile,"settings/graphics/framerate").ToInt()
 		g_RefreshRate		= XMLFindFirstMatch(xmlfile,"settings/graphics/refreshrate").ToInt()
 		
 		g_media_spacedust 	= LoadImage(c_mediaPath + "spacedust.png")
 		g_media_spaceBG		= LoadImage(c_mediaPath + "space_bg.jpg")
-
-	
-		g_TargetFrameLength = 1000/g_FrameRate		' the lenght of the frame in ms
 	EndFunction
 
 	Function Create:TViewport()
