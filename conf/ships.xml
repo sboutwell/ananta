@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--Pre-configured ships-->
+<ships>
+	<startership> <!-- ship id -->
+			<hull>samplehull1</hull>
+			<name>Stormbringer</name>
+			<description>A small and agile short-range exploration vessel.</description>
+			<equipment>
+				<mainengine1> <!-- equipment ID -->
+					<part>trilliumengine1</part>
+					<slot>engineslot1</slot>
+				</mainengine1>
+				<leftrotthruster> <!-- equipment ID -->
+					<part>trilliumthruster1</part>
+					<slot>leftrotthruster</slot>
+				</leftrotthruster>
+				<rightrotthruster> <!-- equipment ID -->
+					<part>trilliumthruster1</part>
+					<slot>rightrotthruster</slot>
+				</rightrotthruster>
+			</equipment>
+	</startership>
+</ships>
