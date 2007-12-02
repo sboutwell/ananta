@@ -36,16 +36,22 @@ Local sector1:TSector = TSector.Create(0,0,"Sol")
 Local activeSector:TSector = sector1 ' set the newly created sector as the "active sector"
 
 'Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
-Local pl2:TPlanet = TPlanet.Create(0, 0, sector1, 100, 10, "Jupiter") 
+Local pl2:TPlanet = TPlanet.Create(0, 0, sector1, 60000000, 10, "Jupiter") 
 pl2._image=G_media_jupiter
 pl2._rotation=-90
 pl2._scaleX = 1
 pl2._scaleY = 1
-pl2._size = 100
+
+Local pl1:TPlanet = TPlanet.Create(3000, 0, sector1, 15000000, 2000, "Neptune") 
+pl1._image = G_media_jupiter
+pl1._rotation = -90
+pl1._scaleX = 0.5
+pl1._scaleY = 0.5
 
 ' generate the player and player's ship
-Local p1:TPlayer = TPlayer.Create("Da Playah")
-Local s1:TShip = TShipModel.BuildShipFromModel("olympus") 
+Local p1:TPlayer = TPlayer.Create("Da Playah") 
+Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
+s1.SetName("Player ship")
 s1.SetSector(sector1) 
 s1.SetCoordinates(500, 0) 
 ' assign the ship for the player to control
@@ -54,7 +60,7 @@ s1.AssignPilot(p1)
 viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
 
 ' set up bunch of AI pilots for testing
-
+rem
 For Local i:Int = 1 To 100
 	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
 	Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
@@ -64,6 +70,7 @@ For Local i:Int = 1 To 100
 	ship.AssignPilot(ai) 	
 	ai.SetTarget(s1) 
 Next
+endrem
 
 viewport.CenterCamera(s1)         		' select the player ship as the object for the camera to follow
 
@@ -90,7 +97,7 @@ While Not KeyHit(KEY_ESCAPE)
 
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
-	G_delta.LimitFPS() 
+	G_delta.LimitFPS()  ' a deltatimer delay to limit FPS
 	Flip(1) 
 	Cls
 

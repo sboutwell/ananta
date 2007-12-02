@@ -14,11 +14,11 @@
       </engineslot1>
       <leftrotthruster>
         <!-- slot ID -->
-        <part1>trilliumthruster1</part1>
+        <part1>jetthruster1</part1>
       </leftrotthruster>
       <rightrotthruster>
         <!-- slot ID -->
-        <part1>trilliumthruster1</part1>
+        <part1>jetthruster1</part1>
       </rightrotthruster>
     </components>
   </nadia>

@@ -10,7 +10,7 @@
         <!-- hull name -->
         <unit>piece</unit>
         <!-- unit of measurement (piece or kg) -->
-        <mass>12000</mass>
+        <mass>8000</mass>
         <!-- empty hull mass in kg -->
         <avgprice>1200</avgprice>
         <!-- average price -->
@@ -22,11 +22,11 @@
         <!-- the scale of the visual image (1 = full resolution of the image) -->
         <size>20</size>
         <!-- the diameter of the hull in meters (for radar blip size, rotational physics and rough collision detection) -->
-        <thrusterpos>20</thrusterpos>
+        <thrusterpos>25</thrusterpos>
         <!-- distance (in meters) of the rotation thrusters from the center of the mass -->
         <maxspeed>100</maxspeed>
         <!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
-        <maxrotspd>180</maxrotspd>
+        <maxrotspd>270</maxrotspd>
         <!-- the maximum rotational speed (deg/s) allowed for this hull -->
         <reverser>0.6</reverser>
         <!-- the portion of the main engine thrust that can be reversed -->
@@ -267,7 +267,7 @@
         <!-- average price -->
         <volume>1</volume>
         <!-- thruster volume in m^3 -->
-        <thrust>60000</thrust>
+        <thrust>100000</thrust>
         <!-- thrust in newtons -->
         <fueltype>rocketfuel</fueltype>
         <!-- the type of fuel this thruster burns -->
