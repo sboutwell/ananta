@@ -1,17 +1,3 @@
-Rem
-	Naming convention:
-	-	All types are named with a T in front (example: TTypeName)
-	-	All lists and fields that are global inside a type must begin with g (example: Global g_variableName)
-		Note a lower case g as opposed to the capital G for program globals.
-	-	All lists are named with L in front of them (example L_ListName)
-	
-	You can capitalize fields, types and lists as needed for good readability. Use your own judgement.
-	
-	Thoroughly comment all type definitions, explain their usage and their methods and fields.
-	
-	Have fun.
-EndRem
-
 ' -----------------------------------------------------------------
 ' TViewport contains various draw-to-screen related stuff
 ' -----------------------------------------------------------------
@@ -117,7 +103,7 @@ Type TViewport
 	EndMethod
 
 	' CenterCamera sets an object for the camera to follow
-	Method CenterCamera(o:TSpaceObject)
+	Method CenterCamera(o:TSpaceObject) 
 		_centeredObject = o
 	End Method
 	

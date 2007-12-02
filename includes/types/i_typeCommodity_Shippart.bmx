@@ -156,34 +156,34 @@ Type THull Extends TShippart
 		
 		Return hull	' return the pointer to this specific object instance
 		
-		' function-in-a-function: copies all fields and lists of the prototype hull into this newly created hull
-		Function CopyProtoValues(hull:THull,proto:THullPrototype)
-			hull.SetMass(proto.GetMass())
-			hull.SetImage(proto.GetImage())
-			hull.SetScale(proto.GetScale())
-			hull.SetSize(proto.GetSize())
-			hull.SetThrusterPos(proto.GetThrusterPos())
-			hull.SetMaxSpd(proto.GetMaxSpd())
-			hull.SetMaxRotationSpd(proto.GetMaxRotationSpd())
-			hull.SetReverserRatio(proto.GetReverserRatio())
-
-			
-			' iterate through prototype slots to create copies of them
-			For Local protoslot:TSlot = EachIn proto.GetSlotList() 
-				Local slot:TSlot = TSlot.Create(protoslot.GetId())	' create a slot instance
-				hull.AddSlot(slot) 	' add the slot to the hull slot list
-				CopySlotValues(slot,protoslot)
-			Next
-			
-			Function CopySlotValues(slot:TSlot,protoslot:TSlot)
-				slot.SetVolume(protoslot.GetVolume())
-				slot.SetExposedDir(protoslot.GetExposedDir())
-				slot.SetLocation(protoslot.GetLocation()) 
-				slot.SetSlotType(protoslot.getSlotType()) 
-			End Function
-		End Function
-		
 	EndFunction
+	
+	' copies all fields and lists of the prototype hull into this newly created hull
+	Function CopyProtoValues(hull:THull, proto:THullPrototype) 
+		hull.SetMass(proto.GetMass())
+		hull.SetImage(proto.GetImage())
+		hull.SetScale(proto.GetScale())
+		hull.SetSize(proto.GetSize())
+		hull.SetThrusterPos(proto.GetThrusterPos())
+		hull.SetMaxSpd(proto.GetMaxSpd())
+		hull.SetMaxRotationSpd(proto.GetMaxRotationSpd())
+		hull.SetReverserRatio(proto.GetReverserRatio())
+
+		
+		' iterate through prototype slots to create copies of them
+		For Local protoslot:TSlot = EachIn proto.GetSlotList() 
+			Local slot:TSlot = TSlot.Create(protoslot.GetId())	' create a slot instance
+			hull.AddSlot(slot) 	' add the slot to the hull slot list
+			CopySlotValues(slot,protoslot)
+		Next	
+	End Function
+	
+	Function CopySlotValues(slot:TSlot, protoslot:TSlot) 
+		slot.SetVolume(protoslot.GetVolume())
+		slot.SetExposedDir(protoslot.GetExposedDir())
+		slot.SetLocation(protoslot.GetLocation()) 
+		slot.SetSlotType(protoslot.getSlotType()) 
+	End Function
 EndType
 
 Type THullPrototype Extends THull

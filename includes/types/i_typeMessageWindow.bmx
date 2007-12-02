@@ -1,18 +1,3 @@
-Rem
-	Naming convention:
-	-	All types are named with a T in front (example: TTypeName)
-	-	All lists and fields that are global inside a type must begin with g (example: Global g_variableName)
-		Note a lower case g as opposed to the capital G for program globals.
-	-	All lists are named with L in front of them (example L_ListName)
-	
-	You can capitalize fields, types and lists as needed for good readability. Use your own judgement.
-	
-	Thoroughly comment all type definitions, explain their usage and their methods and fields.
-	
-	Have fun.
-EndRem
-
-
 ' TMessageWindow is a transparent text area on the screen that shows various messages to the player
 Type TMessageWindow
 	Global g_L_MessageWindows:TList 	' a list to hold all message windows
@@ -69,7 +54,7 @@ Type TMessageWindow
 		Next
 	End Method
 	
-	' Load variables values from the xml file
+	' Load variable values from the xml file
 	Method InitVariables(xmlfile:TXMLDoc)
 		_defaultColor 	= TColor.FindColor(XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/defaultcolor").ToString())
 		_fadeEnabled		= XMLFindFirstMatch(xmlfile,"settings/graphics/messagewindow/fadeEnabled").ToInt()

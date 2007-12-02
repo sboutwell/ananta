@@ -1,19 +1,4 @@
 Rem
-	Naming convention:
-	-	All types are named with a T in front (example: TTypeName)
-	-	All lists and fields that are global inside a type must begin with g (example: Global g_variableName)
-		Note a lower case g as opposed to the capital G for program globals.
-	-	All lists are named with L in front of them (example L_ListName)
-	
-	You can capitalize fields, types and lists as needed for good readability. Use your own judgement.
-	
-	Thoroughly comment all type definitions, explain their usage and their methods and fields.
-	
-	Have fun.
-EndRem
-
-
-Rem
 	*************************************************************************************************
 	***************************************** SPACEOBJECTS ******************************************
 	*************************************************************************************************
@@ -33,8 +18,9 @@ Rem
 EndRem
 
 Type TSpaceObject Abstract
+	Global g_GravConstant:Float = 0.07	' gravitational constant read from an XML file
 	Field _image:TImage					' The image to represent the object
-	Field _x:Float,_y:Float				' x-y coordinates of the object
+	Field _x:Float, _y:Float			' x-y coordinates of the object
 	Field _sector:TSector				' the sector the object is in
 	Field _rotation:Float				' rotation in degrees
 	Field _mass:Long						' The mass of the object in kg
@@ -90,6 +76,10 @@ Type TSpaceObject Abstract
 		_y = coord
 	End Method
 	
+	Method SetName(s:String) 
+		_name = s
+	End Method
+	
 EndType
 
 Type TJumpPoint Extends TSpaceObject
@@ -126,6 +116,7 @@ Type TStar Extends TStellarObject
 		st._sector = sector							' the sector
 		st._mass = mass								' mass in kg
 		st._size = size								' size in pixels
+		st._hasGravity = True
 
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
 		g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list
@@ -144,6 +135,7 @@ Type TPlanet Extends TStellarObject
 		pl._sector = sector									' the sector
 		pl._mass = mass										' mass in kg
 		pl._size = size										' size in pixels
+		pl._hasGravity = True
 
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
 		g_L_StellarObjects.AddLast pl											' add the newly created object to the end of the list
@@ -162,6 +154,7 @@ Type TSpaceStation Extends TStellarObject
 		ss._sector = sector									' the sector
 		ss._mass = mass										' mass in kg
 		ss._size = size										' size in pixels
+		ss._hasGravity = False
 		
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
 		g_L_StellarObjects.AddLast ss												' add the newly created object to the end of the list
@@ -179,17 +172,69 @@ Type TMovingObject Extends TSpaceObject Abstract
 	Field _xVel:Float						' velocity vector x-component
 	Field _yVel:Float						' velocity vector y-component
 	Field _rotationSpd:Float				' rotation speed in degrees per second
+	Field _closestGravSource:TStellarObject ' the closest stellar object exerting gravitational pull
+	Field _affectedByGravity:Int = True
 
 	Method GetRotSpd:Float()
 		Return _rotationSpd
 	End Method
 
+	Method GetClosestGravSource:TStellarObject() 
+		Return _closestGravSource
+	End Method
+	
+	Method SetClosestGravSource(o:TStellarObject) 
+		_closestGravSource = o
+	End Method
+	
+	Method FindClosestGravSource() 
+		If Not _affectedByGravity Then Return
+		Local closest:TStellarObject = Null
+		
+		For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
+			If obj._hasGravity Then
+				If Not closest Or ..
+					ReturnClosestOfTwo(_x, _y, closest.GetX(),  ..
+					closest.GetY(), obj.GetX(), obj.GetY()) Then ..
+					closest = obj
+			EndIf
+		Next
+		If closest <> GetClosestGravSource() Then ..
+			DebugLog "ClosestGravSource for " + Self._name + " now " + closest._name
+		SetClosestGravSource(closest) 
+	End Method
+	
+	Method ApplyGravity() 
+		If Not _affectedByGravity Then Return
+		FindClosestGravSource()           ' update the _closestGravSource field
+		' get the X and Y coordinates of the closest gravity source
+		Local closestX:Float = GetClosestGravSource().GetX() 
+		Local closestY:Float = GetClosestGravSource().GetY() 
+		
+		'g = (G * M) / d^2
+		Local a:Float = (g_gravConstant * GetClosestGravSource().GetMass()) / DistanceSquared(_x, _y, closestX, closestY) 
+		DebugLog a
+		
+		' get the direction to the closest gravity source
+		Local dirToGravSource:Float = DirectionTo(_x, _y, closestX, closestY) 
+		
+		' calculate X and Y components of the acceleration
+		Local Ximpulse:Float = a * (Cos(dirToGravSource)) 
+		Local Yimpulse:Float = a * (Sin(dirToGravSource)) 
+
+		' add to the velocity of the space object
+		_Xvel:+Ximpulse * G_delta.GetDelta() 
+		_Yvel:+Yimpulse * G_delta.GetDelta()		
+	End Method
+	
 	Method Update()
 		' rotate the object
 		_rotation:+_rotationSpd * G_delta.GetDelta() 
 		If _rotation < 0 _rotation:+360
 		If _rotation>=360 _rotation:-360
-			
+		
+		If _affectedByGravity Then ApplyGravity() 
+		
 		' update the position
 		_x = _x + _xVel * G_delta.GetDelta() 
 		_y = _y + _yVel * G_delta.GetDelta() 
@@ -252,9 +297,9 @@ Type TShip Extends TMovingObject
 		_controllerPosition = cnt
 	End Method
 	
-	Method ApplyImpulse(Thrust:Float)
-		Local Ximpulse:Float = Thrust*(Cos(_rotation))
-		Local Yimpulse:Float = Thrust*(Sin(_rotation))
+	Method ApplyImpulse(accel:Float) 
+		Local Ximpulse:Float = accel * (Cos(_rotation)) 
+		Local Yimpulse:Float = accel * (Sin(_rotation)) 
 
 		_Xvel:+Ximpulse * G_delta.GetDelta() 
 		_Yvel:+Yimpulse * G_delta.GetDelta()
@@ -265,19 +310,21 @@ Type TShip Extends TMovingObject
 		If _isRotationLimited And Not _isLimiterOverrided Then ApplyRotationLimiter() 
 	EndMethod
 
-	Method ApplyRotationLimiter()
+	Method ApplyRotationLimiter() 
 		If _rotationSpd > _maxRotationSpd Then	' we're rotating too fast to the RIGHT...
-			_rotationSpd :- _rotAcceleration		' ... so slow down the rotation by firing the LEFT thruster
+			_rotationSpd:-_rotAcceleration * G_delta.GetDelta()  		' ... so slow down the rotation by firing the LEFT thruster
+			' if the rotation speed is now _under_ the limit, set the rotation speed _to_ the limit
 			If _rotationSpd < _maxRotationSpd Then _rotationSpd = _maxRotationSpd
 		EndIf
 
 		If _rotationSpd < -_maxRotationSpd Then	' we're rotating too fast to the LEFT
-			_rotationSpd :+ _rotAcceleration		' ... so slow down the rotation by firing the RIGHT thruster
-			If _rotationSpd > _maxRotationSpd Then _rotationSpd = -_maxRotationSpd
+			_rotationSpd:+_rotAcceleration * G_delta.GetDelta() 		' ... so slow down the rotation by firing the RIGHT thruster
+			' if the rotation speed is now _under_ the limit, set the rotation speed _to_ the limit
+			If _rotationSpd > - _maxRotationSpd Then _rotationSpd = -_maxRotationSpd
 		EndIf
 	EndMethod
 	
-	Method ApplyRotKill()
+	Method ApplyRotKill() 
 		If _rotationSpd = 0.0 Then Return
 		If _rotationSpd < 0 Then _rotationSpd:+(_rotKillPercentage * _rotAcceleration * G_delta.GetDelta()) 
 		If _rotationSpd > 0 Then _rotationSpd:-(_rotKillPercentage * _rotAcceleration * G_delta.GetDelta()) 
