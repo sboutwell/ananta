@@ -180,6 +180,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 	End Method
 
 	Method GetClosestGravSource:TStellarObject() 
+		If Not _closestGravSource Then Return Null
 		Return _closestGravSource
 	End Method
 	
@@ -188,7 +189,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 	End Method
 	
 	Method FindClosestGravSource() 
-		If Not _affectedByGravity Then Return
+		If Not _affectedByGravity Or Not TStellarObject.g_L_StellarObjects Then Return
 		Local closest:TStellarObject = Null
 		
 		For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
@@ -199,21 +200,21 @@ Type TMovingObject Extends TSpaceObject Abstract
 					closest = obj
 			EndIf
 		Next
-		If closest <> GetClosestGravSource() Then ..
-			DebugLog "ClosestGravSource for " + Self._name + " now " + closest._name
 		SetClosestGravSource(closest) 
 	End Method
 	
 	Method ApplyGravity() 
 		If Not _affectedByGravity Then Return
 		FindClosestGravSource()           ' update the _closestGravSource field
+		If Not GetClosestGravSource() Then Return	' return if no gravity sources around
+		
 		' get the X and Y coordinates of the closest gravity source
 		Local closestX:Float = GetClosestGravSource().GetX() 
 		Local closestY:Float = GetClosestGravSource().GetY() 
 		
-		'g = (G * M) / d^2
+			'g = (G * M) / d^2
 		Local a:Float = (g_gravConstant * GetClosestGravSource().GetMass()) / DistanceSquared(_x, _y, closestX, closestY) 
-		DebugLog a
+		'DebugLog a
 		
 		' get the direction to the closest gravity source
 		Local dirToGravSource:Float = DirectionTo(_x, _y, closestX, closestY) 

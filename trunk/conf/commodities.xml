@@ -20,9 +20,9 @@
         <!-- the pic representing this hull -->
         <scale>0.3</scale>
         <!-- the scale of the visual image (1 = full resolution of the image) -->
-        <size>20</size>
+        <size>45</size>
         <!-- the diameter of the hull in meters (for radar blip size, rotational physics and rough collision detection) -->
-        <thrusterpos>25</thrusterpos>
+        <thrusterpos>80</thrusterpos>
         <!-- distance (in meters) of the rotation thrusters from the center of the mass -->
         <maxspeed>100</maxspeed>
         <!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
@@ -125,9 +125,9 @@
         <!-- the pic representing this hull -->
         <scale>0.1</scale>
         <!-- the scale of the visual image (1 = full resolution of the image) -->
-        <size>200</size>
+        <size>100</size>
         <!-- the diameter of the hull in meters (for radar blip size, rotational physics and rough collision detection) -->
-        <thrusterpos>200</thrusterpos>
+        <thrusterpos>75</thrusterpos>
         <!-- distance (in meters) of the rotation thrusters from the center of the mass -->
         <maxspeed>60</maxspeed>
         <!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
