@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <settings>
-  <debug>1</debug>
+  <debug>0</debug>
   <!-- debug mode on = 1 / off = 0 -->
   <graphics>
     <!-- graphics-related settings -->
     <!--Max framerate -->
-    <framerate>30</framerate>
+    <framerate>60</framerate>
     <resolution>
-      <x>800</x>
-      <y>600</y>
+      <x>1024</x>
+      <y>768</y>
     </resolution>
     <!-- main viewport marginals in pixels -->
     <viewportmarginals>
@@ -48,7 +48,7 @@
       <!-- window y coordinate (top left corner) -->
     </messagewindow>
     <!-- 16 or 32 for fullscreen, 0 for windowed -->
-    <bitdepth>0</bitdepth>
+    <bitdepth>16</bitdepth>
     <!-- The refresh rate for fullscreen mode. Zero for defaults.-->
     <refreshrate>60</refreshrate>
     <!-- Flag for screen offset (camera leading in front of the moving ship) -->

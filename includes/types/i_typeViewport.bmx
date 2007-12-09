@@ -26,6 +26,7 @@ Type TViewport
 	Field _marginalRight:Int
 	Field _borderWidth:Int
 	Field _borderColor:TColor
+	Field _miniMap:TMinimap			' the minimap associated with this viewport
 	Field _msgWindow:TMessageWindow = TMessageWindow.Create() ' create a message window for the viewport
 	
 	Method InitViewportVariables()
@@ -51,37 +52,12 @@ Type TViewport
 		_width		= (g_ResolutionX - _startX - _marginalRight)
 		_height		= (g_ResolutionY - _startY - _marginalBottom)
 		_midX		= _width / 2
-		_midY		= _height / 2
+		_midY = _height / 2
+		
+		_miniMap = TMinimap.Create(Self.g_ResolutionX - 195, 0, 195, 195) 
 	EndMethod
 
-	Method DrawLevel()
-	 	'using the object{o} position and direction to draw the map
-	
-		Rem
-			Local TargetScreenOffsetX:Float = (o.xVel) * (C_ScreenWidth/ScreenOffsetMagnitude)  / o.maxSpd
-			Local TargetScreenOffsetY:Float = (o.yVel) * (C_ScreenHeight/ScreenOffsetMagnitude) / o.maxSpd
-			
-			If TargetScreenOffsetX > C_ScreenWidth/ScreenOffsetMagnitude Then TargetScreenOffsetX = C_ScreenWidth/ScreenOffsetMagnitude
-			If TargetScreenOffsetY > C_ScreenHeight/ScreenOffsetMagnitude Then TargetScreenOffsetY = C_ScreenHeight/ScreenOffsetMagnitude
-			If TargetScreenOffsetX < -(C_ScreenWidth/ScreenOffsetMagnitude) Then TargetScreenOffsetX = -(C_ScreenWidth/ScreenOffsetMagnitude)
-			If TargetScreenOffsetY < -(C_ScreenHeight/ScreenOffsetMagnitude) Then TargetScreenOffsetY = -(C_ScreenHeight/ScreenOffsetMagnitude)
-			
-			If ScreenOffset = False Then 
-				TargetScreenOffsetX = 0
-				TargetScreenOffsetY = 0
-			EndIf
-		
-			Smooth out the offset transitions to happen over several frames (using globals ScreenOffsetX and Y)
-			Elasticity coefficient controls the smoothness factor
-			ScreenOffsetX :+ (TargetScreenOffsetX - ScreenOffsetX) * ScreenElasticity*(o.MaxSpd/10)
-			ScreenOffsetY :+ (TargetScreenOffsetY - ScreenOffsetY) * ScreenElasticity*(o.MaxSpd/10)
-		
-	
-			CameraPosition_X = o.x + ScreenOffsetX
-			CameraPosition_Y = o.y + ScreenOffsetY
-	
-		EndRem
-
+	Method DrawLevel() 
 		_CameraPosition_X = _centeredObject.GetX()
 		_CameraPosition_Y = _centeredObject.GetY()
 
@@ -90,11 +66,12 @@ Type TViewport
 		SetScale 1,1
 		SetBlend AlphaBlend
 		SetAlpha 0.7
-		TileImage G_media_spaceBG,_CameraPosition_X/50,_CameraPosition_Y/50
+		SetColor 128, 128, 255
+		SetMaskColor 255, 255, 255
+		TileImage G_media_spaceBG, _CameraPosition_X / 50, _CameraPosition_Y / 50
 	
-		SetBlend AlphaBlend
-		SetAlpha 0.85
-		SetColor 255,255,255
+		SetColor 255, 255, 255
+		SetAlpha 0.95
 		TileImage G_media_spacedust,_CameraPosition_X,_CameraPosition_Y
 		
 		' draw a colored border around the viewport
@@ -109,6 +86,8 @@ Type TViewport
 	
 	Method DrawBorder(w:Int,color:TColor)
 		AutoMidHandle False
+		SetHandle(0, 0) 
+
 		SetViewport(0,0, g_ResolutionX, g_ResolutionY)  ' drawing area (whole screen)
 		SetBlend SolidBlend
 		SetLineWidth(w)
@@ -137,10 +116,25 @@ Type TViewport
 		SetAlpha(1) 
 		SetColor(255,255,255)
 
-		DrawText "FPS: " + G_Delta.GetFPS(), 500, 10
+		DrawText "FPS: " + G_delta.GetFPS(), 500, 10
+		
+		_MiniMap.Draw() 
 	EndMethod
 
-	Method GetStartX:Int()
+	Method GetResX:Int() 
+		Return g_ResolutionX
+	End Method
+
+	Method GetResY:Int() 
+		Return g_ResolutionY
+	End Method
+	
+	Method GetMiniMap:TMinimap() 
+		If _minimap Then Return _minimap
+		Return Null
+	End Method
+
+	Method GetStartX:Int() 
 		Return _startX
 	End Method
 

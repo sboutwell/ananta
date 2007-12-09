@@ -12,7 +12,10 @@ Type TSector Final
 	Method DrawAllInSector(vp:TViewport)
 		If Not _L_SpaceObjects Return													' Exit if a body list doesn't exist
 		For Local body:TSpaceObject = EachIn _L_SpaceObjects	' Iterate through each drawable object in the sector
-			body.DrawBody(vp)  															' Calls the DrawBody method of each drawable object in the sector
+			body.DrawBody(vp)   															' Calls the DrawBody method of each drawable object in the sector
+			If vp.GetMiniMap() Then	' draw a minimap blip if minimap is defined for the viewport
+				vp.GetMiniMap().AddBlip(body) 
+			End If
 		Next
 	EndMethod
 

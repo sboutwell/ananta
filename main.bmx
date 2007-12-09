@@ -18,6 +18,7 @@ Include "includes/types/i_typeMessageWindow.bmx"		'Messagewindow and messageline
 Include "includes/types/i_typeShipModel.bmx"			'Type describing ship models
 Include "includes/types/i_typeMisc.bmx"					'Miscellaneous type definitions
 Include "includes/types/i_typeDelta.bmx"				'Delta timer
+Include "includes/types/i_typeMinimap.bmx"				'Minimap
 
 AutoImageFlags MASKEDIMAGE | FILTEREDIMAGE | MIPMAPPEDIMAGE	' flags For LoadImage()
 
@@ -28,25 +29,27 @@ TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xm
 TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 'End
 
-
-LoadMedia()	' temporary function
+LoadMedia()  	' temporary function
 
 ' generate a sector
 Local sector1:TSector = TSector.Create(0,0,"Sol")
 Local activeSector:TSector = sector1 ' set the newly created sector as the "active sector"
 
-'Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
-Local pl2:TPlanet = TPlanet.Create(0, 0, sector1, 60000000, 10, "Jupiter") 
-pl2._image=G_media_jupiter
-pl2._rotation=-90
-pl2._scaleX = 1
-pl2._scaleY = 1
 
-Local pl1:TPlanet = TPlanet.Create(3000, 0, sector1, 15000000, 2000, "Neptune") 
-pl1._image = G_media_jupiter
-pl1._rotation = -90
-pl1._scaleX = 0.5
-pl1._scaleY = 0.5
+' create a bunch of planets
+SeedRnd(MilliSecs()) 
+For Local i:Int = 1 To 50
+	'Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
+	Local pl2:TPlanet = TPlanet.Create(Rand(- 35000, 35000), Rand(- 35000, 35000), sector1, 100000, 10, "Jupiter " + i) 
+	pl2._image=G_media_jupiter
+	pl2._rotation=-90
+	pl2._scaleX = Rnd(0.5, 2) 
+	pl2._scaleY = pl2._scaleX
+	pl2._size = 980 * pl2._scaleX
+	pl2._mass = (pl2._scaleX ^ 2) * Rand(100000000, 150000000) 
+Next
+
+
 
 ' generate the player and player's ship
 Local p1:TPlayer = TPlayer.Create("Da Playah") 
@@ -60,17 +63,19 @@ s1.AssignPilot(p1)
 viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
 
 ' set up bunch of AI pilots for testing
-rem
-For Local i:Int = 1 To 100
+
+For Local i:Int = 1 To 200
 	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
 	Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
 	ship.SetSector(sector1) 
-	ship.SetCoordinates(Rand(- 1000, 1000), Rand(- 1000, 1000)) 
-	'ship.SetCoordinates (600, 0) 
+	ship.SetCoordinates(Rand(- 35000, 35000), Rand(- 35000, 35000)) 
+	'ship.SetCoordinates (600, 0)
 	ship.AssignPilot(ai) 	
 	ai.SetTarget(s1) 
+	ship._xVel = Rand(- 100, 100) 
+	ship._yVel = Rand(- 100, 100) 
 Next
-endrem
+
 
 viewport.CenterCamera(s1)         		' select the player ship as the object for the camera to follow
 
@@ -97,7 +102,7 @@ While Not KeyHit(KEY_ESCAPE)
 
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
-	G_delta.LimitFPS()  ' a deltatimer delay to limit FPS
+	G_delta.LimitFPS()   ' a deltatimer delay to limit FPS
 	Flip(1) 
 	Cls
 
