@@ -27,7 +27,11 @@ Type TViewport
 	Field _borderWidth:Int
 	Field _borderColor:TColor
 	Field _miniMap:TMinimap			' the minimap associated with this viewport
-	Field _msgWindow:TMessageWindow = TMessageWindow.Create() ' create a message window for the viewport
+	Field _msgWindow:TMessageWindow = TMessageWindow.Create()  ' create a message window for the viewport
+	
+	Field _zoomFactor:Float = 1
+	Field _zoomAmount:Float 		' amount of zoom per keypress
+	Field _zoomAmountReset:Float = 0.5
 	
 	Method InitViewportVariables()
 
@@ -63,16 +67,23 @@ Type TViewport
 
 		SetViewport(_startX ,_startY, _width, _height)  ' limit the drawing area to viewport margins
 	
-		SetScale 1,1
-		SetBlend AlphaBlend
-		SetAlpha 0.7
+		SetScale 1, 1
+		SetBlend ALPHABLEND
+		SetAlpha 0.8
+		If _zoomFactor < 0.1 Then SetAlpha (0.8 / 0.1 * _zoomFactor) 
 		SetColor 128, 128, 255
 		SetMaskColor 255, 255, 255
-		TileImage G_media_spaceBG, _CameraPosition_X / 50, _CameraPosition_Y / 50
+		
+		TileImage G_media_spaceBG, (_CameraPosition_X) / 50, (_CameraPosition_Y) / 50
 	
 		SetColor 255, 255, 255
 		SetAlpha 0.95
-		TileImage G_media_spacedust,_CameraPosition_X,_CameraPosition_Y
+		If _zoomFactor < 0.1 Then SetAlpha (0.95 / 0.1 * _zoomFactor) 
+		
+		' draw the spacedust background. The 5000000 constant is to 
+		' "smudge" zooming transitions until a better way
+		' to scale parallax background with zoom is figured out.
+		TileImage G_media_spacedust, (_CameraPosition_X + 5000000) * _zoomFactor, (_CameraPosition_Y + 5000000) * _zoomFactor
 		
 		' draw a colored border around the viewport
 		DrawBorder(_borderWidth, _borderColor) 
@@ -166,6 +177,24 @@ Type TViewport
 		Return _CameraPosition_Y
 	End Method
 		
+	Method SetZoomFactor(z:Float) 
+		_zoomFactor = z
+	End Method
+	
+	Method ZoomIn() 
+		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta() 
+		_zoomAmount = _zoomAmount + 0.2 * G_delta.GetDelta() 
+	End Method
+	
+	Method ZoomOut() 
+		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta() 
+		_zoomAmount = _zoomAmount + 0.2 * G_delta.GetDelta() 
+	End Method
+	
+	Method StopZoom() 
+		_zoomAmount = _zoomAmountReset
+	End Method
+	
 	Function InitGraphicsMode()
 		Graphics g_ResolutionX, g_ResolutionY, g_BitDepth, g_RefreshRate, 0
 	EndFunction

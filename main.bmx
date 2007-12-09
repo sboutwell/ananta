@@ -29,18 +29,17 @@ TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xm
 TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 'End
 
-LoadMedia()  	' temporary function
+LoadMedia()   	' temporary function
 
 ' generate a sector
 Local sector1:TSector = TSector.Create(0,0,"Sol")
 Local activeSector:TSector = sector1 ' set the newly created sector as the "active sector"
 
-
 ' create a bunch of planets
 SeedRnd(MilliSecs()) 
-For Local i:Int = 1 To 50
+For Local i:Int = 1 To 100
 	'Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
-	Local pl2:TPlanet = TPlanet.Create(Rand(- 35000, 35000), Rand(- 35000, 35000), sector1, 100000, 10, "Jupiter " + i) 
+	Local pl2:TPlanet = TPlanet.Create(Rand(- 100000, 100000), Rand(- 100000, 100000), sector1, 100000, 10, "Jupiter " + i) 
 	pl2._image=G_media_jupiter
 	pl2._rotation=-90
 	pl2._scaleX = Rnd(0.5, 2) 
@@ -48,8 +47,6 @@ For Local i:Int = 1 To 50
 	pl2._size = 980 * pl2._scaleX
 	pl2._mass = (pl2._scaleX ^ 2) * Rand(100000000, 150000000) 
 Next
-
-
 
 ' generate the player and player's ship
 Local p1:TPlayer = TPlayer.Create("Da Playah") 
@@ -64,11 +61,11 @@ viewport.CreateMsg("Total ship mass: " + s1.GetMass())
 
 ' set up bunch of AI pilots for testing
 
-For Local i:Int = 1 To 200
+For Local i:Int = 1 To 100
 	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
 	Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
 	ship.SetSector(sector1) 
-	ship.SetCoordinates(Rand(- 35000, 35000), Rand(- 35000, 35000)) 
+	ship.SetCoordinates(Rand(- 100000, 100000), Rand(- 100000, 100000)) 
 	'ship.SetCoordinates (600, 0)
 	ship.AssignPilot(ai) 	
 	ai.SetTarget(s1) 
@@ -104,6 +101,7 @@ While Not KeyHit(KEY_ESCAPE)
 	viewport.DrawMisc() 
 	G_delta.LimitFPS()   ' a deltatimer delay to limit FPS
 	Flip(1) 
+	SetViewPort(0,0,viewport.GetResX(),viewport.GetResY())
 	Cls
 
 Wend
