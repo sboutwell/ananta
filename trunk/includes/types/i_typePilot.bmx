@@ -21,11 +21,33 @@ Type TPlayer Extends TPilot
 	Method GetInput()
 		If NOT _controlledShip Then Return	' return if the player has no ship to control
 		' keyboard controls
-		If KeyDown(KEY_UP)		_controlledShip.SetThrottle(1)		
+		
+		If KeyDown(KEY_UP) _controlledShip.SetThrottle(1) 
 		If KeyDown(KEY_DOWN) 	_controlledShip.SetThrottle(-1)	
 		If KeyDown(KEY_RIGHT) 	_controlledShip.SetController(1)	
 		If KeyDown(KEY_LEFT) 	_controlledShip.SetController(-1)	
 
+		If Not KeyDown(KEY_LSHIFT) And Not KeyDown(KEY_LCONTROL) Then
+			If KeyDown(KEY_Z) Then viewport.ZoomIn() 
+			If KeyDown(KEY_X) Then viewport.ZoomOut() 
+		EndIf
+		
+		If KeyDown(KEY_LSHIFT) Then
+			If KeyDown(KEY_Z) Then viewport.GetMiniMap().ZoomIn() 
+			If KeyDown(KEY_X) Then viewport.GetMiniMap().ZoomOut() 
+		EndIf
+		
+		If KeyDown(KEY_LCONTROL) Then
+			If KeyDown(KEY_Z) Then viewport.SetZoomFactor(1) 
+			If KeyDown(KEY_X) Then viewport.GetMiniMap().SetZoomFactor(1) 
+		End If
+		
+		If Not KeyDown(KEY_Z) And Not KeyDown(KEY_X) Then
+			viewport.StopZoom() 
+			viewport.GetMiniMap().StopZoom() 
+		EndIf
+
+		
 		' relase controls if keyboard keys are released
 		If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) 		_controlledShip.SetThrottle(0)
 		If Not KeyDown(KEY_RIGHT) And Not KeyDown(KEY_LEFT) 	_controlledShip.SetController(0)

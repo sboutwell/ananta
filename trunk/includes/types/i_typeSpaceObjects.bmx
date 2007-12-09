@@ -43,8 +43,9 @@ Type TSpaceObject Abstract
 			SetRotation _rotation+90
 			SetBlend MASKBLEND
 			SetColor 255,255,255
-			SetScale _scaleX, _scaleY
-			DrawImage _image, (vp.GetCameraPosition_X()- _x) + midX + startX, (vp.GetCameraPosition_Y()- _y) + midY + startY
+			SetScale _scaleX * viewport._zoomFactor, _scaleY * viewport._zoomFactor
+			'Local y:Int = (viewport.GetCameraPosition_Y() - o.GetY()) * _scale + midY + _startY
+			DrawImage _image, (vp.GetCameraPosition_X() - _x) * viewport._zoomFactor + midX + startX, (vp.GetCameraPosition_Y() - _y) * viewport._zoomFactor + midY + startY
 		EndIf
 	EndMethod
 	
