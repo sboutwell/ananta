@@ -170,5 +170,5 @@ Type TFuel Extends TCommodity
 	EndFunction
 EndType
 
-'Ship parts are special commodities used to build ships)
-Include "i_typeCommodity_Shippart.bmx"	
+' TShippart, a sub-type of TCommodity
+Include "i_TCommodity_TShippart.bmx"	

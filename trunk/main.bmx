@@ -10,15 +10,16 @@ Include "includes/functions/f_mathfunctions.bmx"	'General math related functions
 Include "includes/functions/f_stringfunctions.bmx"	'Functions related to string manipulation
 
 ' Type definitions
-Include "includes/types/i_typeSpaceObjects.bmx"			'All spaceborne objects
-Include "includes/types/i_typePilot.bmx"				'Pilot entities and methods for AI routines
-Include "includes/types/i_typeViewport.bmx"				'Draw-to-screen related stuff
-Include "includes/types/i_typeCommodity.bmx"			'Tradeable/usable commodities (contents read from an xml file)
-Include "includes/types/i_typeMessageWindow.bmx"		'Messagewindow and messageline types
-Include "includes/types/i_typeShipModel.bmx"			'Type describing ship models
-Include "includes/types/i_typeMisc.bmx"					'Miscellaneous type definitions
-Include "includes/types/i_typeDelta.bmx"				'Delta timer
-Include "includes/types/i_typeMinimap.bmx"				'Minimap
+Include "includes/types/entities/i_TPilot.bmx"			'Pilot entities and methods for AI routines
+Include "includes/types/entities/i_TSector.bmx"			'Sector of space
+Include "includes/types/entities/i_TSpaceObjects.bmx"	'All spaceborne objects
+Include "includes/types/entities/i_TShipModel.bmx"		'Type describing ship models
+Include "includes/types/commodity/i_TCommodity.bmx"		'Tradeable/usable commodities (contents read from an xml file)
+Include "includes/types/graphics/i_TViewport.bmx"		'Draw-to-screen related stuff
+Include "includes/types/graphics/i_TMessageWindow.bmx"	'Messagewindow and messageline types
+Include "includes/types/graphics/i_TMinimap.bmx"		'Minimap
+Include "includes/types/graphics/i_TColor.bmx"			'A structure-like type to map color names to their RGB values
+Include "includes/types/i_TDelta.bmx"					'Delta timer
 
 AutoImageFlags MASKEDIMAGE | FILTEREDIMAGE | MIPMAPPEDIMAGE	' flags For LoadImage()
 
@@ -37,7 +38,7 @@ Local activeSector:TSector = sector1 ' set the newly created sector as the "acti
 
 ' create a bunch of planets
 SeedRnd(MilliSecs()) 
-For Local i:Int = 1 To 100
+For Local i:Int = 1 To 50
 	'Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
 	Local pl2:TPlanet = TPlanet.Create(Rand(- 100000, 100000), Rand(- 100000, 100000), sector1, 100000, 10, "Jupiter " + i) 
 	pl2._image=G_media_jupiter
@@ -61,7 +62,7 @@ viewport.CreateMsg("Total ship mass: " + s1.GetMass())
 
 ' set up bunch of AI pilots for testing
 
-For Local i:Int = 1 To 100
+For Local i:Int = 1 To 50
 	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
 	Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
 	ship.SetSector(sector1) 
@@ -99,8 +100,15 @@ While Not KeyHit(KEY_ESCAPE)
 
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
-	G_delta.LimitFPS()   ' a deltatimer delay to limit FPS
-	Flip(1) 
+	
+	If G_delta._isFrameRateLimited Then
+		G_delta.LimitFPS()      ' a deltatimer delay to limit FPS
+		Flip(1) 
+	Else
+		Flip(0) 
+	EndIf
+	
+	' clear the whole viewport backbuffer
 	SetViewPort(0,0,viewport.GetResX(),viewport.GetResY())
 	Cls
 

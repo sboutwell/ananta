@@ -4,8 +4,14 @@
   <!-- debug mode on = 1 / off = 0 -->
   <graphics>
     <!-- graphics-related settings -->
-    <!--Max framerate -->
+    <!-- framerate limited yes = 1 / no = 0 -->
+    <limitframerate>1</limitframerate>
+    <!--Max framerate if limited-->
     <framerate>60</framerate>
+    <!-- max deltatime in milliseconds -->
+    <!-- Affects the "jumpiness" of the physics simulation when the game is incapable of updating itself, during alt-tabbing etc. -->
+    <!-- meaning the simulation will actually pause after maxdelta amount of time has passed since the last physics iteration -->
+    <maxdelta>500</maxdelta>
     <resolution>
       <x>800</x>
       <y>600</y>
