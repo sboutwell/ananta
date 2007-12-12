@@ -3,6 +3,7 @@ Type TDelta
 	Field _time:Float
 	Field _maxdt:Float
 	Field _FrameCounter:Int
+	Field _isFrameRateLimited:Int
 	Field _TargetFPS:Int
 	Field _TargetDelta:Float
 	Field _CurrentFPS:Int
@@ -23,8 +24,8 @@ Type TDelta
 		If newTime - _time > _maxdt Then _time = _maxdt
 		_currentDelta = (newTime - _time) / 1000
 		
-		' cap the delta to 0.25s to avoid time skipping when alt-tabbing etc
-		If _currentDelta > 0.25 Then _currentDelta = 0.25
+		' cap the delta to maxdt milliseconds to avoid time skipping when alt-tabbing etc
+		If _currentDelta > _maxdt / 1000 Then _currentDelta = _maxdt / 1000
 		
 		_time = newTime
 		
@@ -39,10 +40,15 @@ Type TDelta
 	End Method
 	
 	Method LimitFPS() 
+		If Not _isFrameRateLimited Then Return
 		Delay(_targetDelta * 1000.0 - (MilliSecs() - _time)) 
 	End Method
 	
-	Function Create:TDelta(target:Int, maxi:Float = 500) 
+	Method isFrameRateLimited:Int() 
+		Return _isFrameRateLimited
+	End Method
+	
+	Function Create:TDelta(target:Int, isLimited:Int = 1, maxi:Float = 500) 
 		Local delta:TDelta = New TDelta
 		delta._time = MilliSecs() 
 		delta._maxdt = maxi
@@ -51,6 +57,7 @@ Type TDelta
 		delta._CurrentFPS = delta._TargetFPS
 		delta._FPSTime = delta._time + 1000
 		delta._FrameCounter = delta._TargetFPS
+		delta._isFrameRateLimited = isLimited
 		Return delta
 	End Function
 End Type

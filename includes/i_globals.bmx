@@ -8,4 +8,7 @@ Global G_media_jupiter:TImage
 ' Make it global so that viewport:TViewport is accessible everywhere
 Global viewport:TViewport = TViewport.Create()
 
-Global G_delta:TDelta = TDelta.Create(XMLGetSingleValue(c_SettingsFile, "settings/graphics/framerate").ToInt()) 
+Global G_delta:TDelta = TDelta.Create(XMLGetSingleValue(c_SettingsFile,  ..
+	"settings/graphics/framerate").ToInt(),  ..
+	XMLGetSingleValue(c_settingsFile, "settings/graphics/limitframerate").ToInt(),  ..
+	XMLGetSingleValue(c_settingsFile, "settings/graphics/maxdelta").ToInt()) 

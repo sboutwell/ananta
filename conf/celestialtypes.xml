@@ -5,11 +5,24 @@
 		<sun1>	<!-- Stellar object ID -->
 			<image>sun1.png</image>	<!-- the pic representing this object -->
 			<description>A middle-aged yellow star.</description>
-			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
+			<minscale>1</minscale>		<!-- the min scale of the visual image -->
 			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
-			<mass>10000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
-
+			<mass>1000000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
 		</sun1>		
+		<sun2>
+			<image>redgiant1.png</image>	<!-- the pic representing this object -->
+			<description>An ancient red giant star.</description>
+			<minscale>1.5</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>10000000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->		
+		</sun2>
+		<sun3>
+			<image>whitedwarf1.png</image>	<!-- the pic representing this object -->
+			<description>A cold supernova remnant that used to be a sun.</description>
+			<minscale>0.5</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>1</maxscale>	<!-- the max scale of the visual image -->
+			<mass>100000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->		
+		</sun3>
 	</stars>
 	
 	<planets>
@@ -18,8 +31,28 @@
 			<description>A rocky planet with no atmosphere.</description>
 			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
 			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
-			<mass>100000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+			<mass>50000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
 		</rocky1>
+		<gas1>	<!-- Stellar object ID -->
+			<image>gasplanet1.png</image>	<!-- the pic representing this object -->
+			<description>A gas giant with a solid core.</description>
+			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>150000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		</gas1>
+		<terra1>	<!-- Stellar object ID -->
+			<image>terra1.png</image>	<!-- the pic representing this object -->
+			<description>A cold planet with large polar caps and indigenous life near the equator.</description>
+			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>15000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		</terra1>
+		<terra2>	<!-- Stellar object ID -->
+			<image>terra2.png</image>	<!-- the pic representing this object -->
+			<description>A lush and wet jungle planet teeming with life.</description>
+			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>15000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		</terra2>
 	</planets>
-	
 </celestialtypes>

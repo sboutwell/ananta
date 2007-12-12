@@ -32,6 +32,7 @@ Type TViewport
 	Field _zoomFactor:Float = 1
 	Field _zoomAmount:Float 		' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5
+	Field _isZooming:Int = False	' flag to indicate if we're zooming in or out
 	
 	Method InitViewportVariables()
 
@@ -80,10 +81,8 @@ Type TViewport
 		SetAlpha 0.95
 		If _zoomFactor < 0.1 Then SetAlpha (0.95 / 0.1 * _zoomFactor) 
 		
-		' draw the spacedust background. The 5000000 constant is to 
-		' "smudge" zooming transitions until a better way
-		' to scale parallax background with zoom is figured out.
-		TileImage G_media_spacedust, (_CameraPosition_X + 5000000) * _zoomFactor, (_CameraPosition_Y + 5000000) * _zoomFactor
+		' draw the spacedust background.
+		If NOT _isZooming Then TileImage G_media_spacedust, _CameraPosition_X * _zoomFactor, _CameraPosition_Y * _zoomFactor
 		
 		' draw a colored border around the viewport
 		DrawBorder(_borderWidth, _borderColor) 
@@ -184,15 +183,18 @@ Type TViewport
 	Method ZoomIn() 
 		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta() 
 		_zoomAmount = _zoomAmount + 0.2 * G_delta.GetDelta() 
+		_isZooming = True
 	End Method
 	
 	Method ZoomOut() 
 		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta() 
 		_zoomAmount = _zoomAmount + 0.2 * G_delta.GetDelta() 
+		_isZooming = True
 	End Method
 	
 	Method StopZoom() 
 		_zoomAmount = _zoomAmountReset
+		_isZooming = False
 	End Method
 	
 	Function InitGraphicsMode()
@@ -203,7 +205,7 @@ Type TViewport
 		g_ResolutionX		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/x").ToInt()
 		g_ResolutionY		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/y").ToInt()
 		g_BitDepth			= XMLFindFirstMatch(xmlfile,"settings/graphics/bitdepth").ToInt()
-		g_RefreshRate		= XMLFindFirstMatch(xmlfile,"settings/graphics/refreshrate").ToInt()
+		g_RefreshRate = XMLFindFirstMatch(xmlfile, "settings/graphics/refreshrate").ToInt() 
 		
 		g_media_spacedust 	= LoadImage(c_mediaPath + "spacedust.png")
 		g_media_spaceBG		= LoadImage(c_mediaPath + "space_bg.jpg")

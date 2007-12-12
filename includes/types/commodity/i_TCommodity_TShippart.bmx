@@ -418,3 +418,7 @@ Type TFueltank Extends TShippart Final
 	EndFunction
 EndType
 
+
+' types directly related to TShippart
+Include "i_TSlot.bmx"
+Include "i_TComponent.bmx"
