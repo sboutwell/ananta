@@ -14,39 +14,50 @@ Rem
 			TShip
 			TAsteroid
 			TProjectile
+			TParticle
 			 
 EndRem
 
 Type TSpaceObject Abstract
-	Global g_GravConstant:Float = 0.07	' gravitational constant read from an XML file
+	Global g_GravConstant:Float = 0.07	' gravitational constant
+	Field _L_Attachments:TList			' visual attachments to the object's image (see TAttachment)
 	Field _image:TImage					' The image to represent the object
+	Field _alpha:Float = 1				' Alpha channel value of the image
 	Field _x:Float, _y:Float			' x-y coordinates of the object
 	Field _sector:TSector				' the sector the object is in
 	Field _rotation:Float				' rotation in degrees
-	Field _mass:Long						' The mass of the object in kg
+	Field _mass:Long					' The mass of the object in kg
 	Field _size:Int						' The visual diameter of the object, to display the object in correct scale in the minimap
 	Field _scaleX:Float = 1				' The scale of the drawn image (1 being full resolution, 2 = double size, 0.5 = half size)
 	Field _scaleY:Float = 1				
-	Field _name:String	= "Nameless"	' The name of the object
+	Field _name:String = "Nameless"	' The name of the object
+	Field _isShownOnMap:Int = False		' flag to indicate minimap visibility
 	
-	Method DrawBody(vp:TViewport)
-		If _image Then 
-			' ********* preload values that are used more than once (-->_veeery_ slight performance boost)
-			Local startX:Int = vp.GetStartX()
-			Local startY:Int = vp.GetStartY()
-			Local midX:Int = vp.GetMidX()
-			Local midY:Int = vp.GetMidY()
-			' *********
-
-			SetViewport(startX, startY, vp.GetWidth(), vp.GetHeight())
-			SetAlpha 1
-			SetRotation _rotation+90
-			SetBlend MASKBLEND
-			SetColor 255,255,255
-			SetScale _scaleX * viewport._zoomFactor, _scaleY * viewport._zoomFactor
-			'Local y:Int = (viewport.GetCameraPosition_Y() - o.GetY()) * _scale + midY + _startY
-			DrawImage _image, (vp.GetCameraPosition_X() - _x) * viewport._zoomFactor + midX + startX, (vp.GetCameraPosition_Y() - _y) * viewport._zoomFactor + midY + startY
-		EndIf
+	Method DrawBody(vp:TViewport) 
+		If Not _image Then Return
+		
+		' ********* preload values that are used more than once (-->_veeery_ slight performance boost)
+		Local startX:Int = vp.GetStartX() 
+		Local startY:Int = vp.GetStartY()
+		Local midX:Int = vp.GetMidX()
+		Local midY:Int = vp.GetMidY()
+		' *********
+		Local x:Float = (vp.GetCameraPosition_X() - _x) * viewport._zoomFactor + midX + startX
+		Local y:Float = (vp.GetCameraPosition_Y() - _y) * viewport._zoomFactor + midY + startY
+		
+		'If x + _size * _scaleX * viewport._zoomfactor / 2 < startX Then Return
+		'If x - _size * _scaleX * viewport._zoomFactor / 2 > startX + vp.GetWidth() Then Return
+				
+		SetViewport(startX, startY, vp.GetWidth(), vp.GetHeight()) 
+		'SetViewport(0, 0, 800, 600) 
+		SetAlpha _alpha
+		SetRotation _rotation + 90
+		SetBlend ALPHABLEND
+		SetColor 255,255,255
+		SetScale _scaleX * viewport._zoomFactor, _scaleY * viewport._zoomFactor
+		
+		
+		DrawImage _image, x, y
 	EndMethod
 	
 	Method GetMass:Float() 
@@ -69,6 +80,10 @@ Type TSpaceObject Abstract
 		Return _y
 	End Method
 
+	Method showsOnMap:Int() 
+		Return _isShownOnMap
+	End Method
+	
 	Method SetX(coord:Float)
 		_x = coord
 	End Method
@@ -92,7 +107,8 @@ Type TJumpPoint Extends TSpaceObject
 		jp._x = x; jp._y = y						' coordinates
 		jp._sector = sector									' the sector
 		jp._destinationJp = destination					' the destination JumpPoint
-
+		jp._isShownOnMap = True
+		
 		If Not g_L_JumpPoints Then g_L_JumpPoints = CreateList()	' create a list if necessary
 		g_L_JumpPoints.AddLast jp											' add the newly created object to the end of the list
 
@@ -118,6 +134,7 @@ Type TStar Extends TStellarObject
 		st._mass = mass								' mass in kg
 		st._size = size								' size in pixels
 		st._hasGravity = True
+		st._isShownOnMap = True
 
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
 		g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list
@@ -137,7 +154,8 @@ Type TPlanet Extends TStellarObject
 		pl._mass = mass										' mass in kg
 		pl._size = size										' size in pixels
 		pl._hasGravity = True
-
+		pl._isShownOnMap = True
+		
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
 		g_L_StellarObjects.AddLast pl											' add the newly created object to the end of the list
 		
@@ -156,6 +174,7 @@ Type TSpaceStation Extends TStellarObject
 		ss._mass = mass										' mass in kg
 		ss._size = size										' size in pixels
 		ss._hasGravity = False
+		ss._isShownOnMap = True
 		
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
 		g_L_StellarObjects.AddLast ss												' add the newly created object to the end of the list
@@ -276,8 +295,27 @@ Type TShip Extends TMovingObject
 	
 	Method Update()
 		' apply forward and reverse thrusts
-		If _throttlePosition > 0 Then ApplyImpulse(_throttlePosition * _forwardAcceleration)
-		If _throttlePosition < 0 Then ApplyImpulse(_throttlePosition * _reverseAcceleration)
+		If _throttlePosition > 0 Then
+			ApplyImpulse(_throttlePosition * _forwardAcceleration) 
+			
+			' add the engine trail effect
+			Local part:TParticle = TParticle.Create(_x - 28 * Cos(_rotation), _y - 28 * Sin(_rotation), 0.1, 0.07, 0.3) 
+			Local randDir:Float = Rand(- 2, 2) 
+			part._xVel = _xVel - 4 * _throttlePosition * _forwardAcceleration * Cos(_rotation + randDir) 
+			part._yVel = _yVel - 4 * _throttlePosition * _forwardAcceleration * Sin(_rotation + randDir) 
+			part._rotation = _rotation
+			
+		EndIf
+		If _throttlePosition < 0 Then
+			ApplyImpulse(_throttlePosition * _reverseAcceleration) 
+
+			' add the engine trail effect
+			Local part:TParticle = TParticle.Create(_x + 28 * Cos(_rotation), _y + 28 * Sin(_rotation), 0.1, 0.04, 0.2) 
+			Local randDir:Float = Rand(- 2, 2) 
+			part._xVel = _xVel - 4 * _throttlePosition * _reverseAcceleration * Cos(_rotation + randDir) 
+			part._yVel = _yVel - 4 * _throttlePosition * _reverseAcceleration * Sin(_rotation + randDir) 
+			part._rotation = _rotation + 180
+		EndIf
 		
 		' apply rotation thrusters
 		ApplyRotation(_controllerPosition * _rotAcceleration)
@@ -445,8 +483,8 @@ Type TShip Extends TMovingObject
 		sh._size = sh._hull._size
 		sh._scaleX = sh._hull._scale
 		sh._scaleY = sh._hull._scale
-		
 		sh._name = name					' give a name
+		sh._isShownOnMap = True
 		
 		If Not g_L_Ships Then g_L_Ships = CreateList() 
 		g_L_Ships.AddLast sh
@@ -463,3 +501,55 @@ EndType
 Type TProjectile Extends TMovingObject
 
 EndType
+
+
+Type TParticle Extends TMovingObject
+	Global g_L_Particles:TList	' list holding all particles
+	Field _life:Float			' life of the particle in seconds
+	Field _alphaDelta:Float		' alpha change per second
+	
+	Method Update() 
+		_life:-1 * G_delta.GetDelta()      			 ' decrement life by 1 frame worth of seconds
+		_alpha:-_alphaDelta * G_delta.GetDelta()     ' decrement alpha by alphaDelta
+		If _life <= 0 Then Destroy() 
+		Super.Update()   ' call Update() of TMovingObject
+	End Method
+	
+	Method Destroy() 
+		If g_L_Particles Then g_L_Particles.Remove(Self) 
+	End Method
+	
+	Function DestroyAll() 
+		If g_L_Particles Then g_L_Particles.Clear() 
+	End Function
+		
+	Function UpdateAndDrawAll() 
+		If Not g_L_Particles Then Return
+		For Local p:TParticle = EachIn g_L_Particles
+			p.Update() 
+			p.DrawBody(viewport) 
+		Next
+	End Function
+	
+	Function Create:TParticle(x:Float, y:Float, life:Float, scale:Float, alpha:Float = 0.8) 
+		Local part:TParticle = New TParticle
+		part._x = x
+		part._y = y
+		part._life = life
+		part._scaleX = scale
+		part._scaleY = scale
+		part._alpha = alpha
+		part._alphaDelta = alpha / life
+		part._affectedByGravity = False
+		part._isShownOnMap = False
+		part._image = TImg.LoadImg("trail.png") 
+	
+		If Not g_L_Particles Then g_L_Particles = CreateList() 
+		g_L_particles.AddLast(part) 
+		
+		Return part
+	EndFunction
+EndType
+
+' types directly related to TSpaceObjects
+Include "i_TAttachment.bmx"

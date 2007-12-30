@@ -70,19 +70,26 @@ Type TViewport
 	
 		SetScale 1, 1
 		SetBlend ALPHABLEND
+		
+		' ----- draw the space background with zoom-dependent alpha
 		SetAlpha 0.8
 		If _zoomFactor < 0.1 Then SetAlpha (0.8 / 0.1 * _zoomFactor) 
 		SetColor 128, 128, 255
 		SetMaskColor 255, 255, 255
-		
 		TileImage G_media_spaceBG, (_CameraPosition_X) / 50, (_CameraPosition_Y) / 50
-	
-		SetColor 255, 255, 255
-		SetAlpha 0.95
-		If _zoomFactor < 0.1 Then SetAlpha (0.95 / 0.1 * _zoomFactor) 
+		' -----
 		
-		' draw the spacedust background.
-		If NOT _isZooming Then TileImage G_media_spacedust, _CameraPosition_X * _zoomFactor, _CameraPosition_Y * _zoomFactor
+		SetColor 255, 255, 255
+		' ----- draw the space dust with zoom-dependent alpha
+		If Not _isZooming And _zoomFactor < 0.1 Then ' if we're zoomed out far enough, gradually fade the space dust
+			SetAlpha (0.95 / 0.1 * _zoomFactor) 
+		ElseIf _isZooming Then  ' if we are zooming in or out, don't draw the space dust
+			SetAlpha 0
+		Else
+			SetAlpha 0.95
+		EndIf
+		TileImage G_media_spacedust, _CameraPosition_X * _zoomFactor, _CameraPosition_Y * _zoomFactor
+		' ---------
 		
 		' draw a colored border around the viewport
 		DrawBorder(_borderWidth, _borderColor) 
@@ -122,13 +129,23 @@ Type TViewport
 	Method DrawMisc()
 		TMessageWindow.DrawAll() 	' draw message windows
 		
-		SetBlend(ALPHABLEND) 
-		SetAlpha(1) 
-		SetColor(255,255,255)
-
-		DrawText "FPS: " + G_delta.GetFPS(), 500, 10
-		
 		_MiniMap.Draw() 
+
+		SetViewport(0, 0, viewport.GetResX(), viewport.GetResY()) 
+		SetBlend(ALPHABLEND) 
+		SetAlpha(1)
+		SetColor(255, 255, 255) 
+		DrawText "FPS: " + G_delta.GetFPS(), 500, 10
+		DrawText "left   - rotate left", viewport.GetResX() - 190, 200
+		DrawText "right  - rotate right", viewport.GetResX() - 190, 215
+		DrawText "up     - thrust", viewport.GetResX() - 190, 230
+		DrawText "down   - reverse thrust", viewport.GetResX() - 190, 245
+		DrawText "z/x    - zoom in/out", viewport.GetResX() - 190, 275
+		DrawText "ctrl+z - reset zoom", viewport.GetResX() - 190, 290
+		DrawText "Z/X    - map zoom in/out", viewport.GetResX() - 190, 305
+		DrawText "ctrl+x - reset map zoom", viewport.GetResX() - 190, 320
+		DrawText "ESC    - exit", viewport.GetResX() - 190, 350
+	
 	EndMethod
 
 	Method GetResX:Int() 
@@ -199,6 +216,7 @@ Type TViewport
 	
 	Function InitGraphicsMode()
 		Graphics g_ResolutionX, g_ResolutionY, g_BitDepth, g_RefreshRate, 0
+		'Graphics g_ResolutionX, g_ResolutionY, 0, 0, 16
 	EndFunction
 
 	Function InitViewportGlobals(xmlfile:TxmlDoc)
@@ -207,8 +225,8 @@ Type TViewport
 		g_BitDepth			= XMLFindFirstMatch(xmlfile,"settings/graphics/bitdepth").ToInt()
 		g_RefreshRate = XMLFindFirstMatch(xmlfile, "settings/graphics/refreshrate").ToInt() 
 		
-		g_media_spacedust 	= LoadImage(c_mediaPath + "spacedust.png")
-		g_media_spaceBG		= LoadImage(c_mediaPath + "space_bg.jpg")
+		g_media_spacedust = TImg.LoadImg("spacedust.png") 
+		g_media_spaceBG = TImg.LoadImg("space_bg.jpg") 
 	EndFunction
 
 	Function Create:TViewport()
