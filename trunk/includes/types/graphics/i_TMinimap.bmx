@@ -1,3 +1,7 @@
+Rem
+	Zoomable minimap and the related types and functions
+EndRem
+
 Type TMinimap
 	Field _L_blips:TList
 	Field _startX:Int	' top left X coordinate
@@ -45,11 +49,17 @@ Type TMinimap
 		SetMaskColor(255, 255, 255) 
 		SetScale(1, 1) 
 		For Local blip:TBlip = EachIn _L_Blips
-			blip.Draw() 
+			' If no part of the blip would be visible on the screen, don't bother to draw it
+			If blip.isOverBoundaries(_startX, _startY, _width, _height) Then
+				Continue
+			Else
+				blip.Draw() 
+			EndIf
 		Next
 		
 		' after drawing all blips, clear the list
 		If _L_blips Then _L_Blips.Clear() 
+		SetHandle(0,0)
 	End Method
 	
 	Method SetZoomFactor(z:Float) 
@@ -88,21 +98,36 @@ Type TMinimap
 EndType
 
 Type TBlip
-	Field _x:Int
-	Field _y:Int
+	Field _x:Int, _y:Int
 	Field _size:Float
-	
 	Field _color:TColor
 
+	Method GetSize:Float() 
+		Return _size
+	End Method
+	
+	Method GetX:Int() 
+		Return _x
+	End Method
+	
+	Method GetY:Int() 
+		Return _y
+	End Method
+	
+	' isOverBoundaries checks if the blip would show on the minimap
+	Method isOverBoundaries:Int(startX:Int, startY:Int, width:Int, height:Int) 
+		Return _x + _size / 2 < startX Or ..
+			_y + _size / 2 < startY Or ..
+			_x - _size / 2 > startX + width Or ..
+			_y - _size / 2 > startY + height
+	End Method
+	
 	Method SetBColor(col:TColor) 
 		_color = col
 	End Method
 	
+	
 	Method Draw() 
-		' if no part of the blip would be visible on the screen, don't bother to draw it
-		If _x - _size > viewport.GetResX() Or _y - _size > viewport.GetResY() ..
-			Or _x + _size < 0 Or _y + _size < 0 Then Return
-			
 		TColor.SetTColor(_color) 
 		SetHandle(_size / 2, _size / 2)    ' oval handle to the middle of the oval
 		DrawOval(_x, _y, _size, _size) 

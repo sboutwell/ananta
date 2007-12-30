@@ -6,11 +6,11 @@ Type TSector Final
 	Field _L_SpaceObjects:TList					' a list to hold all TSpaceObjects in this sector
 
 	Method DrawAllInSector(vp:TViewport)
-		If Not _L_SpaceObjects Return													' Exit if a body list doesn't exist
-		For Local body:TSpaceObject = EachIn _L_SpaceObjects	' Iterate through each drawable object in the sector
-			body.DrawBody(vp)   															' Calls the DrawBody method of each drawable object in the sector
-			If vp.GetMiniMap() Then	' draw a minimap blip if minimap is defined for the viewport
-				vp.GetMiniMap().AddBlip(body) 
+		If Not _L_SpaceObjects Return							' Exit if a body list doesn't exist
+		For Local obj:TSpaceObject = EachIn _L_SpaceObjects	' Iterate through each drawable object in the sector
+			obj.DrawBody(vp)     						' Calls the DrawBody method of each drawable object in the sector
+			If vp.GetMiniMap() And obj.showsOnMap() Then	' draw a minimap blip if minimap is defined for the viewport
+				vp.GetMiniMap().AddBlip(obj) 
 			End If
 		Next
 	EndMethod

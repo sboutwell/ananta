@@ -1,19 +1,4 @@
 Rem
-	Naming convention:
-	-	All types are named with a T in front (example: TTypeName)
-	-	All lists and fields that are global inside a type must begin with g (example: Global g_variableName)
-		Note a lower case g as opposed to the capital G for program globals.
-	-	All lists are named with L in front of them (example L_ListName)
-	
-	You can capitalize fields, types and lists as needed for good readability. Use your own judgement.
-	
-	Thoroughly comment all type definitions, explain their usage and their methods and fields.
-	
-	Have fun.
-EndRem
-
-
-Rem
 ---------------------------------------------------------------------------------------
 	Ship parts are modules that are fit into the ship hull. The values of each part is read from shipparts.xml.
 	Ship design is modular: hull is the base of everything, hulls have slots (see i_typeMisc.bmx) for all ship parts
@@ -51,11 +36,11 @@ EndType
 ' THull is the actual hull instance of a created ship.
 ' The hull data is extracted from a prototype hull when a new ship is created.
 Type THull Extends TShippart
-	Field _L_Slots:TList
+	Field _L_Slots:TList					' equipment slots for the hull (see TSlot)
 
 	Field _image:TImage						' visual representation of the hull
 	Field _scale:Float
-	Field _size:Float
+	Field _size:Float						' size affects rotational physics and radar blip size
 
 	Field _thrusterPos:Float				' rotational thruster position (distance from the centre of mass). More distance gives more "leverage"
 	Field _maxSpd:Float						' maximum speed for fly-by-wire velocity limiter (read from xml)
@@ -266,9 +251,9 @@ Type THullPrototype Extends THull
 			Local hullChildren:TList = hullnode.getChildren()
 			' search the hull node to find all information specific to hulls and save them into fields
 			For Local value:TxmlNode = EachIn hullChildren	' iterate through hull values
-				If value.GetName() = "image"		Then hull.SetImage(LoadImage (c_mediaPath + value.GetText()))	' load the image representing this hull
+				If value.GetName() = "image" Then hull.SetImage(TImg.LoadImg(value.GetText()))  	' load the image representing this hull
 				If value.GetName() = "scale" 		Then hull.SetScale(value.GetText().ToFloat())
-				If value.GetName() = "size" 		Then hull.SetSize(value.GetText().ToFloat())
+				If value.GetName() = "size" Then hull.SetSize(value.GetText().ToFloat())
 				If value.GetName() = "thrusterpos" 	Then hull.SetThrusterPos(value.GetText().ToFloat())
 				If value.GetName() = "maxspd" 		Then hull.SetMaxSpd(value.GetText().ToFloat())
 				If value.GetName() = "maxrotspd" 	Then hull.SetMaxRotationSpd(value.GetText().ToFloat())
