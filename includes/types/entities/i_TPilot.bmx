@@ -38,8 +38,8 @@ Type TPlayer Extends TPilot
 		EndIf
 		
 		If KeyDown(KEY_LCONTROL) Then
-			If KeyDown(KEY_Z) Then viewport.SetZoomFactor(1) 
-			If KeyDown(KEY_X) Then viewport.GetMiniMap().SetZoomFactor(1) 
+			If KeyDown(KEY_Z) Then viewport.ResetZoomFactor() 
+			If KeyDown(KEY_X) Then viewport.GetMiniMap().ResetZoomFactor() 
 		End If
 		
 		If Not KeyDown(KEY_Z) And Not KeyDown(KEY_X) Then

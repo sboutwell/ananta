@@ -5,9 +5,9 @@ Type TSlot Final
 	Field _id:String
 	Field _slottype:String		' type of the slot (rotthruster, thruster, engine, equipment)
 	Field _volume:Float			' volume of the slot in m^3
-	Field _L_components:TList			' list to hold all ship components in this slot
+	Field _L_components:TList	' list to hold all ship components in this slot
 	Field _location:String		' the location of the slot (internal, external). Internal takes less damage.
-	Field _exposedDir:String		' NULL if the slot is not exposed to space, otherwise dir = left, right, nose or tail)
+	Field _exposedDir:String	' NULL if the slot is not exposed to space, otherwise dir = left, right, nose or tail)
 								' Thrusters and engines need to have exposure! Also, weapons in the future need exposure.
 								' Exposed slots take even more damage than external!
 	

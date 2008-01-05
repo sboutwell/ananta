@@ -8,10 +8,13 @@ Type TMinimap
 	Field _startY:Int	' top left Y coordinate
 	Field _height:Int	' height of the minimap in pixels
 	Field _width:Int	' width of the minimap in pixels
+	Field _midX:Float	' middle X coordinate
+	Field _midY:Float	' middle Y coordinate
 	
 	Field _scale:Float = 0.01
-	
-	Field _zoomFactor:Float = 1
+
+	Field _defaultZoom:Float = 0.2
+	Field _zoomFactor:Float
 	Field _zoomAmount:Float 			' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
 	
@@ -19,9 +22,12 @@ Type TMinimap
 	Field _planetColor:TColor
 	Field _shipColor:TColor
 	Field _selfColor:TColor
+	Field _velColor:TColor
+	Field _miscColor:TColor
+	
+	Field _attitudeIndicator:TImage
 	
 	Method AddBlip(o:TSpaceObject) 
-		
 		Local midX:Int = _width / 2
 		Local midY:Int = _height / 2
 		Local x:Int = (viewport.GetCameraPosition_X() - o.GetX()) * _scale * _zoomFactor + midX + _startX
@@ -31,14 +37,18 @@ Type TMinimap
 		Local blip:TBlip = TBlip.Create(x, y, size) 
 		
 		' use casting to find out the type of the object
+		blip.SetBColor(_miscColor) 
 		If TPlanet(o) Then blip.SetBColor(_planetColor) 
 		If TShip(o) Then blip.SetBColor(_ShipColor) 
 		
-		' if the object is the centered object, use "_selfcolor" to represent the center dot
-		If o = viewport._centeredObject Then blip.SetBColor(_selfColor) 
-		
+		' special behaviour for the centered blip
+		If o = viewport._centeredObject Then
+			blip.SetBColor(_selfColor) 
+			If TShip(o) And blip.GetSize() < 3 Then blip.SetSize(0.0) 
+		EndIf
+
 		If Not _L_blips Then _L_blips = New TList
-		_L_blips.AddLast(blip) 
+		If blip.GetSize() > 0 Then _L_blips.AddLast(blip) 
 	End Method
 	
 	Method Draw() 
@@ -53,17 +63,63 @@ Type TMinimap
 			If blip.isOverBoundaries(_startX, _startY, _width, _height) Then
 				Continue
 			Else
-				blip.Draw() 
+				blip.Draw() 				
 			EndIf
 		Next
 		
+		SetHandle(0, 0) 
+		
 		' after drawing all blips, clear the list
 		If _L_blips Then _L_Blips.Clear() 
-		SetHandle(0,0)
+		
+		' draw miscellaneous map details
+		DrawDetails() 
+	End Method
+
+	Method DrawDetails() 
+		' use type casting to determine if the centered object is a TMovingObject
+		Local obj:TMovingObject = TMovingObject(viewport.GetCenteredObject()) 
+		If Not obj Then Return		' return if object is not a moving object
+		DrawVelocityVector(obj)  	' draw velocity vector for the centered object
+		
+		' use type casting to determine if the centered object is a TShip
+		Local ship:TShip = TShip(viewport.GetCenteredObject()) 
+		If Not ship Then Return		' return if the object is not a ship
+		DrawAttitudeIndicator(ship)    ' draw the T-shaped attitude indicator to the middle of the map
+	End Method	
+		
+	Method DrawVelocityVector(obj:TMovingObject) 
+		TColor.SetTColor(_velColor) 
+		SetAlpha(0.3) 
+		
+		Local vX:Float = obj.GetXVel() / 10
+		Local vY:Float = obj.GetYVel() / 10
+		
+		SetScale(1, 1) 
+		SetLineWidth(1) 
+		DrawLine(_midX - vX, _midY - vY, _midX, _midY, False) 
+	End Method
+
+	Method DrawAttitudeIndicator(obj:TShip) 
+		SetScale(0.3, 0.3) 
+		SetBlend(ALPHABLEND) 
+		SetAlpha(0.5) 
+		SetRotation(obj.GetRot() + 90) 
+		SetColor(255, 255, 255) 
+		DrawImage(_attitudeIndicator, _midX, _midY) 
+		SetRotation(0) 
 	End Method
 	
 	Method SetZoomFactor(z:Float) 
 		_zoomfactor = z
+	End Method
+	
+	Method GetDefaultZoom:Float() 
+		Return _defaultZoom
+	End Method
+	
+	Method ResetZoomFactor() 
+		_zoomfactor = _defaultZoom
 	End Method
 	
 	Method ZoomIn() 
@@ -88,11 +144,21 @@ Type TMinimap
 		map._startY = y
 		map._height = h
 		map._width = w
+		map._midX = x + w / 2.0
+		map._midY = y + h / 2.0
+		
+		map._defaultZoom = 0.2
+		map._zoomFactor = map._defaultZoom
 		
 		map._alpha = 0.8
 		map._shipColor = TColor.FindColor("yellow") 
 		map._selfColor = TColor.FindColor("lime") 
 		map._planetColor = TColor.FindColor("cobalt") 
+		map._velColor = TColor.FindColor("lime") 
+		map._miscColor = TColor.FindColor("cyan") 
+		
+		map._attitudeIndicator = TImg.LoadImg("attitude.png") 
+		
 		Return map
 	End Function
 EndType
@@ -114,6 +180,10 @@ Type TBlip
 		Return _y
 	End Method
 	
+	Method SetSize(sz:Float) 
+		_size = sz
+	End Method
+	
 	' isOverBoundaries checks if the blip would show on the minimap
 	Method isOverBoundaries:Int(startX:Int, startY:Int, width:Int, height:Int) 
 		Return _x + _size / 2 < startX Or ..
@@ -128,6 +198,7 @@ Type TBlip
 	
 	
 	Method Draw() 
+		If _size = 0 Then Return		' don't draw 0-sized blips
 		TColor.SetTColor(_color) 
 		SetHandle(_size / 2, _size / 2)    ' oval handle to the middle of the oval
 		DrawOval(_x, _y, _size, _size) 

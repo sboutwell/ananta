@@ -29,6 +29,7 @@ Type TViewport
 	Field _miniMap:TMinimap			' the minimap associated with this viewport
 	Field _msgWindow:TMessageWindow = TMessageWindow.Create()  ' create a message window for the viewport
 	
+	Field _defaultZoom:Float = 1
 	Field _zoomFactor:Float = 1
 	Field _zoomAmount:Float 		' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5
@@ -59,17 +60,21 @@ Type TViewport
 		_midX		= _width / 2
 		_midY = _height / 2
 		
+		_defaultZoom = 1.0
+		_zoomFactor = _defaultZoom
+		
 		_miniMap = TMinimap.Create(Self.g_ResolutionX - 195, 0, 195, 195) 
 	EndMethod
 
 	Method DrawLevel() 
-		_CameraPosition_X = _centeredObject.GetX()
+		_CameraPosition_X = _centeredObject.GetX() 
 		_CameraPosition_Y = _centeredObject.GetY()
 
 		SetViewport(_startX ,_startY, _width, _height)  ' limit the drawing area to viewport margins
 	
 		SetScale 1, 1
 		SetBlend ALPHABLEND
+		SetRotation 0
 		
 		' ----- draw the space background with zoom-dependent alpha
 		SetAlpha 0.8
@@ -126,12 +131,14 @@ Type TViewport
 		TMessageWindow.DrawAll()	' update message windows
 	EndMethod
 		
-	Method DrawMisc()
-		TMessageWindow.DrawAll() 	' draw message windows
+	Method DrawMisc() 
+		TMessageWindow.DrawAll()  	' draw message windows
 		
 		_MiniMap.Draw() 
 
 		SetViewport(0, 0, viewport.GetResX(), viewport.GetResY()) 
+		SetScale(1, 1) 
+		SetRotation(0) 
 		SetBlend(ALPHABLEND) 
 		SetAlpha(1)
 		SetColor(255, 255, 255) 
@@ -148,6 +155,10 @@ Type TViewport
 	
 	EndMethod
 
+	Method GetCenteredObject:TSpaceObject() 
+		Return _centeredObject
+	End Method
+	
 	Method GetResX:Int() 
 		Return g_ResolutionX
 	End Method
@@ -195,6 +206,10 @@ Type TViewport
 		
 	Method SetZoomFactor(z:Float) 
 		_zoomFactor = z
+	End Method
+	
+	Method ResetZoomfactor() 
+		_zoomFactor = _defaultZoom
 	End Method
 	
 	Method ZoomIn() 
