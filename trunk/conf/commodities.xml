@@ -71,24 +71,6 @@
             <location>external</location>
             <!-- internal/external, affects received damage -->
           </transleft>
-          <transnose>
-            <!-- slot ID -->
-            <type>thruster</type>
-            <volume>1</volume>
-            <exposure>nose</exposure>
-            <!-- exposure to the front -> movement backward -->
-            <location>external</location>
-            <!-- internal/external, affects received damage -->
-          </transnose>
-          <transtail>
-            <!-- slot ID -->
-            <type>thruster</type>
-            <volume>1</volume>
-            <exposure>tail</exposure>
-            <!-- exposure to the back -> movement forward -->
-            <location>external</location>
-            <!-- internal/external, affects received damage -->
-          </transtail>
           <engineslot1>
             <!-- slot ID -->
             <type>engine</type>
@@ -108,6 +90,24 @@
             <!-- internal/external, affects received damage -->
           </equipmentslot1>
         </slots>
+        <emitters>
+          <!-- particle emitters (engine trails) -->
+          <main1>
+            <type>main</type>
+            <x>0</x>
+            <y>-28</y>
+          </main1>
+          <rev1>
+            <type>reverse</type>
+            <x>5</x>
+            <y>10</y>
+          </rev1>
+          <rev2>
+            <type>reverse</type>
+            <x>5</x>
+            <y>-10</y>
+          </rev2>
+        </emitters>
       </samplehull1>
       <samplehull2>
         <!-- Hull ID -->
@@ -176,24 +176,6 @@
             <location>external</location>
             <!-- internal/external, affects received damage -->
           </transleft>
-          <transnose>
-            <!-- slot ID -->
-            <type>thruster</type>
-            <volume>1</volume>
-            <exposure>nose</exposure>
-            <!-- exposure to the front -> movement backward -->
-            <location>external</location>
-            <!-- internal/external, affects received damage -->
-          </transnose>
-          <transtail>
-            <!-- slot ID -->
-            <type>thruster</type>
-            <volume>1</volume>
-            <exposure>tail</exposure>
-            <!-- exposure to the back -> movement forward -->
-            <location>external</location>
-            <!-- internal/external, affects received damage -->
-          </transtail>
           <engineslot1>
             <!-- slot ID -->
             <type>engine</type>
@@ -213,6 +195,29 @@
             <!-- internal/external, affects received damage -->
           </equipmentslot1>
         </slots>
+        <emitters>
+          <!-- particle emitters (engine trails) -->
+          <main1>
+            <type>main</type>
+            <x>15</x>
+            <y>-30</y>
+          </main1>
+          <main2>
+            <type>main</type>
+            <x>-15</x>
+            <y>-30</y>
+          </main2>
+          <rev1>
+            <type>reverse</type>
+            <x>5</x>
+            <y>10</y>
+          </rev1>
+          <rev2>
+            <type>reverse</type>
+            <x>5</x>
+            <y>-10</y>
+          </rev2>
+        </emitters>
       </samplehull2>
     </hulls>
     <propulsion>

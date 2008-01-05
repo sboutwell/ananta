@@ -20,7 +20,6 @@ EndRem
 
 Type TSpaceObject Abstract
 	Global g_GravConstant:Float = 0.07	' gravitational constant
-	Field _L_Attachments:TList			' visual attachments to the object's image (see TAttachment)
 	Field _image:TImage					' The image to represent the object
 	Field _alpha:Float = 1				' Alpha channel value of the image
 	Field _x:Float, _y:Float			' x-y coordinates of the object
@@ -32,11 +31,33 @@ Type TSpaceObject Abstract
 	Field _scaleY:Float = 1				
 	Field _name:String = "Nameless"	' The name of the object
 	Field _isShownOnMap:Int = False		' flag to indicate minimap visibility
+
+	' attachment-related fields
+	Field _L_TopAttachments:TList		' top attachments to the object	(visually above this object)
+	Field _L_BottomAttachments:TList	' bottom attachments to the object (visually below this object)
+	Field _parentObject:TSpaceObject	' the parent object this object is attached to, if applicable
+	Field _xOffset:Float = 0			' x-position of the attachment compared to the x of the parent
+	Field _yOffset:Float = 0			' y-position of the attachment compared to the y of the parent
+	Field _rotationOffset:Float 		' rotation compared to the parent rotation
 	
-	Method DrawBody(vp:TViewport) 
+		
+	Method DrawBody(vp:TViewport, drawAsAttachment:Int = False) 
+		
 		If Not _image Then Return
 		
-		' ********* preload values that are used more than once (-->_veeery_ slight performance boost)
+		' don't draw the object if it's an attachment 
+		' to another object but the method was NOT called with the drawAsAttachment flag on
+		If Not drawAsAttachment And _parentObject Then Return
+		
+		' draw bottom attachments if any
+		If _L_BottomAttachments Then
+			For Local a:TSpaceObject = EachIn _L_BottomAttachments
+				a.Update() 
+				a.DrawBody(vp, True) 
+			Next
+		EndIf
+		
+		' ********* preload values that are used more than once
 		Local startX:Int = vp.GetStartX() 
 		Local startY:Int = vp.GetStartY()
 		Local midX:Int = vp.GetMidX()
@@ -56,10 +77,50 @@ Type TSpaceObject Abstract
 		SetColor 255,255,255
 		SetScale _scaleX * viewport._zoomFactor, _scaleY * viewport._zoomFactor
 		
-		
 		DrawImage _image, x, y
+		
+		' draw top attachments if any
+		If _L_TopAttachments Then
+			For Local a:TSpaceObject = EachIn _L_TopAttachments
+				a.Update() 
+				a.DrawBody(vp, True) 
+			Next
+		EndIf
 	EndMethod
 	
+	Method Update() 
+		If _parentObject Then	' is attached to another object...
+			Local pRot:Float = _parentObject.GetRot() 
+			Local pX:Float = _parentObject.GetX() 
+			Local pY:Float = _parentObject.GetY() 
+			_x = pX + _xOffset * Cos(pRot) + _yOffset * Sin(pRot) 
+			_y = pY + _xOffset * Sin(pRot) - _yOffset * Cos(pRot) 
+			_rotation = pRot + _rotationOffset
+		EndIf
+	End Method
+	
+	' attach another object. Attached objects cannot move themselves.
+	Method AddAttachment(obj:TSpaceObject, xo:Float = 0, yo:Float = 0, roto:Float = 0, onTop:Int = True) 
+		obj._parentObject = Self
+		obj._xOffset = xo
+		obj._yOffset = yo
+		obj._rotationOffset = roto
+		
+		If Not _L_TopAttachments Then _L_TopAttachments = CreateList() 
+		If Not _L_BottomAttachments Then _L_BottomAttachments = CreateList() 
+		If onTop Then _L_TopAttachments.AddLast(obj) 
+		If Not onTop Then _L_BottomAttachments.AddLast(obj) 
+		
+		' add the mass to this object's total mass
+		_mass:+obj.GetMass() 
+		
+		' if the parent object is a ship, update ship's performance values
+		If TShip(Self) Then	' type-casting
+			Local ship:TShip = TShip(Self) 
+			ship.UpdatePerformance() 
+		End If
+	End Method
+
 	Method GetMass:Float() 
 		Return _mass
 	End Method
@@ -72,7 +133,7 @@ Type TSpaceObject Abstract
 		Return _size
 	End Method
 	
-	Method GetX:Float()
+	Method GetX:Float() 
 		Return _x
 	End Method
 	
@@ -195,6 +256,14 @@ Type TMovingObject Extends TSpaceObject Abstract
 	Field _closestGravSource:TStellarObject ' the closest stellar object exerting gravitational pull
 	Field _affectedByGravity:Int = True
 
+	Method GetXVel:Float() 
+		Return _xVel
+	End Method
+	
+	Method GetYVel:Float() 
+		Return _yVel
+	End Method
+	
 	Method GetRotSpd:Float()
 		Return _rotationSpd
 	End Method
@@ -206,6 +275,18 @@ Type TMovingObject Extends TSpaceObject Abstract
 	
 	Method SetClosestGravSource(o:TStellarObject) 
 		_closestGravSource = o
+	End Method
+	
+	Method SetXVel(x:Float) 
+		_xVel = x
+	End Method
+	
+	Method SetYVel(y:Float) 
+		_yVel = y
+	End Method
+	
+	Method SetRotationSpd(r:Float) 
+		_rotationSpd = r
 	End Method
 	
 	Method FindClosestGravSource() 
@@ -225,30 +306,51 @@ Type TMovingObject Extends TSpaceObject Abstract
 	
 	Method ApplyGravity() 
 		If Not _affectedByGravity Then Return
-		FindClosestGravSource()           ' update the _closestGravSource field
-		If Not GetClosestGravSource() Then Return	' return if no gravity sources around
+		'FindClosestGravSource()           ' update the _closestGravSource field
 		
-		' get the X and Y coordinates of the closest gravity source
-		Local closestX:Float = GetClosestGravSource().GetX() 
-		Local closestY:Float = GetClosestGravSource().GetY() 
-		
+		For Local gs:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
+			If gs._sector <> Self._sector Then Continue 	' return if the object is in another sector
+			
+			' get the X and Y coordinates of the gravity source
+			Local gsX:Float = gs.GetX() 
+			Local gsY:Float = gs.GetY() 
+			Local squaredDist:Double = DistanceSquared(_x, _y, gsX, gsY) 
+			If squaredDist > 500000000 Then Continue	' don't apply gravity if the source is too far
+			'If Self._name = "Player ship" Then DebugLog squaredDist
+			
 			'g = (G * M) / d^2
-		Local a:Float = (g_gravConstant * GetClosestGravSource().GetMass()) / DistanceSquared(_x, _y, closestX, closestY) 
-		'DebugLog a
-		
-		' get the direction to the closest gravity source
-		Local dirToGravSource:Float = DirectionTo(_x, _y, closestX, closestY) 
-		
-		' calculate X and Y components of the acceleration
-		Local Ximpulse:Float = a * (Cos(dirToGravSource)) 
-		Local Yimpulse:Float = a * (Sin(dirToGravSource)) 
+			Local a:Float = (g_gravConstant * gs.GetMass()) / squaredDist
+			
+			'DebugLog a
+			If a < 0 Then DebugLog Self._name + " affected by negative gravity! Gravsource: " + gs._name
+			
+			' get the direction to the closest gravity source
+			Local dirToGravSource:Float = DirectionTo(_x, _y, gsX, gsY) 
+			
+			' calculate X and Y components of the acceleration
+			Local aX:Float = a * (Cos(dirToGravSource)) 
+			Local aY:Float = a * (Sin(dirToGravSource)) 
 
-		' add to the velocity of the space object
-		_Xvel:+Ximpulse * G_delta.GetDelta() 
-		_Yvel:+Yimpulse * G_delta.GetDelta()		
+			'If Self._name = "Player ship" Then DebugLog Ximpulse + ":" + Yimpulse
+
+			' add to the velocity of the space object
+			_Xvel:+aX * G_delta.GetDelta() 
+			_Yvel:+aY * G_delta.GetDelta() 
+		Next
 	End Method
 	
-	Method Update()
+	Method Update() 
+		' if attached to a moving object, override velocity with the parent object's velocity
+		If TMovingObject(_parentObject) Then
+			Local o:TMovingObject = TMovingObject(_parentObject) 
+			_xVel = o.GetXVel() 
+			_yVel = o.GetYVel() 
+			' call the update-method of TSpaceObject to update rotation and position
+			Super.Update() 
+			Return
+		EndIf
+		
+
 		' rotate the object
 		_rotation:+_rotationSpd * G_delta.GetDelta() 
 		If _rotation < 0 _rotation:+360
@@ -259,6 +361,9 @@ Type TMovingObject Extends TSpaceObject Abstract
 		' update the position
 		_x = _x + _xVel * G_delta.GetDelta() 
 		_y = _y + _yVel * G_delta.GetDelta() 
+		
+		' call the update-method of TSpaceObject
+		Super.Update() 
 	EndMethod
 	
 	Function UpdateAll()
@@ -289,38 +394,58 @@ Type TShip Extends TMovingObject
 	Field _throttlePosition:Float = 0		' -1 = full back, +1 = full forward
 	Field _controllerPosition:Float = 0		' -1 = full left, +1 = full right
 
+	Field _L_MainEngineEmitters:TList		' particle emitters for main engine trail
+	Field _L_ReverseEngineEmitters:TList	' particle emitters for retro engine trail
+	
 	Field _fuel:Float						' on-board fuel for main engines (calculated by a routine)
 	Field _oxygen:Float						' on-board oxygen
 	Field _pilot:TPilot						' The pilot controlling this ship
 	
-	Method Update()
+	
+	Method Update() 
 		' apply forward and reverse thrusts
 		If _throttlePosition > 0 Then
 			ApplyImpulse(_throttlePosition * _forwardAcceleration) 
 			
 			' add the engine trail effect
-			Local part:TParticle = TParticle.Create(_x - 28 * Cos(_rotation), _y - 28 * Sin(_rotation), 0.1, 0.07, 0.3) 
+			If _L_mainEngineEmitters Then
+				For Local emitter:TParticleGenerator = EachIn _L_mainEngineEmitters
+					emitter.Emit(_throttlePosition * _forwardAcceleration) 
+				Next
+			EndIf
+			
+			'rem
+			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 28 * Cos(_rotation), _y - 28 * Sin(_rotation), 0.1, 0.07, 0.3) 
 			Local randDir:Float = Rand(- 2, 2) 
-			part._xVel = _xVel - 4 * _throttlePosition * _forwardAcceleration * Cos(_rotation + randDir) 
-			part._yVel = _yVel - 4 * _throttlePosition * _forwardAcceleration * Sin(_rotation + randDir) 
+			part._xVel = _xVel - 300 * Cos(_rotation + randDir) 
+			part._yVel = _yVel - 300 * Sin(_rotation + randDir) 
 			part._rotation = _rotation
+			'endrem
 			
 		EndIf
 		If _throttlePosition < 0 Then
 			ApplyImpulse(_throttlePosition * _reverseAcceleration) 
-
+			
+			'rem
 			' add the engine trail effect
-			Local part:TParticle = TParticle.Create(_x + 28 * Cos(_rotation), _y + 28 * Sin(_rotation), 0.1, 0.04, 0.2) 
+			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 5 * Cos(_rotation) + 10 * Sin(_rotation), _y + 5 * Sin(_rotation) - 10 * Cos(_rotation), 0.1, 0.04, 0.2) 
 			Local randDir:Float = Rand(- 2, 2) 
 			part._xVel = _xVel - 4 * _throttlePosition * _reverseAcceleration * Cos(_rotation + randDir) 
 			part._yVel = _yVel - 4 * _throttlePosition * _reverseAcceleration * Sin(_rotation + randDir) 
 			part._rotation = _rotation + 180
+			
+			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 5 * Cos(_rotation) - 10 * Sin(_rotation), _y + 5 * Sin(_rotation) + 10 * Cos(_rotation), 0.1, 0.04, 0.2) 
+			randDir:Float = Rand(- 2, 2) 
+			part._xVel = _xVel - 4 * _throttlePosition * _reverseAcceleration * Cos(_rotation + randDir) 
+			part._yVel = _yVel - 4 * _throttlePosition * _reverseAcceleration * Sin(_rotation + randDir) 
+			part._rotation = _rotation + 180
+			'endrem
 		EndIf
 		
 		' apply rotation thrusters
 		ApplyRotation(_controllerPosition * _rotAcceleration)
 
-		If _controllerPosition = 0 Then ApplyRotKill()		' if the "joystick" is centered, fire the rotKill thrusters
+		If _controllerPosition = 0 Then ApplyRotKill() 		' if the "joystick" is centered, fire the rotKill thrusters
 
 		super.Update()  ' call update method of TMovingObject
 	EndMethod
@@ -423,12 +548,16 @@ Type TShip Extends TMovingObject
 		' add the hull mass to the ship's total mass
 		_mass = _mass + _hull.GetMass()
 	
+		UpdatePerformance() 
+	EndMethod
+
+	Method UpdatePerformance() 
 		_forwardAcceleration = (_engineThrust / _mass) 
 		_reverseAcceleration = ((_engineThrust * _hull.GetReverserRatio()) / _mass) 
 		_rotAcceleration = (RadToDeg(CalcRotAcceleration(_rotThrust, _size, _mass, _hull.GetThrusterPos()))) 
-		_maxRotationSpd = _hull.GetMaxRotationSpd() 
-	EndMethod
-
+		_maxRotationSpd = _hull.GetMaxRotationSpd() 		
+	End Method
+	
 	Method AssignPilot(p:TPilot)
 		_pilot = p					' assign the given pilot as the pilot for this ship
 		p.SetControlledShip(Self)	' assign this ship as the controlled ship for the given pilot
@@ -465,6 +594,7 @@ Type TShip Extends TMovingObject
 		_x = x
 		_y = y
 	End Method
+	
 	Function UpdateAll() 
 		If Not g_L_Ships Then Return
 		For Local o:TShip = EachIn g_L_Ships
@@ -495,61 +625,34 @@ Type TShip Extends TMovingObject
 EndType
 
 Type TAsteroid Extends TMovingObject
-
+	Global g_L_Asteroids:TList
+	
+	Function Create:TAsteroid(img:String, sector:TSector, x:Float, y:Float, mass:Long) 
+		Local a:TAsteroid = New TAsteroid
+		a._image = TImg.LoadImg(img) 
+		a._mass = mass
+		a._sector = sector
+		a._x = x
+		a._y = y
+		a._isShownOnMap = True
+		a._affectedByGravity = True
+		
+		If Not g_L_Asteroids Then g_L_Asteroids = CreateList() 
+		g_L_Asteroids.AddLast(a) 
+		
+		If Not g_L_MovingObjects Then g_L_MovingObjects = CreateList() 
+		g_L_MovingObjects.AddLast(a) 
+		
+		sector.AddSpaceObject(a) 
+		
+		Return a
+	End Function
 EndType
 
 Type TProjectile Extends TMovingObject
 
 EndType
 
-
-Type TParticle Extends TMovingObject
-	Global g_L_Particles:TList	' list holding all particles
-	Field _life:Float			' life of the particle in seconds
-	Field _alphaDelta:Float		' alpha change per second
-	
-	Method Update() 
-		_life:-1 * G_delta.GetDelta()      			 ' decrement life by 1 frame worth of seconds
-		_alpha:-_alphaDelta * G_delta.GetDelta()     ' decrement alpha by alphaDelta
-		If _life <= 0 Then Destroy() 
-		Super.Update()   ' call Update() of TMovingObject
-	End Method
-	
-	Method Destroy() 
-		If g_L_Particles Then g_L_Particles.Remove(Self) 
-	End Method
-	
-	Function DestroyAll() 
-		If g_L_Particles Then g_L_Particles.Clear() 
-	End Function
-		
-	Function UpdateAndDrawAll() 
-		If Not g_L_Particles Then Return
-		For Local p:TParticle = EachIn g_L_Particles
-			p.Update() 
-			p.DrawBody(viewport) 
-		Next
-	End Function
-	
-	Function Create:TParticle(x:Float, y:Float, life:Float, scale:Float, alpha:Float = 0.8) 
-		Local part:TParticle = New TParticle
-		part._x = x
-		part._y = y
-		part._life = life
-		part._scaleX = scale
-		part._scaleY = scale
-		part._alpha = alpha
-		part._alphaDelta = alpha / life
-		part._affectedByGravity = False
-		part._isShownOnMap = False
-		part._image = TImg.LoadImg("trail.png") 
-	
-		If Not g_L_Particles Then g_L_Particles = CreateList() 
-		g_L_particles.AddLast(part) 
-		
-		Return part
-	EndFunction
-EndType
-
 ' types directly related to TSpaceObjects
 Include "i_TAttachment.bmx"
+Include "i_TParticle.bmx"

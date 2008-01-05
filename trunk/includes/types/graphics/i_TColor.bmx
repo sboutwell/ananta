@@ -17,8 +17,8 @@ Type TColor Final
 	End Method
 	
 	' SetTColor() is a SetColor replacement that uses named colors instead of RGB values
-	Function SetTColor(color:TColor)
-		SetColor(color._red,color._green,color._blue)
+	Function SetTColor(color:TColor) 
+		SetColor(color._red, color._green, color._blue) 
 		Return
 	End Function
 

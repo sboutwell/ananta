@@ -21,7 +21,8 @@ Type TImg Extends TMedia
 		Return _image
 	End Method
 	
-	Function LoadImg:TImage(filename:String) 
+	' LoadImg returns a TImage matching a filename string. 
+	Function LoadImg:TImage(filename:String, automid:Int = True) 
 		AutoImageFlags MASKEDIMAGE | FILTEREDIMAGE | MIPMAPPEDIMAGE	' flags For LoadImage()
 
 		If Not g_L_imageFiles Then g_L_imageFiles = CreateList() 
@@ -31,7 +32,7 @@ Type TImg Extends TMedia
 			If img.GetFileName() = filename Then Return img.GetImage() 
 		Next
 		
-		AutoMidHandle True
+		AutoMidHandle automid
 		Local image:TImage = LoadImage(g_mediaPath + filename) 
 		If Not image Then Return Null
 		

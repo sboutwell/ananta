@@ -10,7 +10,7 @@ Type TSector Final
 		For Local obj:TSpaceObject = EachIn _L_SpaceObjects	' Iterate through each drawable object in the sector
 			obj.DrawBody(vp)     						' Calls the DrawBody method of each drawable object in the sector
 			If vp.GetMiniMap() And obj.showsOnMap() Then	' draw a minimap blip if minimap is defined for the viewport
-				vp.GetMiniMap().AddBlip(obj) 
+				vp.GetMiniMap().AddBlip(obj)
 			End If
 		Next
 	EndMethod
