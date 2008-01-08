@@ -1,0 +1,29 @@
+-	Avoid using program-wide globals whenever feasible, but if you do, 
+	program globals should have a capital G in front of them (example G_ViewPort)
+-	All types are named with a T in front (example: TTypeName)
+-	All lists and fields that are global inside a type must begin with g (example: g_variableName)
+	Note a lower case g as opposed to the capital G for program globals.
+- 	All lists are named with L in front of them (example L_ListName). 
+	Global lists are named as g_L_ListName.
+-	All methods, functions, fields that are supposed to be private to the type 
+	(ie. not to be accessed directly outside of the type) should begin
+	an _underscore (example _L_PrivateList). 
+	As Blitz doesn't support actual private declarations (the limits cannot be enforced by the compiler), 
+	the naming convention is for convenience and readability only.
+-	Try to discourage direct manipulation of fields outside the type by using the 
+	aforementioned underscore naming convention indicating private use, and provide accessor methods 
+	to the types instead. Ie. a field called _money should be accessed through methods called 
+	SetMoney() and GetMoney(). This "rule" will save us from huge future headaches (tracking mystical bugs)
+	and help dramatically with future changes to the type interface.
+
+Use descriptive names for type fields, methods and functions. 
+Method OpenPodBayDoor(door.id) tells a lot more than Method Open(d.i)
+
+You can capitalize variables, fields, types, lists etc. as needed for good readability. 
+Use your own judgement.
+
+Comment all type definitions, explain their usage and their methods and fields. Unless they are simple
+enough to document themselves.
+
+Most importantly:
+Have fun!
