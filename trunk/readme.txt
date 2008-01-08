@@ -1,4 +1,3 @@
-rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -16,22 +15,31 @@ This file is part of Ananta.
 
 
 Copyright 2007, 2008 Jussi Pakkanen
-endrem
+frosty_79(|at|)airpost.net
 
-rem
-	Attachments are visual add-ons attached to a space object's hull: weapons, engines, etc.
-	Note that TAttachment is used for "visual-only" attachments. All spaceobjects can be attached
-	to another spaceobject
-endrem
 
-Type TAttachment Extends TSpaceObject
+Ananta pre-alpha preview version
+=========================
+
+Unzip all files to a folder of your choosing and run main.exe.
+XML files in "conf" folder should be self explanatory.
+If you wish to run the game in full screen, change <bitdepth> 
+setting to 16 or 32 in settings.xml. You may also want to
+adjust <resolution> to a more comfortable setting.
+
+
+Controls:
+	Left arrow		- rotate ship left
+	Right arrow 	- rotate ship right
+	Up arrow		- fire main engines
+	Down arrow 	- fire reverse engines
 	
-	Function Create:TAttachment(parent:TSpaceObject, image:String, x:Float = 0, y:Float = 0, rot:Float = 0, scaleX:Float = 0, scaleY:Float = 0, onTop:Int = True) 
-		Local a:TAttachment = New TAttachment
-		parent.AddAttachment(a, x, y, rot, onTop) 
-		a._image = TImg.LoadImg(image) 
-		a._scaleX = scaleX
-		a._scaleY = scaleY		
-		Return a
-	End Function
-End Type
+	z			- zoom in
+	x			- zoom out
+	shift+z		- minimap zoom in
+	shift+x		- minimap zoom out
+	ctrl+z		- reset zoom
+	ctrl+x		- reset minimap zoom
+	ESC			- exit game
+
+

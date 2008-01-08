@@ -1,4 +1,24 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file is part of Ananta.
+
+    Ananta is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Ananta is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Copyright 2007, 2008 Jussi Pakkanen
+-->
+
 <commodities>
   <shipparts>
     <!-- commodity type: SHIPPARTS (special type) -->
@@ -10,7 +30,7 @@
         <!-- hull name -->
         <unit>piece</unit>
         <!-- unit of measurement (piece or kg) -->
-        <mass>8000</mass>
+        <mass>4000</mass>
         <!-- empty hull mass in kg -->
         <avgprice>1200</avgprice>
         <!-- average price -->
@@ -96,16 +116,19 @@
             <type>main</type>
             <x>0</x>
             <y>-28</y>
+            <rndDir>2</rndDir>
           </main1>
           <rev1>
             <type>reverse</type>
             <x>5</x>
             <y>10</y>
+            <rndDir>2</rndDir>
           </rev1>
           <rev2>
             <type>reverse</type>
             <x>5</x>
             <y>-10</y>
+            <rndDir>2</rndDir>
           </rev2>
         </emitters>
       </samplehull1>
