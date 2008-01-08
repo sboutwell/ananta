@@ -1,3 +1,23 @@
+rem
+This file is part of Ananta.
+
+    Ananta is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Ananta is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Copyright 2007, 2008 Jussi Pakkanen
+endrem
+
 ' -----------------------------------------------------------------
 ' TViewport contains various draw-to-screen related stuff
 ' -----------------------------------------------------------------
@@ -133,7 +153,7 @@ Type TViewport
 		
 	Method DrawMisc() 
 		TMessageWindow.DrawAll()  	' draw message windows
-		
+		G_debugWindow.DrawAllLines() 
 		_MiniMap.Draw() 
 
 		SetViewport(0, 0, viewport.GetResX(), viewport.GetResY()) 
@@ -142,7 +162,7 @@ Type TViewport
 		SetBlend(ALPHABLEND) 
 		SetAlpha(1)
 		SetColor(255, 255, 255) 
-		DrawText "FPS: " + G_delta.GetFPS(), 500, 10
+		
 		DrawText "left   - rotate left", viewport.GetResX() - 190, 200
 		DrawText "right  - rotate right", viewport.GetResX() - 190, 215
 		DrawText "up     - thrust", viewport.GetResX() - 190, 230

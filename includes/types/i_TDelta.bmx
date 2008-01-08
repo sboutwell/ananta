@@ -1,31 +1,51 @@
+rem
+This file is part of Ananta.
+
+    Ananta is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Ananta is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Copyright 2007, 2008 Jussi Pakkanen
+endrem
+
 ' deltatimer and FPS calculation/limiting
 Type TDelta
-	Field _time:Float
+	Field _time:Double
 	Field _maxdt:Float
 	Field _FrameCounter:Int
 	Field _isFrameRateLimited:Int
 	Field _TargetFPS:Int
-	Field _TargetDelta:Float
+	Field _TargetDelta:Double
 	Field _CurrentFPS:Int
-	Field _FPSTime:Float
-	Field _currentDelta:Float
+	Field _FPSTime:Double
+	Field _currentDelta:Double
 	Field _isFirstRound:Int = True
 	
 	Method GetFPS:Int() 
 		Return _currentFPS
 	End Method
 	
-	Method GetDelta:Float() 
+	Method GetDelta:Double() 
 		Return _currentDelta
 	EndMethod
 	
 	Method Calc() 
-		Local newTime:Float = MilliSecs() 
+		Local newTime:Double = MilliSecs() 
 		If newTime - _time > _maxdt Then _time = _maxdt
-		_currentDelta = (newTime - _time) / 1000
+		_currentDelta = (newTime - _time) / 1000.0
 		
 		' cap the delta to maxdt milliseconds to avoid time skipping when alt-tabbing etc
-		If _currentDelta > _maxdt / 1000 Then _currentDelta = _maxdt / 1000
+		If _currentDelta > _maxdt / 1000.0 Then _currentDelta = _maxdt / 1000.0
 		
 		_time = newTime
 		
@@ -48,7 +68,7 @@ Type TDelta
 		Return _isFrameRateLimited
 	End Method
 	
-	Function Create:TDelta(target:Int, isLimited:Int = 1, maxi:Float = 500) 
+	Function Create:TDelta(target:Int, isLimited:Int = True, maxi:Float = 500) 
 		Local delta:TDelta = New TDelta
 		delta._time = MilliSecs() 
 		delta._maxdt = maxi

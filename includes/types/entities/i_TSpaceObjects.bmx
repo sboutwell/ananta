@@ -1,3 +1,23 @@
+rem
+This file is part of Ananta.
+
+    Ananta is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Ananta is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Copyright 2007, 2008 Jussi Pakkanen
+endrem
+
 Rem
 	*************************************************************************************************
 	***************************************** SPACEOBJECTS ******************************************
@@ -19,10 +39,9 @@ Rem
 EndRem
 
 Type TSpaceObject Abstract
-	Global g_GravConstant:Float = 0.07	' gravitational constant
 	Field _image:TImage					' The image to represent the object
 	Field _alpha:Float = 1				' Alpha channel value of the image
-	Field _x:Float, _y:Float			' x-y coordinates of the object
+	Field _x:Double, _y:Double			' x-y coordinates of the object
 	Field _sector:TSector				' the sector the object is in
 	Field _rotation:Float				' rotation in degrees
 	Field _mass:Long					' The mass of the object in kg
@@ -63,8 +82,8 @@ Type TSpaceObject Abstract
 		Local midX:Int = vp.GetMidX()
 		Local midY:Int = vp.GetMidY()
 		' *********
-		Local x:Float = (vp.GetCameraPosition_X() - _x) * viewport._zoomFactor + midX + startX
-		Local y:Float = (vp.GetCameraPosition_Y() - _y) * viewport._zoomFactor + midY + startY
+		Local x:Double = (vp.GetCameraPosition_X() - _x) * viewport._zoomFactor + midX + startX
+		Local y:Double = (vp.GetCameraPosition_Y() - _y) * viewport._zoomFactor + midY + startY
 		
 		'If x + _size * _scaleX * viewport._zoomfactor / 2 < startX Then Return
 		'If x - _size * _scaleX * viewport._zoomFactor / 2 > startX + vp.GetWidth() Then Return
@@ -91,8 +110,8 @@ Type TSpaceObject Abstract
 	Method Update() 
 		If _parentObject Then	' is attached to another object...
 			Local pRot:Float = _parentObject.GetRot() 
-			Local pX:Float = _parentObject.GetX() 
-			Local pY:Float = _parentObject.GetY() 
+			Local pX:Double = _parentObject.GetX() 
+			Local pY:Double = _parentObject.GetY() 
 			_x = pX + _xOffset * Cos(pRot) + _yOffset * Sin(pRot) 
 			_y = pY + _xOffset * Sin(pRot) - _yOffset * Cos(pRot) 
 			_rotation = pRot + _rotationOffset
@@ -133,11 +152,11 @@ Type TSpaceObject Abstract
 		Return _size
 	End Method
 	
-	Method GetX:Float() 
+	Method GetX:Double() 
 		Return _x
 	End Method
 	
-	Method GetY:Float()
+	Method GetY:Double() 
 		Return _y
 	End Method
 
@@ -145,11 +164,11 @@ Type TSpaceObject Abstract
 		Return _isShownOnMap
 	End Method
 	
-	Method SetX(coord:Float)
+	Method SetX(coord:Double) 
 		_x = coord
 	End Method
 	
-	Method SetY(coord:Float)
+	Method SetY(coord:Double) 
 		_y = coord
 	End Method
 	
@@ -250,17 +269,20 @@ EndType
 ' *** MOVING SPACE OBJECTS
 Type TMovingObject Extends TSpaceObject Abstract
 	Global g_L_MovingObjects:TList			' a list to hold all moving objects
-	Field _xVel:Float						' velocity vector x-component
-	Field _yVel:Float						' velocity vector y-component
+	Field _xVel:Double						' velocity vector x-component
+	Field _yVel:Double						' velocity vector y-component
 	Field _rotationSpd:Float				' rotation speed in degrees per second
-	Field _closestGravSource:TStellarObject ' the closest stellar object exerting gravitational pull
 	Field _affectedByGravity:Int = True
 
-	Method GetXVel:Float() 
+	Method GetVel:Float() 
+		Return Sqr(_xVel ^ 2 + _yVel ^ 2) 
+	End Method
+	
+	Method GetXVel:Double() 
 		Return _xVel
 	End Method
 	
-	Method GetYVel:Float() 
+	Method GetYVel:Double() 
 		Return _yVel
 	End Method
 	
@@ -268,20 +290,11 @@ Type TMovingObject Extends TSpaceObject Abstract
 		Return _rotationSpd
 	End Method
 
-	Method GetClosestGravSource:TStellarObject() 
-		If Not _closestGravSource Then Return Null
-		Return _closestGravSource
-	End Method
-	
-	Method SetClosestGravSource(o:TStellarObject) 
-		_closestGravSource = o
-	End Method
-	
-	Method SetXVel(x:Float) 
+	Method SetXVel(x:Double) 
 		_xVel = x
 	End Method
 	
-	Method SetYVel(y:Float) 
+	Method SetYVel(y:Double) 
 		_yVel = y
 	End Method
 	
@@ -289,54 +302,60 @@ Type TMovingObject Extends TSpaceObject Abstract
 		_rotationSpd = r
 	End Method
 	
-	Method FindClosestGravSource() 
-		If Not _affectedByGravity Or Not TStellarObject.g_L_StellarObjects Then Return
-		Local closest:TStellarObject = Null
+	Method GravityPull(gs:TStellarObject) 
+		' get the X and Y coordinates of the gravity source
+		Local gsX:Double = gs.GetX() 
+		Local gsY:Double = gs.GetY() 
+		Local squaredDist:Double = DistanceSquared(_x, _y, gsX, gsY) 
+		'If squaredDist > 500000000 Then Return	' don't apply gravity if the source is "too far"
 		
-		For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
-			If obj._hasGravity Then
-				If Not closest Or ..
-					ReturnClosestOfTwo(_x, _y, closest.GetX(),  ..
-					closest.GetY(), obj.GetX(), obj.GetY()) Then ..
-					closest = obj
-			EndIf
-		Next
-		SetClosestGravSource(closest) 
+		'g = (G * M) / d^2
+		Local a:Double = (c_GravConstant * gs.GetMass()) / squaredDist
+		
+		If a < 0 Then DebugLog Self._name + " affected by negative gravity! Gravsource: " + gs._name
+		
+		' get the direction to the gravity source
+		Local dirToGravSource:Double = DirectionTo(_x, _y, gsX, gsY) 
+		
+		' calculate X and Y components of the acceleration
+		Local aX:Double = a * (Cos(dirToGravSource)) 
+		Local aY:Double = a * (Sin(dirToGravSource)) 
+
+		'If Self = p1.GetControlledShip() Then
+		'	G_debugWindow.AddText(gs._name + " grav: " + Sqr(aX ^ 2 + aY ^ 2)) 
+		'EndIf
+		
+		' add to the velocity of the space object
+		_Xvel:+aX * G_delta.GetDelta() 
+		_Yvel:+aY * G_delta.GetDelta() 		
 	End Method
 	
 	Method ApplyGravity() 
 		If Not _affectedByGravity Then Return
-		'FindClosestGravSource()           ' update the _closestGravSource field
-		
+	
 		For Local gs:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
 			If gs._sector <> Self._sector Then Continue 	' return if the object is in another sector
-			
-			' get the X and Y coordinates of the gravity source
-			Local gsX:Float = gs.GetX() 
-			Local gsY:Float = gs.GetY() 
-			Local squaredDist:Double = DistanceSquared(_x, _y, gsX, gsY) 
-			If squaredDist > 500000000 Then Continue	' don't apply gravity if the source is too far
-			'If Self._name = "Player ship" Then DebugLog squaredDist
-			
-			'g = (G * M) / d^2
-			Local a:Float = (g_gravConstant * gs.GetMass()) / squaredDist
-			
-			'DebugLog a
-			If a < 0 Then DebugLog Self._name + " affected by negative gravity! Gravsource: " + gs._name
-			
-			' get the direction to the closest gravity source
-			Local dirToGravSource:Float = DirectionTo(_x, _y, gsX, gsY) 
-			
-			' calculate X and Y components of the acceleration
-			Local aX:Float = a * (Cos(dirToGravSource)) 
-			Local aY:Float = a * (Sin(dirToGravSource)) 
-
-			'If Self._name = "Player ship" Then DebugLog Ximpulse + ":" + Yimpulse
-
-			' add to the velocity of the space object
-			_Xvel:+aX * G_delta.GetDelta() 
-			_Yvel:+aY * G_delta.GetDelta() 
+			If gs._hasGravity = False Then Continue			' don't pull if the object does not exert gravity
+			GravityPull(gs) 
 		Next
+	End Method
+	
+	' CalcOrbitalVelocity calculates the velocity required to maintain a stable orbit around body
+	Method CalcOrbitalVelocity:Double(body:TSpaceObject) 
+		Return Sqr(c_GravConstant * body.GetMass() / Distance(_x, _y, body.GetX(), body.GetY())) 
+	End Method
+	
+	' SetOrbitalVelocity sets xVel and yVel to maintain a stable orbit around body
+	Method SetOrbitalVelocity(body:TSpaceObject, clockwise:Int = True) 
+		Local vel:Double = CalcOrbitalVelocity(body) 
+		Local dirTo:Float = DirectionTo(_x, _y, body.GetX(), body.GetY()) 
+		Local dir:Float
+		
+		If clockwise Then dir = dirTo - 90
+		If Not clockwise Then dir = dirTo + 90
+		
+		_yVel = Sin(dir) * vel
+		_xVel = Cos(dir) * vel				 
 	End Method
 	
 	Method Update() 

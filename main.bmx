@@ -1,5 +1,28 @@
+rem
+This file is part of Ananta.
+
+    Ananta is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Ananta is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Copyright 2007, 2008 Jussi Pakkanen
+endrem
+
 SuperStrict
-Import bah.Libxml		' the open-source XML parser library
+Import bah.Libxml		' XML parser library
+Import bah.Cairo		' vector graphics library
+'Import bah.random
+
 
 SetGraphicsDriver GLMax2DDriver() 
 AppTitle = ""
@@ -17,6 +40,7 @@ Include "includes/types/entities/i_TShipModel.bmx"		'Type describing ship models
 Include "includes/types/commodity/i_TCommodity.bmx"		'Tradeable/usable commodities (contents read from an xml file)
 Include "includes/types/graphics/i_TViewport.bmx"		'Draw-to-screen related stuff
 Include "includes/types/graphics/i_TMessageWindow.bmx"	'Messagewindow and messageline types
+Include "includes/types/graphics/i_TDebugWindow.bmx"	'Debugwindow and debugline types
 Include "includes/types/graphics/i_TMinimap.bmx"		'Minimap
 Include "includes/types/graphics/i_TColor.bmx"			'A structure-like type to map color names to their RGB values
 Include "includes/types/graphics/i_TMedia.bmx"			'Type loading and holding media files
@@ -29,28 +53,44 @@ TViewport.InitGraphicsMode()		' lets go graphical using the values read from the
 TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
 TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
+GenerateTextures()   		' generate some sprites/textures as new image files
+
 ' generate a sector
 Local sector1:TSector = TSector.Create(0,0,"Sol")
 Local activeSector:TSector = sector1 ' set the newly created sector as the "active sector"
 
-' create a bunch of planets
+' create a star and a bunch of planets
+Local sSize:Int = 250000	' sector size
 SeedRnd(MilliSecs()) 
-For Local i:Int = 1 To 100
+Local st1:TStar = TStar.Create(0, 0, sector1, 100000, 10, "Sol") 
+st1._image = TImg.LoadImg("star_generated") 
+'st1._image = TImg.LoadImg("jupiter.png") 
+'st1._image = pImage
+st1._rotation = -90
+st1._scaleX = 12
+st1._scaleY = st1._scaleX
+st1._size = CalcImageSize(st1._image, False) * st1._scaleX
+st1._mass = (st1._scaleX ^ 2) * 100000000
+
+
+For Local i:Int = 1 To 50
 	'Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
-	Local pl2:TPlanet = TPlanet.Create(Rand(- 200000, 200000), Rand(- 200000, 200000), sector1, 100000, 10, "Jupiter " + i) 
+	Local pl2:TPlanet = TPlanet.Create(Rand(- sSize, sSize), Rand(- sSize, sSize), sector1, 100000, 10, "Jupiter " + i) 
 	pl2._image = TImg.LoadImg("jupiter.png") 
+	'pl2._image = TImg.LoadImg("star_generated") 
 	pl2._rotation=-90
 	pl2._scaleX = Rnd(0.5, 2) 
 	pl2._scaleY = pl2._scaleX
-	pl2._size = 980 * pl2._scaleX
-	pl2._mass = (pl2._scaleX ^ 2) * Rand(200000000, 350000000) 
+	pl2._size = CalcImageSize(pl2._image, False) * pl2._scaleX
+	pl2._mass = (pl2._scaleX ^ 2) * Rand(30000000, 50000000) 
+	pl2._hasGravity = True
 Next
 
-For Local i:Int = 1 To 100
-	Local ast:TAsteroid = TAsteroid.Create("asteroid.png", sector1, Rand(- 200000, 200000), Rand(- 200000, 200000), Rand(10, 500)) 
+For Local i:Int = 1 To 50
+	Local ast:TAsteroid = TAsteroid.Create("asteroid.png", sector1, Rand(- sSize, sSize), Rand(- sSize, sSize), Rand(10, 500)) 
 	ast._scaleX = Rnd(0.1, 1.5) 
 	ast._scaleY = ast._scaleX
-	ast._size = 100 * ast._scaleX
+	ast._size = CalcImageSize(ast._image, False) * ast._scaleX
 	ast._mass = (ast._scaleX ^ 2) * Rand(2000, 5000) 
 	ast.SetRotationSpd(Rand(- 200, 200)) 
 	ast.SetXVel(Rand(- 500, 500)) 
@@ -58,11 +98,13 @@ For Local i:Int = 1 To 100
 Next
 
 ' generate the player and player's ship
-Local p1:TPlayer = TPlayer.Create("Da Playah") 
+Global p1:TPlayer = TPlayer.Create("Da Playah") 
 Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
-s1.SetName("Player ship")
+s1.SetName("Player ship") 
 s1.SetSector(sector1) 
-s1.SetCoordinates(0, 0) 
+s1.SetCoordinates(- 50000, 0) 
+s1._rotation = 90
+s1.SetOrbitalVelocity(st1, False) 
 ' assign the ship for the player to control
 s1.AssignPilot(p1) 
 
@@ -80,7 +122,7 @@ For Local i:Int = 1 To 50
 	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
 	Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
 	ship.SetSector(sector1) 
-	ship.SetCoordinates(Rand(- 200000, 200000), Rand(- 200000, 200000)) 
+	ship.SetCoordinates(Rand(- sSize, sSize), Rand(- sSize, sSize)) 
 	'ship.SetCoordinates (600, 0)
 	ship.AssignPilot(ai) 
 	ai.SetTarget(s1)
@@ -123,8 +165,14 @@ While Not KeyHit(KEY_ESCAPE)
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
 	
+	G_debugWindow.AddText("FPS: " + G_delta.GetFPS()) 
+	G_debugWindow.AddText("Vel: " + p1.GetControlledShip().GetVel()) 
+	G_debugWindow.AddText("Distance to Sol: " + Distance(p1.GetControlledShip().GetX(),  ..
+												p1.GetControlledShip().GetY(), ..
+ 												st1.GetX(), st1.GetY())) 
+	
 	If G_delta._isFrameRateLimited Then
-		G_delta.LimitFPS()       ' limit framerate
+		G_delta.LimitFPS()        ' limit framerate
 		Flip(1) 
 	Else
 		Flip(0) 
@@ -136,3 +184,38 @@ While Not KeyHit(KEY_ESCAPE)
 
 Wend
 
+Function GenerateStarTexture:TImage(r:Int) 
+	Local cairo:TCairo = TCairo.Create(TCairoImageSurface.CreateForPixmap(r * 2, r * 2)) 
+
+	Local normalizeMat:TCairoMatrix = TCairoMatrix.CreateScale(r * 2, r * 2) 
+	cairo.SetMatrix(normalizeMat) 
+	
+	Local pat:TCairoPattern = TCairoPattern.CreateRadial (0.5, 0.5, 6, 0.5, 0.5, 30) 
+	pat.AddColorStopRGBA(1, 1, 1, 0.5, 1) 
+	pat.AddColorStopRGBA(0, 0.95, 0.95, 0, 1) 
+	cairo.SetSource(pat) 
+	cairo.Arc(0.5, 0.5, 0.5, 0, 360) 
+	cairo.Fill() 
+		
+	' draw an arc of 360 degrees (a circle) with radius r.
+	'cairo.arc(r, r, r - 1, 0, 360) 
+	
+	' set draw color to yellow
+	'cairo.SetSourceRGB(1, 1, 0) 
+	
+	' fix fill color to current
+	cairo.Fill() 
+	
+	' Retrieve the image data from the pixmap
+	Local image:TImage = LoadImage(TCairoImageSurface(cairo.getTarget()).pixmap()) 
+	
+	' destroy context and resources
+	cairo.Destroy() 
+
+	Return image
+End Function
+
+Function GenerateTextures() 
+	Local pImage:TImage = GenerateStarTexture(800) 
+	TImg.StoreImg(pImage, "star_generated") 
+End Function

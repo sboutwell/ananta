@@ -1,3 +1,23 @@
+rem
+This file is part of Ananta.
+
+    Ananta is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Ananta is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Copyright 2007, 2008 Jussi Pakkanen
+endrem
+
 Rem
 	Zoomable minimap and the related types and functions
 EndRem
@@ -19,6 +39,7 @@ Type TMinimap
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
 	
 	Field _alpha:Float
+	Field _starColor:TColor
 	Field _planetColor:TColor
 	Field _shipColor:TColor
 	Field _selfColor:TColor
@@ -38,6 +59,7 @@ Type TMinimap
 		
 		' use casting to find out the type of the object
 		blip.SetBColor(_miscColor) 
+		If TStar(o) Then blip.SetBColor(_starColor) 
 		If TPlanet(o) Then blip.SetBColor(_planetColor) 
 		If TShip(o) Then blip.SetBColor(_ShipColor) 
 		
@@ -151,7 +173,8 @@ Type TMinimap
 		map._zoomFactor = map._defaultZoom
 		
 		map._alpha = 0.8
-		map._shipColor = TColor.FindColor("yellow") 
+		map._starColor = TColor.FindColor("yellow") 
+		map._shipColor = TColor.FindColor("crimson") 
 		map._selfColor = TColor.FindColor("lime") 
 		map._planetColor = TColor.FindColor("cobalt") 
 		map._velColor = TColor.FindColor("lime") 
