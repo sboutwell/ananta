@@ -7,8 +7,8 @@
 Procedurally generated (nearly) infinite universe, with hard-coded "inner systems", [http://en.wikipedia.org/wiki/Frontier:_Elite_II Elite II Frontier] style. Universe is comprised of sectors (or solar systems, if you will) connected with either hyperspace jumps or wormhole-type jumpgates. Each sector has a mixture of one or more stars and different types of planets. Procedurally generated sectors are created on-the-fly.
 
 
-=== Dynamics ===
-Newtonian stellar dynamics with scaled-down distances. All planetary bodies can be realistic in size (compared to each other), but distances are scaled down. The diameter of the whole solar system would be less than the orbit of Mercury. Space travel should take minutes instead of days. Ship sizes and performance will be hugely exaggerated. They'll zip though the solar system in a sensible time. Possible time compression for longer distances.
+=== Mechanics ===
+Newtonian stellar mechanics with scaled-down distances. All planetary bodies can be realistic in size (compared to each other), but distances are scaled down. The diameter of the whole solar system would be less than the orbit of Mercury. Space travel should take minutes instead of days. Ship sizes and performance will be hugely exaggerated. They'll zip though the solar system in a sensible time. Possible time compression for longer distances.
 
 
 === AI ===
