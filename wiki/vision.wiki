@@ -1,4 +1,4 @@
-#summary The ultimate pipe dream of what Ananta could look like.
+#summary The pipe dream of what Ananta could look like.
 #labels Phase-Requirements
 
 = The vision =
@@ -9,14 +9,16 @@ Procedurally generated (nearly) infinite universe, with hard-coded "inner system
 
 
 === Mechanics ===
-Newtonian stellar mechanics with scaled-down distances. All planetary bodies can be realistic in size (compared to each other), but distances are scaled down. The diameter of the whole solar system would be less than the orbit of Mercury. Space travel should take minutes instead of days. Ship sizes and performance will be hugely exaggerated. They'll zip though the solar system in a sensible time. Possible time compression for longer distances.
+Newtonian stellar mechanics with scaled-down distances. All planetary bodies can be realistic in size (compared to each other), but distances are radically scaled down. The diameter of the whole solar system would be less than the orbit of Mercury. Space travel should take minutes instead of days. Ship sizes and performance will be hugely exaggerated. They'll zip though the solar system in a sensible time. Possible time compression for longer distances.
 
 
 === AI ===
-Dynamic multilayered AI that is tracked (or some of it is) across the entire universe. AI does decisions based on pre-determined behavior style, whether they are more inclined towards trading, scavenging, mining, piracy, etc. 
+Dynamic multilayered AI that is tracked across the entire universe. AI does decisions based on pre-determined behavior style, whether they are more inclined towards trading, scavenging, mining, piracy, bounty hunting etc. AI does not 'cheat': the cargo they carry is bought, mined, scavenged or pirated by themselves. The fuel they burn has to be replenished. The money they carry has to be earned. AI with very little money tends to do things helping them to earn some. AI with poor equipment for the job they are doing will try to retrofit if they have some extra money. If not, they'll try to earn it.
 
 
 === Economy ===
-Living economy that fluctuates with supply/demand. Something of a hybrid between Software Refinery's [http://en.wikipedia.org/wiki/Hardwar Hardwar] and Egosoft's [http://www.egosoft.com/games/x/info_en.php X-series]. Raw materials are mined or grown, which are refined into components and other semi-finished goods, from which the finished products are made of. Finished goods are always consumed by someone, either by general population, other businesses, military or AI pilots. Population's base demand for different kinds of goods are affected by state of the world's economy, which will fluctuate semi-randomly. 
+Living economy that fluctuates with supply/demand. Something of a hybrid between Software Refinery's [http://en.wikipedia.org/wiki/Hardwar Hardwar] and Egosoft's [http://www.egosoft.com/games/x/info_en.php X-series]. Raw materials are mined or grown, which are refined into components and other semi-finished goods, from which the finished products are made of. Finished goods are always consumed by someone, either by general population, other businesses, military or AI pilots. Population's base demand for different kinds of goods is affected by state of the world's economy, which will fluctuate semi-randomly. 
 
+
+=== Business ===
 Everything in the game can be manufactured, owned and traded, including ships, factories and space stations. Player and AI can buy property and use it for own businesses. Businesses can run without player's intervention using hired employees and AI traders as suppliers. Player can run any business ranging from raw material production to final assembly. Businesses can exist on planets or space stations. 
