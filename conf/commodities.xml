@@ -30,19 +30,19 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- hull name -->
         <unit>piece</unit>
         <!-- unit of measurement (piece or kg) -->
-        <mass>4000</mass>
+        <mass>6000</mass>
         <!-- empty hull mass in kg -->
         <avgprice>1200</avgprice>
         <!-- average price -->
         <volume>600</volume>
         <!-- hull external volume in m^3 (note: not INTERNAL volume!) -->
-        <image>ship1.png</image>
+        <image>ship2.png</image>
         <!-- the pic representing this hull -->
-        <scale>0.3</scale>
+        <scale>0.05</scale>
         <!-- the scale of the visual image (1 = full resolution of the image) -->
-        <size>45</size>
+        <size>43</size>
         <!-- the diameter of the hull in meters (for radar blip size, rotational physics and rough collision detection) -->
-        <thrusterpos>80</thrusterpos>
+        <thrusterpos>40</thrusterpos>
         <!-- distance (in meters) of the rotation thrusters from the center of the mass -->
         <maxspeed>100</maxspeed>
         <!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
@@ -101,6 +101,16 @@ Copyright 2007, 2008 Jussi Pakkanen
             <location>external</location>
             <!-- internal/external, affects received damage -->
           </engineslot1>
+          <engineslot2>
+            <!-- slot ID -->
+            <type>engine</type>
+            <volume>5</volume>
+            <!-- the volume of the slot in m^3 -->
+            <exposure>tail</exposure>
+            <!-- main engines always point behind... other directions have no effect -->
+            <location>external</location>
+            <!-- internal/external, affects received damage -->
+          </engineslot2>
           <equipmentslot1>
             <!-- slot ID -->
             <type>equipment</type>
@@ -134,21 +144,21 @@ Copyright 2007, 2008 Jussi Pakkanen
       </samplehull1>
       <samplehull2>
         <!-- Hull ID -->
-        <name>Cruiser</name>
+        <name>Long range fighter</name>
         <!-- hull name -->
         <unit>piece</unit>
         <!-- unit of measurement (piece or kg) -->
-        <mass>30000</mass>
+        <mass>12000</mass>
         <!-- empty hull mass in kg -->
         <avgprice>12000</avgprice>
         <!-- average price -->
         <volume>9600</volume>
         <!-- hull external volume in m^3 (note: not INTERNAL volume!) -->
-        <image>cruiser.png</image>
+        <image>ship3.png</image>
         <!-- the pic representing this hull -->
-        <scale>0.1</scale>
+        <scale>0.08</scale>
         <!-- the scale of the visual image (1 = full resolution of the image) -->
-        <size>100</size>
+        <size>70</size>
         <!-- the diameter of the hull in meters (for radar blip size, rotational physics and rough collision detection) -->
         <thrusterpos>75</thrusterpos>
         <!-- distance (in meters) of the rotation thrusters from the center of the mass -->
@@ -295,7 +305,7 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- average price -->
         <volume>1</volume>
         <!-- thruster volume in m^3 -->
-        <thrust>100000</thrust>
+        <thrust>200000</thrust>
         <!-- thrust in newtons -->
         <fueltype>rocketfuel</fueltype>
         <!-- the type of fuel this thruster burns -->

@@ -19,13 +19,11 @@ Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
 SuperStrict
-Import bah.Libxml		' XML parser library
-Import bah.Cairo		' vector graphics library
-'Import bah.random
-
+Import bah.Libxml		' XML parser library wrapper for BlitzMax by Bruce A. Henderson
+Import bah.Cairo		' vector graphics library wrapper for BlitzMax by Bruce A. Henderson
 
 SetGraphicsDriver GLMax2DDriver() 
-AppTitle = ""
+AppTitle = "Ananta"
 Include "includes/i_constants.bmx"					'Global constants. All constants must begin with C_
 Include "includes/i_globals.bmx"					'Global variables and types. All globals must begin with G_
 Include "includes/functions/f_XMLfunctions.bmx"		'Functions related to XML loading, parsing and searching
@@ -53,60 +51,44 @@ TViewport.InitGraphicsMode()		' lets go graphical using the values read from the
 TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
 TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
-GenerateTextures()   		' generate some sprites/textures as new image files
+GenerateTextures()   		' generate some vector textures as new image files
 
-' generate a sector
-Local sector1:TSector = TSector.Create(0,0,"Sol")
-Local activeSector:TSector = sector1 ' set the newly created sector as the "active sector"
-
-' create a star and a bunch of planets
-Local sSize:Int = 250000	' sector size
-SeedRnd(MilliSecs()) 
-Local st1:TStar = TStar.Create(0, 0, sector1, 100000, 10, "Sol") 
-st1._image = TImg.LoadImg("star_generated") 
-'st1._image = TImg.LoadImg("jupiter.png") 
-'st1._image = pImage
-st1._rotation = -90
-st1._scaleX = 12
-st1._scaleY = st1._scaleX
-st1._size = CalcImageSize(st1._image, False) * st1._scaleX
-st1._mass = (st1._scaleX ^ 2) * 100000000
-
-
-For Local i:Int = 1 To 50
-	'Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
-	Local pl2:TPlanet = TPlanet.Create(Rand(- sSize, sSize), Rand(- sSize, sSize), sector1, 100000, 10, "Jupiter " + i) 
-	pl2._image = TImg.LoadImg("jupiter.png") 
-	'pl2._image = TImg.LoadImg("star_generated") 
-	pl2._rotation=-90
-	pl2._scaleX = Rnd(0.5, 2) 
-	pl2._scaleY = pl2._scaleX
-	pl2._size = CalcImageSize(pl2._image, False) * pl2._scaleX
-	pl2._mass = (pl2._scaleX ^ 2) * Rand(30000000, 50000000) 
-	pl2._hasGravity = True
-Next
-
-For Local i:Int = 1 To 50
-	Local ast:TAsteroid = TAsteroid.Create("asteroid.png", sector1, Rand(- sSize, sSize), Rand(- sSize, sSize), Rand(10, 500)) 
-	ast._scaleX = Rnd(0.1, 1.5) 
-	ast._scaleY = ast._scaleX
-	ast._size = CalcImageSize(ast._image, False) * ast._scaleX
-	ast._mass = (ast._scaleX ^ 2) * Rand(2000, 5000) 
-	ast.SetRotationSpd(Rand(- 200, 200)) 
-	ast.SetXVel(Rand(- 500, 500)) 
-	ast.SetYVel(Rand(- 500, 500)) 
-Next
+Local sSize:Int = 500000	' sector size
+GenerateTestUniverse(sSize)
 
 ' generate the player and player's ship
 Global p1:TPlayer = TPlayer.Create("Da Playah") 
 Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
 s1.SetName("Player ship") 
-s1.SetSector(sector1) 
-s1.SetCoordinates(- 50000, 0) 
+s1.SetSector(TSector.GetActiveSector()) 
 s1._rotation = 90
-s1.SetOrbitalVelocity(st1, False) 
 ' assign the ship for the player to control
 s1.AssignPilot(p1) 
+
+
+' find the closest planet to the center and make the player ship orbit it
+Local orbitedPlanet:TStellarObject
+Local minDist:Double = 50000000
+For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
+	Local dist:Double = Distance(0, 0,obj.GetX(),obj.GetY())
+	If TPlanet(obj) And dist < minDist Then
+		orbitedPlanet = obj
+		minDist = dist
+	EndIf
+Next
+s1.SetCoordinates(orbitedPlanet.GetX() + OrbitedPlanet.GetSize() * 0.7, orbitedPlanet.GetY()) 
+s1.SetOrbitalVelocity(orbitedPlanet, False) 
+
+' Create one asteroid to orbit the same planet
+Local ast:TAsteroid = TAsteroid.Create("asteroid.png", TSector.GetActiveSector(), 1000, 1000, 500) 
+ast._scaleX = orbitedPlanet.GetScaleX()
+ast._scaleY = ast._scaleX
+ast._size = CalcImageSize(ast._image, False) * ast._scaleX
+ast._mass = (ast._scaleX ^ 2) * Rand(2000, 5000) 
+ast.SetRotationSpd(Rand(- 50, 50)) 
+ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75,1.1))
+ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75,1.1))
+ast.SetOrbitalVelocity(orbitedPlanet,True)
 
 'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, sector1, 0.1, 0.3, 400, 0.07) 
 'part1.SetRandomDir(2) 
@@ -118,18 +100,17 @@ viewport.CreateMsg("Total ship mass: " + s1.GetMass())
 
 ' set up bunch of AI pilots for testing
 
-For Local i:Int = 1 To 50
+For Local i:Int = 1 To 25
 	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
 	Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
-	ship.SetSector(sector1) 
+	ship.SetSector(TSector.GetActiveSector()) 
 	ship.SetCoordinates(Rand(- sSize, sSize), Rand(- sSize, sSize)) 
 	'ship.SetCoordinates (600, 0)
 	ship.AssignPilot(ai) 
-	ai.SetTarget(s1)
+	ai.SetTarget(s1)		' make the AI ship try to point at the player ship
 	ship._xVel = Rand(- 100, 100) 
 	ship._yVel = Rand(- 100, 100) 
 Next
-
 
 viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
 
@@ -157,7 +138,7 @@ While Not KeyHit(KEY_ESCAPE)
 	viewport.DrawLevel()
 	
 	' draw each object in the currently active sector
-	activeSector.DrawAllInSector(viewport) 
+	TSector.GetActiveSector().DrawAllInSector(viewport) 
 
 	' update and draw particles
 	TParticle.UpdateAndDrawAll() 
@@ -166,10 +147,7 @@ While Not KeyHit(KEY_ESCAPE)
 	viewport.DrawMisc() 
 	
 	G_debugWindow.AddText("FPS: " + G_delta.GetFPS()) 
-	G_debugWindow.AddText("Vel: " + p1.GetControlledShip().GetVel()) 
-	G_debugWindow.AddText("Distance to Sol: " + Distance(p1.GetControlledShip().GetX(),  ..
-												p1.GetControlledShip().GetY(), ..
- 												st1.GetX(), st1.GetY())) 
+	G_debugWindow.AddText("Velocity: " + p1.GetControlledShip().GetVel()) 
 	
 	If G_delta._isFrameRateLimited Then
 		G_delta.LimitFPS()        ' limit framerate
@@ -184,38 +162,66 @@ While Not KeyHit(KEY_ESCAPE)
 
 Wend
 
-Function GenerateStarTexture:TImage(r:Int) 
-	Local cairo:TCairo = TCairo.Create(TCairoImageSurface.CreateForPixmap(r * 2, r * 2)) 
-
-	Local normalizeMat:TCairoMatrix = TCairoMatrix.CreateScale(r * 2, r * 2) 
-	cairo.SetMatrix(normalizeMat) 
-	
-	Local pat:TCairoPattern = TCairoPattern.CreateRadial (0.5, 0.5, 6, 0.5, 0.5, 30) 
-	pat.AddColorStopRGBA(1, 1, 1, 0.5, 1) 
-	pat.AddColorStopRGBA(0, 0.95, 0.95, 0, 1) 
-	cairo.SetSource(pat) 
-	cairo.Arc(0.5, 0.5, 0.5, 0, 360) 
-	cairo.Fill() 
-		
-	' draw an arc of 360 degrees (a circle) with radius r.
-	'cairo.arc(r, r, r - 1, 0, 360) 
-	
-	' set draw color to yellow
-	'cairo.SetSourceRGB(1, 1, 0) 
-	
-	' fix fill color to current
-	cairo.Fill() 
-	
-	' Retrieve the image data from the pixmap
-	Local image:TImage = LoadImage(TCairoImageSurface(cairo.getTarget()).pixmap()) 
-	
-	' destroy context and resources
-	cairo.Destroy() 
-
-	Return image
+Function GenerateTextures() 
+	TImg.StoreImg(TStar.GenerateStarTexture(800) , "star_generated") 
 End Function
 
-Function GenerateTextures() 
-	Local pImage:TImage = GenerateStarTexture(800) 
-	TImg.StoreImg(pImage, "star_generated") 
+Function GenerateTestUniverse(sSize:int)
+	Local asteroids:Int = 40
+	Local planets:Int = 50
+	
+	' generate a sector
+	Local sector1:TSector = TSector.Create(0,0,"Sol")
+	sector1.SetAsActive() ' set the newly created sector as the "active sector"
+
+	' ================ randomize sector and planetary object for testing ===================
+	SeedRnd(MilliSecs()) 
+	' create a star
+	Local st1:TStar = TStar.Create(0, 0, sector1, 100000, 10, "Sol") 
+	st1._image = TImg.LoadImg("star_generated") 
+	st1._rotation = -90
+	st1._scaleX = 20
+	st1._scaleY = st1._scaleX
+	st1._size = CalcImageSize(st1._image, False) * st1._scaleX
+	st1._mass = (st1._scaleX ^ 2) * 20000000
+	
+	' create some planets
+	For Local i:Int = 1 To planets
+		'Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
+		Local pl2:TPlanet = TPlanet.Create(Rand(- sSize, sSize), Rand(- sSize, sSize), sector1, 100000, 10, "Jupiter " + i) 
+		
+		' Re-randomize the coordinates if the planet is too close to the sun 
+		Local again:Int = False
+		Repeat
+			If Distance(st1.GetX(),st1.GetY(),pl2.GetX(),pl2.GetY()) < st1.GetSize()*1.2 Then 
+				pl2.SetX(rand(-sSize,sSize))
+				pl2.SetY(rand(-sSize,sSize))
+				again = TRUE
+				DebugLog("Planet " + i + " too close to the sun, repositioning...")
+			Else
+				again = FALSE
+			EndIf
+		Until again = False
+		
+		pl2._image = TImg.LoadImg("jupiter.png") 
+		pl2._rotation=-90
+		pl2._scaleX = Rnd(0.5, 2) 
+		pl2._scaleY = pl2._scaleX
+		pl2._size = CalcImageSize(pl2._image, False) * pl2._scaleX
+		pl2._mass = (pl2._scaleX ^ 2) * Rand(30000000, 50000000) 
+		pl2._hasGravity = True
+	Next
+	
+	' create some asteroids
+	For Local i:Int = 1 To asteroids
+		Local ast:TAsteroid = TAsteroid.Create("asteroid.png", sector1, Rand(- sSize, sSize), Rand(- sSize, sSize), Rand(10, 500)) 
+		ast._scaleX = Rnd(0.1, 1.5) 
+		ast._scaleY = ast._scaleX
+		ast._size = CalcImageSize(ast._image, False) * ast._scaleX
+		ast._mass = (ast._scaleX ^ 2) * Rand(2000, 5000) 
+		ast.SetRotationSpd(Rand(- 200, 200)) 
+		ast.SetXVel(Rand(- 1500, 1500)) 
+		ast.SetYVel(Rand(- 1500, 1500)) 
+	Next
+		
 End Function

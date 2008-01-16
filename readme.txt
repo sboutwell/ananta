@@ -15,7 +15,15 @@ This file is part of Ananta.
 
 
 Copyright 2007, 2008 Jussi Pakkanen
-frosty_79(|at|)airpost.net
+vilumax (_at_) gmail (_dot_) com
+
+
+Credits:
+Bruce A. Henderson for libxml, Cairo and fontconfig wrappers
+Darren A. Sexton for BSG ship sprites
+Jim Stevenson for B5 ship sprites (shipschematics.net)
+
+
 
 
 Ananta pre-alpha preview version
@@ -29,17 +37,25 @@ adjust <resolution> to a more comfortable setting.
 
 
 Controls:
-	Left arrow		- rotate ship left
+	Left arrow	- rotate ship left
 	Right arrow 	- rotate ship right
 	Up arrow		- fire main engines
 	Down arrow 	- fire reverse engines
 	
-	z			- zoom in
-	x			- zoom out
+	z		- zoom in
+	x		- zoom out
 	shift+z		- minimap zoom in
 	shift+x		- minimap zoom out
 	ctrl+z		- reset zoom
 	ctrl+x		- reset minimap zoom
-	ESC			- exit game
+	ESC		- exit game
+	F1		- show the control help above
 
+Sector map legend:
+	Blue 		- planet
+	Red 		- ship
+	Cyan 		- asteroid
+	Yellow		- star
+	Blue line		- velocity vector
 
+In this randomly generated scenario you are starting around the orbit of a planet with collision detection off. Zoom out (shift+x) in sector map to view the rest of the sector in the minimap. There is really not much to do other than explore the sector and play around with the various gravity wells. For practice, try to achieve a circular orbit around any planet.

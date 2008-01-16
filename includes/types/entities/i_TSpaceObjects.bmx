@@ -50,6 +50,11 @@ Type TSpaceObject Abstract
 	Field _scaleY:Float = 1				
 	Field _name:String = "Nameless"	' The name of the object
 	Field _isShownOnMap:Int = False		' flag to indicate minimap visibility
+	Field _hasGravity:Int	= False			' a true-false flag to indicate gravitational pull
+	Field _xVel:Double						' velocity vector x-component
+	Field _yVel:Double						' velocity vector y-component
+	Field _rotationSpd:Float				' rotation speed in degrees per second
+	Field _affectedByGravity:Int = True
 
 	' attachment-related fields
 	Field _L_TopAttachments:TList		' top attachments to the object	(visually above this object)
@@ -140,6 +145,42 @@ Type TSpaceObject Abstract
 		End If
 	End Method
 
+	Method GetScaleX:Float()
+		Return _scaleX
+	End Method
+
+	Method GetScaleY:Float()
+		Return _scaleY
+	End Method
+	
+	Method GetVel:Float() 
+		Return Sqr(_xVel ^ 2 + _yVel ^ 2) 
+	End Method
+	
+	Method GetXVel:Double() 
+		Return _xVel
+	End Method
+	
+	Method GetYVel:Double() 
+		Return _yVel
+	End Method
+	
+	Method GetRotSpd:Float()
+		Return _rotationSpd
+	End Method
+
+	Method SetXVel(x:Double) 
+		_xVel = x
+	End Method
+	
+	Method SetYVel(y:Double) 
+		_yVel = y
+	End Method
+	
+	Method SetRotationSpd(r:Float) 
+		_rotationSpd = r
+	End Method
+		
 	Method GetMass:Float() 
 		Return _mass
 	End Method
@@ -172,6 +213,14 @@ Type TSpaceObject Abstract
 		_y = coord
 	End Method
 	
+	Method SetScaleX(s:Float)
+		_scaleX = s
+	End Method
+	
+	Method SetScaleY(s:Float)
+		_scaleY = s
+	End Method
+
 	Method SetName(s:String) 
 		_name = s
 	End Method
@@ -202,10 +251,36 @@ EndType
 ' *** STATIONARY STELLAR OBJECTS
 Type TStellarObject Extends TSpaceObject Abstract
 	Global g_L_StellarObjects:TList			' a list to hold all major stellar bodies (Stars, planets and space stations)
-	Field _hasGravity:Int	= False			' a true-false flag to indicate gravitational pull
 EndType
 
 Type TStar Extends TStellarObject
+
+	' uses Cairo vector graphics library to generate a star image of a radius supplied by a parameter
+	Function GenerateStarTexture:TImage(r:Int) 
+		Local cairo:TCairo = TCairo.Create(TCairoImageSurface.CreateForPixmap(r * 2, r * 2)) 
+	
+		Local normalizeMat:TCairoMatrix = TCairoMatrix.CreateScale(r * 2, r * 2) 
+		cairo.SetMatrix(normalizeMat) 
+		
+		Local pat:TCairoPattern = TCairoPattern.CreateRadial (0.5, 0.5, 6, 0.5, 0.5, 30) 
+		pat.AddColorStopRGBA(1, 1, 1, 0.5, 1) 
+		pat.AddColorStopRGBA(0, 0.95, 0.95, 0, 1) 
+		cairo.SetSource(pat) 
+		cairo.Arc(0.5, 0.5, 0.5, 0, 360) 
+		cairo.Fill() 
+			
+		' fix fill color to current
+		cairo.Fill() 
+		
+		' Retrieve the image data from the pixmap
+		Local image:TImage = LoadImage(TCairoImageSurface(cairo.getTarget()).pixmap()) 
+		
+		' destroy context and resources
+		cairo.Destroy() 
+	
+		Return image
+	End Function
+		
 	Function Create:TStar(x:Int=0,y:Int=0,sector:TSector,mass:Long,size:Int,name:String)
 		Local st:TStar = New Tstar				' create an instance
 		st._name = name								' give a name
@@ -269,40 +344,8 @@ EndType
 ' *** MOVING SPACE OBJECTS
 Type TMovingObject Extends TSpaceObject Abstract
 	Global g_L_MovingObjects:TList			' a list to hold all moving objects
-	Field _xVel:Double						' velocity vector x-component
-	Field _yVel:Double						' velocity vector y-component
-	Field _rotationSpd:Float				' rotation speed in degrees per second
-	Field _affectedByGravity:Int = True
 
-	Method GetVel:Float() 
-		Return Sqr(_xVel ^ 2 + _yVel ^ 2) 
-	End Method
-	
-	Method GetXVel:Double() 
-		Return _xVel
-	End Method
-	
-	Method GetYVel:Double() 
-		Return _yVel
-	End Method
-	
-	Method GetRotSpd:Float()
-		Return _rotationSpd
-	End Method
-
-	Method SetXVel(x:Double) 
-		_xVel = x
-	End Method
-	
-	Method SetYVel(y:Double) 
-		_yVel = y
-	End Method
-	
-	Method SetRotationSpd(r:Float) 
-		_rotationSpd = r
-	End Method
-	
-	Method GravityPull(gs:TStellarObject) 
+	Method GravityPull(gs:TSpaceObject) 
 		' get the X and Y coordinates of the gravity source
 		Local gsX:Double = gs.GetX() 
 		Local gsY:Double = gs.GetY() 
@@ -332,8 +375,9 @@ Type TMovingObject Extends TSpaceObject Abstract
 	
 	Method ApplyGravity() 
 		If Not _affectedByGravity Then Return
-	
+		
 		For Local gs:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
+'			If gs = Self Then Continue						' don't apply gravity if gravity source is self!
 			If gs._sector <> Self._sector Then Continue 	' return if the object is in another sector
 			If gs._hasGravity = False Then Continue			' don't pull if the object does not exert gravity
 			GravityPull(gs) 
@@ -434,8 +478,15 @@ Type TShip Extends TMovingObject
 			EndIf
 			
 			'rem
-			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 28 * Cos(_rotation), _y - 28 * Sin(_rotation), 0.1, 0.07, 0.3) 
+			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) + 2*Sin(_rotation), _y - 27 * Sin(_rotation) - 2*Cos(_rotation), 0.1, 0.03, 0.3) 
 			Local randDir:Float = Rand(- 2, 2) 
+			part._xVel = _xVel - 300 * Cos(_rotation + randDir) 
+			part._yVel = _yVel - 300 * Sin(_rotation + randDir) 
+			part._rotation = _rotation
+			'endrem
+			'rem
+			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) - 2*Sin(_rotation), _y - 27 * Sin(_rotation) + 2*Cos(_rotation), 0.1, 0.03, 0.3) 
+			randDir:Float = Rand(- 2, 2) 
 			part._xVel = _xVel - 300 * Cos(_rotation + randDir) 
 			part._yVel = _yVel - 300 * Sin(_rotation + randDir) 
 			part._rotation = _rotation
@@ -447,16 +498,16 @@ Type TShip Extends TMovingObject
 			
 			'rem
 			' add the engine trail effect
-			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 5 * Cos(_rotation) + 10 * Sin(_rotation), _y + 5 * Sin(_rotation) - 10 * Cos(_rotation), 0.1, 0.04, 0.2) 
+			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) + 7 * Sin(_rotation), _y + 6 * Sin(_rotation) - 7 * Cos(_rotation), 0.1, 0.03, 0.1) 
 			Local randDir:Float = Rand(- 2, 2) 
-			part._xVel = _xVel - 4 * _throttlePosition * _reverseAcceleration * Cos(_rotation + randDir) 
-			part._yVel = _yVel - 4 * _throttlePosition * _reverseAcceleration * Sin(_rotation + randDir) 
+			part._xVel = _xVel - 100 * _throttlePosition * Cos(_rotation + randDir) 
+			part._yVel = _yVel - 100 * _throttlePosition * Sin(_rotation + randDir) 
 			part._rotation = _rotation + 180
 			
-			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 5 * Cos(_rotation) - 10 * Sin(_rotation), _y + 5 * Sin(_rotation) + 10 * Cos(_rotation), 0.1, 0.04, 0.2) 
+			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) - 7 * Sin(_rotation), _y + 6 * Sin(_rotation) + 7 * Cos(_rotation), 0.1, 0.03, 0.1) 
 			randDir:Float = Rand(- 2, 2) 
-			part._xVel = _xVel - 4 * _throttlePosition * _reverseAcceleration * Cos(_rotation + randDir) 
-			part._yVel = _yVel - 4 * _throttlePosition * _reverseAcceleration * Sin(_rotation + randDir) 
+			part._xVel = _xVel - 100 * _throttlePosition * Cos(_rotation + randDir) 
+			part._yVel = _yVel - 100 * _throttlePosition * Sin(_rotation + randDir) 
 			part._rotation = _rotation + 180
 			'endrem
 		EndIf

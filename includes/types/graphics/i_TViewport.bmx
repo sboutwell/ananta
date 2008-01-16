@@ -53,8 +53,10 @@ Type TViewport
 	Field _zoomFactor:Float = 1
 	Field _zoomAmount:Float 		' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5
+	Field _zoomStep:Float = 0.5			' the amount added to the _zoomAmount per each second of zooming
 	Field _isZooming:Int = False	' flag to indicate if we're zooming in or out
-	
+
+		
 	Method InitViewportVariables()
 
 		Local xmlfile:TxmlDoc = parseXMLdoc(c_settingsFile)
@@ -163,16 +165,8 @@ Type TViewport
 		SetAlpha(1)
 		SetColor(255, 255, 255) 
 		
-		DrawText "left   - rotate left", viewport.GetResX() - 190, 200
-		DrawText "right  - rotate right", viewport.GetResX() - 190, 215
-		DrawText "up     - thrust", viewport.GetResX() - 190, 230
-		DrawText "down   - reverse thrust", viewport.GetResX() - 190, 245
-		DrawText "z/x    - zoom in/out", viewport.GetResX() - 190, 275
-		DrawText "ctrl+z - reset zoom", viewport.GetResX() - 190, 290
-		DrawText "Z/X    - map zoom in/out", viewport.GetResX() - 190, 305
-		DrawText "ctrl+x - reset map zoom", viewport.GetResX() - 190, 320
-		DrawText "ESC    - exit", viewport.GetResX() - 190, 350
-	
+		' draw some miscellaneous information
+		DrawText "Hold F1 for controls", viewport.GetResX() - 190, GetResY()-25
 	EndMethod
 
 	Method GetCenteredObject:TSpaceObject() 
@@ -234,13 +228,13 @@ Type TViewport
 	
 	Method ZoomIn() 
 		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta() 
-		_zoomAmount = _zoomAmount + 0.2 * G_delta.GetDelta() 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
 		_isZooming = True
 	End Method
 	
 	Method ZoomOut() 
 		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta() 
-		_zoomAmount = _zoomAmount + 0.2 * G_delta.GetDelta() 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
 		_isZooming = True
 	End Method
 	
@@ -249,9 +243,23 @@ Type TViewport
 		_isZooming = False
 	End Method
 	
+	Method ShowInstructions()
+		G_DebugWindow.AddText("")
+		G_DebugWindow.AddText("============== Controls ==============")
+		G_DebugWindow.AddText("left                 - rotate left")
+		G_DebugWindow.AddText("right                - rotate right")
+		G_DebugWindow.AddText("up                   - thrust")
+		G_DebugWindow.AddText("down                 - reverse thrust")
+		G_DebugWindow.AddText("z/x                  - zoom in/out")
+		G_DebugWindow.AddText("ctrl+z               - reset zoom")
+		G_DebugWindow.AddText("shift+z / shift+x    - map zoom in/out")
+		G_DebugWindow.AddText("ctrl+x               - reset map zoom")
+		G_DebugWindow.AddText("ESC                  - exit")
+	End Method
+	
 	Function InitGraphicsMode()
 		Graphics g_ResolutionX, g_ResolutionY, g_BitDepth, g_RefreshRate, 0
-		'Graphics g_ResolutionX, g_ResolutionY, 0, 0, 16
+		HideMouse()
 	EndFunction
 
 	Function InitViewportGlobals(xmlfile:TxmlDoc)

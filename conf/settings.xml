@@ -34,8 +34,8 @@ Copyright 2007, 2008 Jussi Pakkanen
     <!-- meaning the simulation will actually pause after maxdelta amount of time has passed since the last physics iteration -->
     <maxdelta>500</maxdelta>
     <resolution>
-      <x>800</x>
-      <y>600</y>
+      <x>1024</x>
+      <y>768</y>
     </resolution>
     <!-- main viewport marginals in pixels -->
     <viewportmarginals>

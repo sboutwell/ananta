@@ -71,6 +71,9 @@ Type TPlayer Extends TPilot
 			viewport.GetMiniMap().StopZoom() 
 		EndIf
 
+		If KeyDown(KEY_F1) Then
+			viewport.ShowInstructions()
+		End If
 		
 		' relase controls if keyboard keys are released
 		If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) 		_controlledShip.SetThrottle(0)
