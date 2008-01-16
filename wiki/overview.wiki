@@ -1,5 +1,0 @@
-#summary Ananta development overview
-
-= Introduction =
-
-These Wiki pages contain various information regarding Ananta development.
