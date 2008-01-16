@@ -4,7 +4,7 @@
 
 
 === Universe ===
-Procedurally generated (nearly) infinite universe, with hard-coded "inner systems", Elite II Frontier style. Universe comprises of sectors (solar systems) connected with either hyperspace jumps or wormhole-type jumpgates. Each sector has a mixture of one or more stars and different types of planets. Procedurally generated sectors are created on-the-fly.
+Procedurally generated (nearly) infinite universe, with hard-coded "inner systems", [http://en.wikipedia.org/wiki/Frontier:_Elite_II Elite II Frontier] style. Universe is comprised of sectors (or solar systems, if you will) connected with either hyperspace jumps or wormhole-type jumpgates. Each sector has a mixture of one or more stars and different types of planets. Procedurally generated sectors are created on-the-fly.
 
 
 === Dynamics ===
