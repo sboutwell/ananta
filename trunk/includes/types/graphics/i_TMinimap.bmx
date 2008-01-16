@@ -37,6 +37,7 @@ Type TMinimap
 	Field _zoomFactor:Float
 	Field _zoomAmount:Float 			' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
+	Field _zoomStep:Float = 0.5			' the amount added to the _zoomAmount per each second of zooming
 	
 	Field _alpha:Float
 	Field _starColor:TColor
@@ -108,8 +109,25 @@ Type TMinimap
 		Local ship:TShip = TShip(viewport.GetCenteredObject()) 
 		If Not ship Then Return		' return if the object is not a ship
 		DrawAttitudeIndicator(ship)    ' draw the T-shaped attitude indicator to the middle of the map
+		
+		' draw the background tint
+		DrawBackGround()
+		
+		' draw the minimap title
+		SetAlpha(1)
+		SetColor(255,255,255)
+		SetScale(1,1)
+		SetRotation(0)
+		DrawText("Sector map",self._midX-35,self._StartY)
 	End Method	
 		
+	Method DrawBackground()
+		SetScale(1,1)
+		SetAlpha(0.15)
+		SetColor(64,64,255)
+		DrawRect(_startX,_startY,_width,_height)
+	End Method
+	
 	Method DrawVelocityVector(obj:TMovingObject) 
 		TColor.SetTColor(_velColor) 
 		SetAlpha(0.3) 
@@ -146,12 +164,12 @@ Type TMinimap
 	
 	Method ZoomIn() 
 		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta() 
-		_zoomAmount = _zoomAmount + 0.2 * G_delta.GetDelta() 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
 	End Method
 	
 	Method ZoomOut() 
 		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta() 
-		_zoomAmount = _zoomAmount + 0.2 * G_delta.GetDelta() 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
 	End Method
 	
 	Method StopZoom() 
@@ -169,7 +187,7 @@ Type TMinimap
 		map._midX = x + w / 2.0
 		map._midY = y + h / 2.0
 		
-		map._defaultZoom = 0.2
+		map._defaultZoom = 3
 		map._zoomFactor = map._defaultZoom
 		
 		map._alpha = 0.8

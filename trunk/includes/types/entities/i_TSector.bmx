@@ -21,6 +21,7 @@ endrem
 ' TSector represents a star system
 Type TSector Final
 	Global g_L_Sectors:TList					' a list to hold all sectors
+	Global _g_ActiveSector:TSector				' the sector the player is in
 	Field _name:String							' Name of the sector
 	Field _x:Int,_y:Int							' Sector's x-y-coordinates in the galaxy map
 	Field _L_SpaceObjects:TList					' a list to hold all TSpaceObjects in this sector
@@ -40,6 +41,13 @@ Type TSector Final
 		_L_SpaceObjects.AddLast obj
 	EndMethod
 
+	Method SetAsActive()
+		_g_ActiveSector = self
+	End Method
+	
+	Function GetActiveSector:TSector()
+		Return _g_ActiveSector
+	End Function
 	
 	Function Create:TSector(x:Int,y:Int,name:String)
 		Local se:TSector = New TSector								' create an instance of the sector
