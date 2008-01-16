@@ -1,13 +1,15 @@
 #summary The ultimate pipe-dream of what Ananta could look like.
 
-== The vision ==
+= The vision =
 
-=== The Universe ===
+
+=== Universe ===
 Procedurally generated (nearly) infinite universe, with hard-coded "inner systems", Elite II Frontier style. Universe comprises of sectors (solar systems) connected with either hyperspace jumps or wormhole-type jumpgates. Each sector has a mixture of one or more stars and different types of planets. Procedurally generated sectors are created on-the-fly.
 
 
 === Dynamics ===
 Newtonian stellar dynamics with scaled-down distances. All planetary bodies can be realistic in size (compared to each other), but distances are scaled down. The diameter of the whole solar system would be less than the orbit of Mercury. Space travel should take minutes instead of days. Ship sizes and performance will be hugely exaggerated. They'll zip though the solar system in a sensible time. Possible time compression for longer distances.
+
 
 === AI ===
 Dynamic multilayered AI that is tracked (or some of it is) across the entire universe. AI does decisions based on pre-determined behavior style, whether they are more inclined towards trading, scavenging, mining, piracy, etc. 
