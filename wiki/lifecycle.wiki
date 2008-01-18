@@ -11,8 +11,8 @@ I started with a landscape with few hills, a cloud and a tree. It was simple but
 
 Few months later it had a river in the foreground teeming with life: ducks, alligators, turtles, etc. It also had a small fisherman's hut with its occupant angling on a pier.
 
-One year later I had added a huge metropolitan city in the background with many skyscrapers, complete with rows of 40-story windows with incredibly small details. Aircraft were flying over the sky dropping skydivers, and there was a distant thunderstorm far in the horizon. It had more details than Don Rosa's Donald Duck stories.
+By the end of the semester I had added a huge skyscraper city in the background, complete with rows of 40-story windows with incredibly small details. Aircraft were flying over the sky dropping skydivers, and there was a distant thunderstorm far in the horizon. It had more details than Don Rosa's Donald Duck stories.
 
-Ananta will be something similar. The initial release will be simple but a working game. Maybe not the full economic simulator described in the pipe dream page, but something that will be fun play nevertheless. The beauty of games of this genre is that once the basic engine is built and turned into a working game, you can always keep expanding and adding more features to it. The intention is that Ananta will never be finished. In fact, that's one meaning behind the working title in the first place: Ananta is a sanskrit word for 'eternal', 'endless' or 'infinite'.
+Ananta will be something similar. The initial release will be a simple but working game; maybe not the full economic simulator described in the pipe dream page, but something that will be fun to play nevertheless. The beauty of games of this genre is that once the basic engine is built and turned into something playable, you can always keep expanding and adding more features to it. The intention is that Ananta will never be finished. In fact, that's one meaning behind the working title in the first place: Ananta is a sanskrit word for 'eternal', 'endless' or 'infinite'.
 
 A game project with no deadlines or set goals. How cool is that? ;)
