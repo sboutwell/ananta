@@ -1,4 +1,4 @@
-#summary The vision of what Ananta should look like in the future.
+#summary The pipe dream of what Ananta could look like in the distant future.
 #labels Phase-Requirements
 
 = The vision =
