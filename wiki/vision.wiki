@@ -7,17 +7,13 @@
 === Universe ===
 Procedurally generated (nearly) infinite universe, with hard-coded "inner systems", [http://en.wikipedia.org/wiki/Frontier:_Elite_II Elite II Frontier] style. Universe is comprised of sectors (or solar systems, if you will) connected with either hyperspace jumps or wormhole-type jumpgates. Each sector has a mixture of one or more stars and different types of planets. Procedurally generated sectors are created on-the-fly.
 
-
-
 === Mechanics ===
 Newtonian orbital mechanics with scaled-down distances. All planetary bodies can be realistic in size (compared to each other), but distances are radically scaled down. The diameter of the whole solar system would be less than the orbit of Mercury. Space travel should take minutes instead of days. Ship sizes and performance will be hugely exaggerated. They'll zip though the solar system in a sensible time. Possible time compression for longer distances.
 
-
 === Space flight ===
-Space flight will be fully inertial obeying the laws of Newton to the letter, but there will be some computational fly-by-wire aids for the less hardcore space flight enthusiasts among you. The player will have the option to turn on a 'flight compensator' that will assist in maintaining the selected _speed_ and _direction_. 
+Space flight will be fully inertial obeying the laws of Newton to the letter, but there will be some computational fly-by-wire aids for the less hardcore space flight enthusiasts among you. For example, the player will have the option to turn on a 'flight compensator' that will assist in maintaining the selected _speed_ and _direction_.
 
-There is the possibility to implement some way to limit velocity to avoid _jousting_-like space combat.
-
+There is the possibility to implement some way to limit velocity to avoid _jousting_-like space combat, which has proven to bring the fun factor down.
 
 === Ship design ===
 Ship design is highly modular. There are dozens of ship hulls for the player to choose from, with various masses, volumes and characteristics. Each of the hull can be equipped and customized, making the total number of differently behaving ships practically infinite.
@@ -30,7 +26,7 @@ Some ships can dock to each other. For example, there are carriers that can bert
 
 
 === AI ===
-Dynamic multilayered AI that is tracked across the entire universe. AI does decisions based on pre-determined behavior style, whether they are more inclined towards trading, scavenging, mining, piracy, bounty hunting etc. AI does not 'cheat': the cargo they carry is bought, mined, scavenged or pirated by themselves. The fuel they burn has to be replenished. The money they carry has to be earned. AI with very little money tends to do things helping them to earn some. AI with poor equipment for the job they are doing will try to retrofit if they have some extra money. If not, they'll try to earn it.
+Dynamic multilayered AI that is tracked across the entire universe. AI does decisions based on pre-determined behavior style, whether they are more inclined towards trading, scavenging, mining, piracy, bounty hunting etc. AI does not 'cheat': the cargo they carry is bought, mined, scavenged or pirated by themselves. The fuel they burn has to be replenished. The money they carry has to be earned. AI with very little money tends to do things helping them to earn some. AI with poor equipment will try to retrofit if they have some extra money. If not, they'll try to earn it.
 
 
 
@@ -39,4 +35,4 @@ Living economy that fluctuates with supply/demand. Something of a hybrid between
 
 
 === Business ===
-Everything in the game can be manufactured, owned and traded, including ships, factories and space stations. Player and AI can buy property and use it for own businesses. Businesses can run without player's intervention using hired employees and AI traders as suppliers. Player can run any business ranging from raw material production to final assembly. Businesses can exist on planets or space stations. 
+Everything in the game can be manufactured, owned and traded, including ships, factories and space stations. Player and AI can buy property and use it for their own businesses. Businesses can run without the player's intervention using hired employees and AI traders as suppliers. Player can run any business ranging from raw material production to final assembly. Businesses can exist on planets, space stations and even larger ships. 
