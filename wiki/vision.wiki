@@ -43,5 +43,4 @@ Everything in the game can be manufactured, owned and traded, including ships, f
 The player can buy any number of spacecraft and hire AI pilots to do trading, resource gathering or battle.
 
 === Politics ===
-There are factions with variable relations towards each other. Each sector can be owned by of one of these factions. There can be wars and alliances, that include not only governments but business empires as well. The player can become a part of such a faction, or even start one. Any faction (including the player) can gain the possession of territory through trade, diplomacy or battle. Becoming such a space mogul and syndicate owner will take a lot of work, though.
-
+There are factions with variable relations towards each other. Each sector can be owned by of one of these factions. There can be wars and alliances, that include not only governments but business empires as well. The player can become a part of such a faction, or even start one. Any faction (including the player) can gain the possession of territory through trade, diplomacy or battle. Becoming such a space mogul and syndicate owner will take a lot of time and effort, though.
