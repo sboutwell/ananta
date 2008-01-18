@@ -14,7 +14,9 @@ Newtonian orbital mechanics with scaled-down distances. All planetary bodies can
 
 
 === Space flight ===
-Space flight will be fully inertial obeying the laws of Newton to the letter, but there will be some computational fly-by-wire aids for the less hardcore space flight enthusiasts among you. 
+Space flight will be fully inertial obeying the laws of Newton to the letter, but there will be some computational fly-by-wire aids for the less hardcore space flight enthusiasts among you. The player will have the option to turn on a 'flight compensator' that will assist in maintaining the selected _speed_ and _direction_. 
+
+There is the possibility to implement some way to limit velocity to avoid _jousting_-like space combat.
 
 
 === Ship design ===
