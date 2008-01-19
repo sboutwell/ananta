@@ -3,6 +3,7 @@
 
 = The vision =
 
+This page lists a number features planned for Ananta. It's more of a personal wish list of things that would be nice to have at some point, rather than a laid-down path for the project. Extravagant ambition in software projects is not necessarily a bad thing, as long as the ambition does not turn into obsession. Anything is possible if it's built bottom-up in small steps.
 
 === Universe ===
 Procedurally generated (nearly) infinite universe, with hard-coded "inner systems", [http://en.wikipedia.org/wiki/Frontier:_Elite_II Elite II Frontier] style. Universe is comprised of sectors (or solar systems, if you will) connected with either hyperspace jumps or wormhole-type jumpgates. Each sector has a mixture of one or more stars and different types of planets. Procedurally generated sectors are created on-the-fly.
@@ -13,7 +14,7 @@ Newtonian orbital mechanics with scaled-down distances. All planetary bodies can
 === Space flight ===
 Space flight will be fully inertial obeying the laws of Newton to the letter, but there will be some computational fly-by-wire aids for the less hardcore space flight enthusiasts among you. For example, the player will have the option to turn on a 'flight compensator' that will assist in maintaining the selected _speed_ and _direction_.
 
-There is the possibility to implement some way to limit velocity to avoid _jousting_-like space combat, which has proven to bring the fun factor down.
+There is the possibility to implement some way to limit velocity to avoid _jousting_-like space combat, which has proven to bring down the fun factor.
 
 === Ship design ===
 Ship design is highly modular. There are dozens of ship hulls for the player to choose from, with various masses, volumes and characteristics. Each of the hull can be equipped and customized, making the total number of differently behaving ships practically infinite.
@@ -43,4 +44,4 @@ Everything in the game can be manufactured, owned and traded, including ships, f
 The player can buy any number of spacecraft and hire AI pilots to do trading, resource gathering or battle.
 
 === Politics ===
-There are factions with variable relations towards each other. Each sector can be owned by of one of these factions. There can be wars and alliances, that include not only governments but business empires as well. The player can become a part of such a faction, or even start one. Any faction (including the player) can gain the possession of territory through trade, diplomacy or battle. Becoming such a space mogul and syndicate owner will take a lot of time and effort, though.
+There are factions with variable relations towards each other. Each sector can be owned by of one of these factions. There can be wars and alliances, that include not only governments but business empires as well. The player can become a part of such a faction, or even start one. Any faction (including the player) can gain the possession of territory through trade, diplomacy or battle. Becoming such a space mogul and syndicate warmonger will take a lot of time and effort, though.
