@@ -1,5 +1,5 @@
 #summary The pipe dream of what Ananta could look like in the distant future.
-#labels Phase-Requirements
+#labels Phase-Requirements,Featured
 
 = The vision =
 
