@@ -55,7 +55,10 @@ Type TSpaceObject Abstract
 	Field _yVel:Double						' velocity vector y-component
 	Field _rotationSpd:Float				' rotation speed in degrees per second
 	Field _affectedByGravity:Int = True
+	Field _canCollide:Int = False			' flag to indicate if this object can collide with other objects with the same flag set
+	Field _L_collidedWith:TList 		' List holding all spaceobjects this object has already collided with during the frame
 
+		
 	' attachment-related fields
 	Field _L_TopAttachments:TList		' top attachments to the object	(visually above this object)
 	Field _L_BottomAttachments:TList	' bottom attachments to the object (visually below this object)
@@ -111,6 +114,15 @@ Type TSpaceObject Abstract
 			Next
 		EndIf
 	EndMethod
+	
+	Method AddToCollisionList(spaceobj:TSpaceObject) 
+		If Not _L_collidedWith Then _L_collidedWith = CreateList() 
+		_L_collidedWith.AddLast(spaceobj) 
+	End Method
+	
+	Method ClearCollisionList() 
+		If _L_CollidedWith Then _L_CollidedWith.Clear() 
+	End Method
 	
 	Method Update() 
 		If _parentObject Then	' is attached to another object...
@@ -241,7 +253,7 @@ Type TJumpPoint Extends TSpaceObject
 		If Not g_L_JumpPoints Then g_L_JumpPoints = CreateList()	' create a list if necessary
 		g_L_JumpPoints.AddLast jp											' add the newly created object to the end of the list
 
-		sector.AddSpaceObject(jp)		' add the jumppoint to the sector's space object list
+		sector.AddSpaceObject(jp) 		' add the jumppoint to the sector's space object list
 
 		Return jp																		' return the pointer to this specific object instance
 	EndFunction
@@ -289,6 +301,7 @@ Type TStar Extends TStellarObject
 		st._mass = mass								' mass in kg
 		st._size = size								' size in pixels
 		st._hasGravity = True
+		st._canCollide = True
 		st._isShownOnMap = True
 
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
@@ -309,6 +322,7 @@ Type TPlanet Extends TStellarObject
 		pl._mass = mass										' mass in kg
 		pl._size = size										' size in pixels
 		pl._hasGravity = True
+		pl._canCollide = True
 		pl._isShownOnMap = True
 		
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
@@ -329,6 +343,7 @@ Type TSpaceStation Extends TStellarObject
 		ss._mass = mass										' mass in kg
 		ss._size = size										' size in pixels
 		ss._hasGravity = False
+		ss._canCollide = True
 		ss._isShownOnMap = True
 		
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
@@ -345,43 +360,110 @@ EndType
 Type TMovingObject Extends TSpaceObject Abstract
 	Global g_L_MovingObjects:TList			' a list to hold all moving objects
 
-	Method GravityPull(gs:TSpaceObject) 
+	' This method combines collision detection with gravity for speed optimization
+	' (distance between each object must be checked in both operations)
+	Method DoGravityAndCollisions(gs:TSpaceObject) 
 		' get the X and Y coordinates of the gravity source
 		Local gsX:Double = gs.GetX() 
 		Local gsY:Double = gs.GetY() 
-		Local squaredDist:Double = DistanceSquared(_x, _y, gsX, gsY) 
+		Local dist:Double = Distance(_x, _y, gsX, gsY) 
 		'If squaredDist > 500000000 Then Return	' don't apply gravity if the source is "too far"
-		
-		'g = (G * M) / d^2
-		Local a:Double = (c_GravConstant * gs.GetMass()) / squaredDist
-		
-		If a < 0 Then DebugLog Self._name + " affected by negative gravity! Gravsource: " + gs._name
-		
-		' get the direction to the gravity source
-		Local dirToGravSource:Double = DirectionTo(_x, _y, gsX, gsY) 
-		
-		' calculate X and Y components of the acceleration
-		Local aX:Double = a * (Cos(dirToGravSource)) 
-		Local aY:Double = a * (Sin(dirToGravSource)) 
 
-		'If Self = p1.GetControlledShip() Then
-		'	G_debugWindow.AddText(gs._name + " grav: " + Sqr(aX ^ 2 + aY ^ 2)) 
-		'EndIf
+		' apply gravity
+		If gs._hasGravity Then
+			'g = (G * M) / d^2
+			Local a:Double = (c_GravConstant * gs.GetMass()) / dist ^ 2
+			
+			If a < 0 Then DebugLog Self._name + " affected by negative gravity! Gravsource: " + gs._name
+			
+			' get the direction to the gravity source
+			Local dirToGravSource:Double = DirectionTo(_x, _y, gsX, gsY) 
+			
+			' calculate X and Y components of the acceleration
+			Local aX:Double = a * (Cos(dirToGravSource)) 
+			Local aY:Double = a * (Sin(dirToGravSource)) 
+	
+			' add to the velocity of the space object
+			_Xvel:+aX * G_delta.GetDelta() 
+			_Yvel:+aY * G_delta.GetDelta() 
+		EndIf
+
+		' do a preliminary circle-to-circle collision detection
+		If _canCollide And gs._canCollide Then
+			Local collisionDistance:Double = Self.GetSize() / 2 + gs.GetSize() / 2
+			If Dist < collisionDistance Then
+				CollideWith(gs, Dist, collisionDistance) 
+				AddToCollisionList(gs) 
+				gs.AddToCollisionList(Self) 
+			End If
+		End If
 		
-		' add to the velocity of the space object
-		_Xvel:+aX * G_delta.GetDelta() 
-		_Yvel:+aY * G_delta.GetDelta() 		
+	End Method
+
+	Method ApplyGravityAndCollision() 
+		' don't bother iterating if gravity or collisions have no effect to this object
+		If Not _affectedByGravity And Not _canCollide Then Return
+		
+		' iterate through all objects in the active sector
+		For Local obj:TSpaceObject = EachIn TSector.GetActiveSector()._L_SpaceObjects
+			If obj = Self Then Continue						' don't apply gravity or collision if source is self!
+			'If obj._sector <> Self._sector Then Continue 	' return if the object is in another sector
+			DoGravityAndCollisions(obj)  	' do gravity and collision checking against 'obj'
+		Next
 	End Method
 	
-	Method ApplyGravity() 
-		If Not _affectedByGravity Then Return
+	' This method is called in collision with 'obj'
+	Method CollideWith(obj:TSpaceObject, actualDistance:Double, collisionDistance:Double) 
+		' return if the two objects have collided already...
+		If _L_CollidedWith And _L_CollidedWith.Contains(obj) Then Return
+		If obj._L_collidedWith And obj._L_collidedWith.Contains(Self) Then Return
+		' ---
 		
-		For Local gs:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
-'			If gs = Self Then Continue						' don't apply gravity if gravity source is self!
-			If gs._sector <> Self._sector Then Continue 	' return if the object is in another sector
-			If gs._hasGravity = False Then Continue			' don't pull if the object does not exert gravity
-			GravityPull(gs) 
-		Next
+		' use type casting to convert spaceobject into moving object, if applicable
+		Local mObj:TMovingObject = Null
+		If TMovingObject(obj) Then mObj = TMovingObject(obj) 
+		' ---
+		
+		Local collNormalAngle:Float = ATan2(obj.GetY() - _y, obj.GetX() - _x) 
+		' position exactly touching, no intersection
+		Local moveDist1:Double = (collisionDistance - actualDistance) * (obj.GetMass() / Float((_mass + obj.GetMass()))) 
+		Local moveDist2:Double = (collisionDistance - actualDistance) * (_mass / Float((_mass + obj.GetMass()))) 
+		_x = _x + moveDist1 * Cos(collNormalAngle + 180) 
+		_y = _y + moveDist1 * Sin(collNormalAngle + 180) 
+		obj.SetX(obj.GetX() + moveDist2 * Cos(collNormalAngle)) 
+		obj.SetY(obj.GetY() + moveDist2 * Sin(collNormalAngle)) 
+		
+		
+		' COLLISION RESPONSE
+		' n = vector connecting the centers of the circles
+		' we are finding the components of the normalised vector n
+		Local nX:Double = Cos(collNormalAngle) 
+		Local nY:Double = Sin(collNormalAngle) 
+		' now find the length of the components of each movement vectors
+		' along n, by using dot product.
+		Local a1:Double = GetXVel() * nX + GetYVel() * nY
+		Local a2:Double = 0
+		If mObj Then
+			a2 = mObj.GetXVel() * nX + mObj.GetYVel() * nY
+		EndIf
+		' optimisedP = 2(a1 - a2)
+		'             ----------
+		'              m1 + m2
+		Local optimisedP:Double = (2.0 * (a1 - a2)) / (_mass + obj.GetMass()) 
+		
+		' now find out the resultant vectors
+		optimisedP = optimisedP * 0.7	' 30% elastic collision
+		Self.SetXVel(Self.GetXVel() - (optimisedP * obj.GetMass() * nX)) 
+		Self.SetYVel(Self.GetYVel() - (optimisedP * obj.GetMass() * nY)) 
+		
+		'G_DebugWindow.AddText(optimisedP)
+		
+		If mObj Then
+			mObj.SetXVel(mObj.GetXVel() + (optimisedP * Self.GetMass() * nX)) 
+			mObj.SetYVel(mObj.GetYVel() + (optimisedP * Self.GetMass() * nY)) 
+		End If
+		
+		'endrem
 	End Method
 	
 	' CalcOrbitalVelocity calculates the velocity required to maintain a stable orbit around body
@@ -402,6 +484,11 @@ Type TMovingObject Extends TSpaceObject Abstract
 		_xVel = Cos(dir) * vel				 
 	End Method
 	
+	Method UpdatePosition() 
+		_x = _x + _xVel * G_delta.GetDelta() 
+		_y = _y + _yVel * G_delta.GetDelta() 		
+	End Method
+	
 	Method Update() 
 		' if attached to a moving object, override velocity with the parent object's velocity
 		If TMovingObject(_parentObject) Then
@@ -413,17 +500,16 @@ Type TMovingObject Extends TSpaceObject Abstract
 			Return
 		EndIf
 		
-
 		' rotate the object
 		_rotation:+_rotationSpd * G_delta.GetDelta() 
 		If _rotation < 0 _rotation:+360
 		If _rotation>=360 _rotation:-360
 		
-		If _affectedByGravity Then ApplyGravity() 
-		
 		' update the position
-		_x = _x + _xVel * G_delta.GetDelta() 
-		_y = _y + _yVel * G_delta.GetDelta() 
+		UpdatePosition() 
+    	
+		' apply gravity and do collision checking
+		ApplyGravityAndCollision() 
 		
 		' call the update-method of TSpaceObject
 		Super.Update() 
@@ -432,7 +518,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 	Function UpdateAll()
 		If Not g_L_MovingObjects Then Return
 		For Local o:TMovingObject = EachIn g_L_MovingObjects
-			o.Update()
+			o.Update() 
 		Next
 	EndFunction
 	
@@ -453,7 +539,7 @@ Type TShip Extends TMovingObject
 	Field _isSpeedLimited:Int = True			' a flag to indicate if speed limiter is functional
 	Field _isRotationLimited:Int = True		' a flag to indicate if rotation limiter is functional
 	Field _isLimiterOverrided:Int = False	' flag to indicate if speed and rotation limiters are overrided
-
+	
 	Field _throttlePosition:Float = 0		' -1 = full back, +1 = full forward
 	Field _controllerPosition:Float = 0		' -1 = full left, +1 = full right
 
@@ -478,17 +564,17 @@ Type TShip Extends TMovingObject
 			EndIf
 			
 			'rem
-			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) + 2*Sin(_rotation), _y - 27 * Sin(_rotation) - 2*Cos(_rotation), 0.1, 0.03, 0.3) 
+			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) + 2 * Sin(_rotation), _y - 27 * Sin(_rotation) - 2 * Cos(_rotation), 0.1, 0.03, 0.5) 
 			Local randDir:Float = Rand(- 2, 2) 
-			part._xVel = _xVel - 300 * Cos(_rotation + randDir) 
-			part._yVel = _yVel - 300 * Sin(_rotation + randDir) 
+			part._xVel = _xVel - 150 * Cos(_rotation + randDir) 
+			part._yVel = _yVel - 150 * Sin(_rotation + randDir) 
 			part._rotation = _rotation
 			'endrem
 			'rem
-			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) - 2*Sin(_rotation), _y - 27 * Sin(_rotation) + 2*Cos(_rotation), 0.1, 0.03, 0.3) 
+			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) - 2 * Sin(_rotation), _y - 27 * Sin(_rotation) + 2 * Cos(_rotation), 0.1, 0.03, 0.5) 
 			randDir:Float = Rand(- 2, 2) 
-			part._xVel = _xVel - 300 * Cos(_rotation + randDir) 
-			part._yVel = _yVel - 300 * Sin(_rotation + randDir) 
+			part._xVel = _xVel - 150 * Cos(_rotation + randDir) 
+			part._yVel = _yVel - 150 * Sin(_rotation + randDir) 
 			part._rotation = _rotation
 			'endrem
 			
@@ -498,13 +584,13 @@ Type TShip Extends TMovingObject
 			
 			'rem
 			' add the engine trail effect
-			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) + 7 * Sin(_rotation), _y + 6 * Sin(_rotation) - 7 * Cos(_rotation), 0.1, 0.03, 0.1) 
+			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) + 7 * Sin(_rotation), _y + 6 * Sin(_rotation) - 7 * Cos(_rotation), 0.1, 0.03, 0.3) 
 			Local randDir:Float = Rand(- 2, 2) 
 			part._xVel = _xVel - 100 * _throttlePosition * Cos(_rotation + randDir) 
 			part._yVel = _yVel - 100 * _throttlePosition * Sin(_rotation + randDir) 
 			part._rotation = _rotation + 180
 			
-			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) - 7 * Sin(_rotation), _y + 6 * Sin(_rotation) + 7 * Cos(_rotation), 0.1, 0.03, 0.1) 
+			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) - 7 * Sin(_rotation), _y + 6 * Sin(_rotation) + 7 * Cos(_rotation), 0.1, 0.03, 0.3) 
 			randDir:Float = Rand(- 2, 2) 
 			part._xVel = _xVel - 100 * _throttlePosition * Cos(_rotation + randDir) 
 			part._yVel = _yVel - 100 * _throttlePosition * Sin(_rotation + randDir) 
@@ -517,7 +603,7 @@ Type TShip Extends TMovingObject
 
 		If _controllerPosition = 0 Then ApplyRotKill() 		' if the "joystick" is centered, fire the rotKill thrusters
 
-		super.Update()  ' call update method of TMovingObject
+		Super.Update()    ' call update method of TMovingObject
 	EndMethod
 
 	Method GetRotAccel:Float()
@@ -685,6 +771,7 @@ Type TShip Extends TMovingObject
 		sh._scaleY = sh._hull._scale
 		sh._name = name					' give a name
 		sh._isShownOnMap = True
+		sh._canCollide = True
 		
 		If Not g_L_Ships Then g_L_Ships = CreateList() 
 		g_L_Ships.AddLast sh
@@ -705,6 +792,7 @@ Type TAsteroid Extends TMovingObject
 		a._x = x
 		a._y = y
 		a._isShownOnMap = True
+		a._canCollide = True
 		a._affectedByGravity = True
 		
 		If Not g_L_Asteroids Then g_L_Asteroids = CreateList() 

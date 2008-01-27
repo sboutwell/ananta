@@ -33,6 +33,7 @@ Type TSector Final
 			If vp.GetMiniMap() And obj.showsOnMap() Then	' draw a minimap blip if minimap is defined for the viewport
 				vp.GetMiniMap().AddBlip(obj)
 			End If
+			obj.ClearCollisionList() 
 		Next
 	EndMethod
 

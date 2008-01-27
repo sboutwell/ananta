@@ -15,7 +15,7 @@ This file is part of Ananta.
     along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
 
 
-Copyright 2007, 2008 Jussi Pakkanen
+Copyright 2007, 2008 'Jussi Pakkanen'
 endrem
 
 ' TSlot is a special "container" in a ship hull that holds other ship parts. 
