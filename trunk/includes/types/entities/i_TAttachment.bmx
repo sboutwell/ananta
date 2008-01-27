@@ -21,7 +21,7 @@ endrem
 rem
 	Attachments are visual add-ons attached to a space object's hull: weapons, engines, etc.
 	Note that TAttachment is used for "visual-only" attachments. All spaceobjects can be attached
-	to another spaceobject
+	to another spaceobject as such.
 endrem
 
 Type TAttachment Extends TSpaceObject
@@ -31,7 +31,7 @@ Type TAttachment Extends TSpaceObject
 		parent.AddAttachment(a, x, y, rot, onTop) 
 		a._image = TImg.LoadImg(image) 
 		a._scaleX = scaleX
-		a._scaleY = scaleY		
+		a._scaleY = scaleY
 		Return a
 	End Function
 End Type

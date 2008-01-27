@@ -22,7 +22,6 @@ SuperStrict
 Import bah.Libxml		' XML parser library wrapper for BlitzMax by Bruce A. Henderson
 Import bah.Cairo		' vector graphics library wrapper for BlitzMax by Bruce A. Henderson
 
-SetGraphicsDriver GLMax2DDriver() 
 AppTitle = "Ananta"
 Include "includes/i_constants.bmx"					'Global constants. All constants must begin with C_
 Include "includes/i_globals.bmx"					'Global variables and types. All globals must begin with G_
@@ -51,7 +50,7 @@ TViewport.InitGraphicsMode()		' lets go graphical using the values read from the
 TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
 TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
-GenerateTextures()   		' generate some vector textures as new image files
+GenerateVectorTextures()    		' generate some vector textures as new image files
 
 Local sSize:Int = 500000	' sector size
 GenerateTestUniverse(sSize)
@@ -123,12 +122,11 @@ While Not KeyHit(KEY_ESCAPE)
 	
 	' checks for keypresses (or other control inputs) and applies their actions
 	p1.GetInput()
-	'part1.Emit(350) 
 	
 	' Update every AI pilot and apply their control inputs to their controlled ships
 	TAIPlayer.UpdateAllAI() 
 
-	' update the positions of every moving object (except ships), including the ones in other sectors
+	' update the positions of every moving object (except ships)
 	TMovingObject.UpdateAll() 
 
 	' update the positions of every ship and calculate fuel and oxygen consumption
@@ -140,7 +138,8 @@ While Not KeyHit(KEY_ESCAPE)
 	' draw each object in the currently active sector
 	TSector.GetActiveSector().DrawAllInSector(viewport) 
 
-	' update and draw particles
+	' update and draw particles 
+	' (TODO: integrate this to DrawAllInSector to avoid particles being drawn over other objects)
 	TParticle.UpdateAndDrawAll() 
 
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
@@ -162,13 +161,13 @@ While Not KeyHit(KEY_ESCAPE)
 
 Wend
 
-Function GenerateTextures() 
+Function GenerateVectorTextures() 
 	TImg.StoreImg(TStar.GenerateStarTexture(800) , "star_generated") 
 End Function
 
 Function GenerateTestUniverse(sSize:int)
-	Local asteroids:Int = 40
-	Local planets:Int = 50
+	Local asteroids:Int = 50
+	Local planets:Int = 40
 	
 	' generate a sector
 	Local sector1:TSector = TSector.Create(0,0,"Sol")
@@ -183,7 +182,7 @@ Function GenerateTestUniverse(sSize:int)
 	st1._scaleX = 20
 	st1._scaleY = st1._scaleX
 	st1._size = CalcImageSize(st1._image, False) * st1._scaleX
-	st1._mass = (st1._scaleX ^ 2) * 20000000
+	st1._mass = (st1._scaleX ^ 2) * 100000000
 	
 	' create some planets
 	For Local i:Int = 1 To planets
@@ -193,7 +192,7 @@ Function GenerateTestUniverse(sSize:int)
 		' Re-randomize the coordinates if the planet is too close to the sun 
 		Local again:Int = False
 		Repeat
-			If Distance(st1.GetX(),st1.GetY(),pl2.GetX(),pl2.GetY()) < st1.GetSize()*1.2 Then 
+			If Distance(st1.GetX(), st1.GetY(), pl2.GetX(), pl2.GetY()) < st1.GetSize() * 2 Then
 				pl2.SetX(rand(-sSize,sSize))
 				pl2.SetY(rand(-sSize,sSize))
 				again = TRUE

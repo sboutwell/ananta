@@ -23,6 +23,7 @@ endrem
 ' -----------------------------------------------------------------
 
 Type TViewport
+	Global g_Renderer:String = "opengl"		' the renderer to use (directx / opengl)
 	Global g_ResolutionX:Int	
 	Global g_ResolutionY:Int	
 	Global g_BitDepth:Int
@@ -253,16 +254,32 @@ Type TViewport
 		G_DebugWindow.AddText("z/x                  - zoom in/out")
 		G_DebugWindow.AddText("ctrl+z               - reset zoom")
 		G_DebugWindow.AddText("shift+z / shift+x    - map zoom in/out")
-		G_DebugWindow.AddText("ctrl+x               - reset map zoom")
+		G_debugWindow.AddText("ctrl+x               - reset map zoom") 
+		G_debugWindow.AddText("alt+enter            - toggle fullscreen") 
 		G_DebugWindow.AddText("ESC                  - exit")
 	End Method
 	
-	Function InitGraphicsMode()
+	Function InitGraphicsMode() 
+		If g_Renderer = "directx" Then
+			SetGraphicsDriver D3D7Max2DDriver() 
+		Else
+			SetGraphicsDriver GLMax2DDriver() 
+		EndIf
 		Graphics g_ResolutionX, g_ResolutionY, g_BitDepth, g_RefreshRate, 0
 		HideMouse()
 	EndFunction
-
-	Function InitViewportGlobals(xmlfile:TxmlDoc)
+	
+	Function ToggleFullScreen() 
+		If g_BitDepth <> 0 Then
+			g_BitDepth = 0
+		Else
+			g_BitDepth = 32
+		EndIf
+		InitGraphicsMode() 
+	End Function
+	
+	Function InitViewportGlobals(xmlfile:TxmlDoc) 
+		g_Renderer = XMLFindFirstMatch(xmlfile, "settings/graphics/renderer").ToString() 
 		g_ResolutionX		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/x").ToInt()
 		g_ResolutionY		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/y").ToInt()
 		g_BitDepth			= XMLFindFirstMatch(xmlfile,"settings/graphics/bitdepth").ToInt()

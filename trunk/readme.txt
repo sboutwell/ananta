@@ -37,25 +37,36 @@ adjust <resolution> to a more comfortable setting.
 
 
 Controls:
-	Left arrow	- rotate ship left
-	Right arrow 	- rotate ship right
-	Up arrow		- fire main engines
-	Down arrow 	- fire reverse engines
+	Left arrow      - rotate ship left
+	Right arrow     - rotate ship right
+	Up arrow        - fire main engines
+	Down arrow      - fire reverse engines
 	
-	z		- zoom in
-	x		- zoom out
-	shift+z		- minimap zoom in
-	shift+x		- minimap zoom out
-	ctrl+z		- reset zoom
-	ctrl+x		- reset minimap zoom
-	ESC		- exit game
-	F1		- show the control help above
+	z               - zoom in
+	x               - zoom out
+	shift+z         - minimap zoom in
+	shift+x         - minimap zoom out
+	ctrl+z          - reset zoom
+	ctrl+x          - reset minimap zoom
+	alt+enter       - toggle fullscreen mode
+	ESC             - exit game
+	F1              - display the control help
 
 Sector map legend:
-	Blue 		- planet
-	Red 		- ship
-	Cyan 		- asteroid
-	Yellow		- star
-	Blue line		- velocity vector
+	Blue            - planet
+	Red             - ship
+	Cyan            - asteroid
+	Yellow          - star
+	Green line      - velocity vector
 
-In this randomly generated scenario you are starting around the orbit of a planet with collision detection off. Zoom out (shift+x) in sector map to view the rest of the sector in the minimap. There is really not much to do other than explore the sector and play around with the various gravity wells. For practice, try to achieve a circular orbit around any planet.
+In this randomly generated scenario you are starting around 
+the orbit of a planet. 
+Zoom out (shift+x) in sector map to view the rest of the 
+sector in the minimap. There is really not much to do other 
+than explore the sector, play around with the various 
+gravity wells and push asteroids to alter their trajectories.
+For practice, try to achieve a circular orbit around any planet.
+If you're having trouble, google for "Hohmann transfer" ;)
+
+Known issues:
+Collision detection between two fast-moving objects can be a bit "jittery".

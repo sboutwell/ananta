@@ -242,7 +242,7 @@ Type TBlip
 		If _size = 0 Then Return		' don't draw 0-sized blips
 		TColor.SetTColor(_color) 
 		SetHandle(_size / 2, _size / 2)    ' oval handle to the middle of the oval
-		DrawOval(_x, _y, _size, _size) 
+		DrawOval (_x, _y, _size, _size) 
 	End Method
 	
 	Function Create:TBlip(x:Int, y:Int, size:Int) 

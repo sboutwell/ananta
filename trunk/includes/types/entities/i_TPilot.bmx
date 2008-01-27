@@ -66,6 +66,10 @@ Type TPlayer Extends TPilot
 			If KeyDown(KEY_X) Then viewport.GetMiniMap().ResetZoomFactor() 
 		End If
 		
+		If KeyDown(KEY_LALT) Then
+			If KeyDown(KEY_ENTER) Then TViewport.ToggleFullScreen()
+		End If
+		
 		If Not KeyDown(KEY_Z) And Not KeyDown(KEY_X) Then
 			viewport.StopZoom() 
 			viewport.GetMiniMap().StopZoom() 
