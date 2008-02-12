@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This file is part of Ananta.
+
+    Ananta is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Ananta is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Copyright 2007, 2008 Jussi Pakkanen
+-->
+
+<settings>
+  <debug>0</debug>
+  <!-- debug mode on = 1 / off = 0 -->
+  <graphics>
+    <!-- graphics-related settings -->
+    <!-- graphics renderer (opengl/directx) -->
+    <renderer>opengl</renderer>
+    <!-- framerate limited yes = 1 / no = 0 -->
+    <limitframerate>0</limitframerate>
+    <!--Max framerate if limited-->
+    <framerate>60</framerate>
+    <!-- max deltatime in milliseconds -->
+    <!-- Affects the "jumpiness" of the physics simulation when the game is incapable of updating itself, during alt-tabbing etc. -->
+    <!-- meaning the simulation will actually pause after maxdelta amount of time has passed since the last physics iteration -->
+    <maxdelta>500</maxdelta>
+    <resolution>
+      <x>1024</x>
+      <y>768</y>
+    </resolution>
+    <!-- main viewport marginals in pixels -->
+    <viewportmarginals>
+      <top>5</top>
+      <bottom>5</bottom>
+      <left>5</left>
+      <right>200</right>
+    </viewportmarginals>
+    <!-- the border around the viewport -->
+    <border>
+      <width>3</width>
+      <!-- line width -->
+      <color>skyblue</color>
+      <!-- line color -->
+    </border>
+    <!-- font properties of the main message window -->
+    <messagewindow>
+      <fadeEnabled>1</fadeEnabled>
+      <!-- message fading true = 1 / false = 0 -->
+      <ttl>5</ttl>
+      <!-- time in seconds before a line of text starts to fade -->
+      <maxlenght>40</maxlenght>
+      <!-- max chars fitting a single line before wrapping occurs -->
+      <maxlines>10</maxlines>
+      <!-- maximum number of simultaneous lines -->
+      <scale>1</scale>
+      <!-- font scale -->
+      <alpha>0.8</alpha>
+      <!-- default alpha for a new message line -->
+      <fadefactor>0.3</fadefactor>
+      <!-- alpha change per second when fading out -->
+      <defaultcolor>lime</defaultcolor>
+      <!-- default font color -->
+      <x>10</x>
+      <!-- window x coordinate (top left corner) -->
+      <y>10</y>
+      <!-- window y coordinate (top left corner) -->
+    </messagewindow>
+    <!-- 16 or 32 for fullscreen, 0 for windowed -->
+    <bitdepth>0</bitdepth>
+    <!-- The refresh rate for fullscreen mode. Zero for defaults.-->
+    <refreshrate>60</refreshrate>
+    <!-- Flag for screen offset (camera leading in front of the moving ship) -->
+    <!-- NOT USED -->
+    <screenoffset>True</screenoffset>
+    <!-- The bigger the magnitude the less offset there is-->
+    <!-- NOT USED -->
+    <screenoffsetmagnitude>4</screenoffsetmagnitude>
+    <!-- Elasticity factor (how smooth camera transitions for offset are)-->
+    <!-- NOT USED -->
+    <screenelasticity>0.08</screenelasticity>
+    <!-- Starting ship for the player -->
+    <!-- NOT USED -->
+    <startership>nadia</startership>
+  </graphics>
+</settings>
