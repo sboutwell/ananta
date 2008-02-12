@@ -60,13 +60,13 @@ Sector map legend:
 	Green line      - velocity vector
 
 In this randomly generated scenario you are starting around 
-the orbit of a planet. 
+the orbit of a random planet. 
 Zoom out (shift+x) in sector map to view the rest of the 
 sector in the minimap. There is really not much to do other 
 than explore the sector, play around with the various 
-gravity wells and push asteroids to alter their trajectories.
-For practice, try to achieve a circular orbit around any planet.
-If you're having trouble, google for "Hohmann transfer" ;)
+gravity wells and push asteroids to alter their trajectories. 
+The collision detection at this point is a crude circle-to-circle
+check only.
 
 Known issues:
 Collision detection between two fast-moving objects can be a bit "jittery".
