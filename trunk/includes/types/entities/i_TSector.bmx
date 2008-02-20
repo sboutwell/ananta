@@ -33,13 +33,18 @@ Type TSector Final
 			If vp.GetMiniMap() And obj.showsOnMap() Then	' draw a minimap blip if minimap is defined for the viewport
 				vp.GetMiniMap().AddBlip(obj)
 			End If
-			obj.ClearCollisionList() 
+			obj._updated = False
 		Next
 	EndMethod
 
 	Method AddSpaceObject(obj:TSpaceObject)
 		If Not _L_SpaceObjects Then _L_SpaceObjects = CreateList()	' create a list if necessary
 		_L_SpaceObjects.AddLast obj
+	EndMethod
+
+	Method RemoveSpaceObject(obj:TSpaceObject) 
+		If Not _L_SpaceObjects Then Return
+		_L_SpaceObjects.Remove(obj) 
 	EndMethod
 
 	Method SetAsActive()
