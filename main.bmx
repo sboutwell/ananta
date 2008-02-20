@@ -32,7 +32,7 @@ Include "includes/functions/f_stringfunctions.bmx"	'Functions related to string 
 ' Type definitions
 Include "includes/types/entities/i_TPilot.bmx"			'Pilot entities and methods for AI routines
 Include "includes/types/entities/i_TSector.bmx"			'Sector of space
-Include "includes/types/entities/i_TSpaceObjects.bmx"	'All spaceborne objects
+Include "includes/types/entities/i_TSpaceObjects.bmx"	'All spaceborne objects and their drawing
 Include "includes/types/entities/i_TShipModel.bmx"		'Type describing ship models
 Include "includes/types/commodity/i_TCommodity.bmx"		'Tradeable/usable commodities (contents read from an xml file)
 Include "includes/types/graphics/i_TViewport.bmx"		'Draw-to-screen related stuff
@@ -40,8 +40,8 @@ Include "includes/types/graphics/i_TMessageWindow.bmx"	'Messagewindow and messag
 Include "includes/types/graphics/i_TDebugWindow.bmx"	'Debugwindow and debugline types
 Include "includes/types/graphics/i_TMinimap.bmx"		'Minimap
 Include "includes/types/graphics/i_TColor.bmx"			'A structure-like type to map color names to their RGB values
-Include "includes/types/graphics/i_TMedia.bmx"			'Type loading and holding media files
-Include "includes/types/math/i_TCoordinate.bmx"			'Struct-like type to represent a position in 2d space
+Include "includes/types/graphics/i_TMedia.bmx"			'Type that loads and holds media files
+'Include "includes/types/math/i_TCoordinate.bmx"			'Struct-like type to represent a position in 2d space
 Include "includes/types/i_TDelta.bmx"					'Delta timer
 
 TColor.LoadAll()      				' load all color info from colors.xml (must be loaded before initializing the viewport)
@@ -52,7 +52,7 @@ TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
-Local sSize:Int = 500000	' sector size
+Local sSize:Int = 500000	' sector size in pixels
 GenerateTestUniverse(sSize)
 
 ' generate the player and player's ship
@@ -116,7 +116,7 @@ viewport.CenterCamera(s1)           		' select the player ship as the object for
 
 
 ' Main loop
-While Not KeyHit(KEY_ESCAPE) 
+While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' calculate the deltatimer (alters global variable G_delta)
 	G_delta.Calc() 
 	
@@ -135,12 +135,12 @@ While Not KeyHit(KEY_ESCAPE)
 	' draw the level
 	viewport.DrawLevel()
 	
+	' update and draw particles 
+	TParticle.UpdateAndDrawAll()
+	 
 	' draw each object in the currently active sector
 	TSector.GetActiveSector().DrawAllInSector(viewport) 
 
-	' update and draw particles 
-	' (TODO: integrate this to DrawAllInSector to avoid particles being drawn over other objects)
-	TParticle.UpdateAndDrawAll() 
 
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 

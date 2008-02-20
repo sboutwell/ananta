@@ -56,7 +56,7 @@ Type TSpaceObject Abstract
 	Field _rotationSpd:Float				' rotation speed in degrees per second
 	Field _affectedByGravity:Int = True
 	Field _canCollide:Int = False			' flag to indicate if this object can collide with other objects with the same flag set
-	Field _L_collidedWith:TList 		' List holding all spaceobjects this object has already collided with during the frame
+	Field _updated:Int = False			' a flag to indicate if this object has been updated during the frame
 
 		
 	' attachment-related fields
@@ -115,15 +115,6 @@ Type TSpaceObject Abstract
 		EndIf
 	EndMethod
 	
-	Method AddToCollisionList(spaceobj:TSpaceObject) 
-		If Not _L_collidedWith Then _L_collidedWith = CreateList() 
-		_L_collidedWith.AddLast(spaceobj) 
-	End Method
-	
-	Method ClearCollisionList() 
-		If _L_CollidedWith Then _L_CollidedWith.Clear() 
-	End Method
-	
 	Method Update() 
 		If _parentObject Then	' is attached to another object...
 			Local pRot:Float = _parentObject.GetRot() 
@@ -133,6 +124,7 @@ Type TSpaceObject Abstract
 			_y = pY + _xOffset * Sin(pRot) - _yOffset * Cos(pRot) 
 			_rotation = pRot + _rotationOffset
 		EndIf
+		_updated = True
 	End Method
 	
 	' attach another object. Attached objects cannot move themselves.
@@ -393,8 +385,6 @@ Type TMovingObject Extends TSpaceObject Abstract
 			Local collisionDistance:Double = Self.GetSize() / 2 + gs.GetSize() / 2
 			If Dist < collisionDistance Then
 				CollideWith(gs, Dist, collisionDistance) 
-				AddToCollisionList(gs) 
-				gs.AddToCollisionList(Self) 
 			End If
 		End If
 		
@@ -414,10 +404,11 @@ Type TMovingObject Extends TSpaceObject Abstract
 	
 	' This method is called in collision with 'obj'
 	Method CollideWith(obj:TSpaceObject, actualDistance:Double, collisionDistance:Double) 
-		' return if the two objects have collided already...
-		If _L_CollidedWith And _L_CollidedWith.Contains(obj) Then Return
-		If obj._L_collidedWith And obj._L_collidedWith.Contains(Self) Then Return
-		' ---
+		' Return if the MOVING object we're colliding with hasn't been updated yet
+		' This check ensures that collisions between moving objects are checked only after both
+		' objects' positions have been updated. Failure to do so can lead to a double-collision.
+		If NOT obj._updated AND TMovingObject(obj) Then Return
+		
 		
 		' use type casting to convert spaceobject into moving object, if applicable
 		Local mObj:TMovingObject = Null
@@ -508,11 +499,11 @@ Type TMovingObject Extends TSpaceObject Abstract
 		' update the position
 		UpdatePosition() 
     	
-		' apply gravity and do collision checking
-		ApplyGravityAndCollision() 
-		
 		' call the update-method of TSpaceObject
 		Super.Update() 
+		
+		' apply gravity and do collision checking
+		ApplyGravityAndCollision() 
 	EndMethod
 	
 	Function UpdateAll()
@@ -563,15 +554,16 @@ Type TShip Extends TMovingObject
 				Next
 			EndIf
 			
+			' temporary engine trail emitting until the code above gets functional
 			'rem
-			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) + 2 * Sin(_rotation), _y - 27 * Sin(_rotation) - 2 * Cos(_rotation), 0.1, 0.03, 0.5) 
+			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) + 2 * Sin(_rotation), _y - 27 * Sin(_rotation) - 2 * Cos(_rotation), 0.1, 0.03, 0.5,_sector) 
 			Local randDir:Float = Rand(- 2, 2) 
 			part._xVel = _xVel - 150 * Cos(_rotation + randDir) 
 			part._yVel = _yVel - 150 * Sin(_rotation + randDir) 
 			part._rotation = _rotation
 			'endrem
 			'rem
-			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) - 2 * Sin(_rotation), _y - 27 * Sin(_rotation) + 2 * Cos(_rotation), 0.1, 0.03, 0.5) 
+			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) - 2 * Sin(_rotation), _y - 27 * Sin(_rotation) + 2 * Cos(_rotation), 0.1, 0.03, 0.5,_sector ) 
 			randDir:Float = Rand(- 2, 2) 
 			part._xVel = _xVel - 150 * Cos(_rotation + randDir) 
 			part._yVel = _yVel - 150 * Sin(_rotation + randDir) 
@@ -582,15 +574,23 @@ Type TShip Extends TMovingObject
 		If _throttlePosition < 0 Then
 			ApplyImpulse(_throttlePosition * _reverseAcceleration) 
 			
+			' add the engine trail effect
+			If _L_reverseEngineEmitters Then
+				For Local emitter:TParticleGenerator = EachIn _L_reverseEngineEmitters
+					emitter.Emit(_throttlePosition * _reverseAcceleration) 
+				Next
+			EndIf
+			
+			' temporary engine trail emitting until the code above gets functional
 			'rem
 			' add the engine trail effect
-			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) + 7 * Sin(_rotation), _y + 6 * Sin(_rotation) - 7 * Cos(_rotation), 0.1, 0.03, 0.3) 
+			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) + 7 * Sin(_rotation), _y + 6 * Sin(_rotation) - 7 * Cos(_rotation), 0.1, 0.03, 0.3,_sector) 
 			Local randDir:Float = Rand(- 2, 2) 
 			part._xVel = _xVel - 100 * _throttlePosition * Cos(_rotation + randDir) 
 			part._yVel = _yVel - 100 * _throttlePosition * Sin(_rotation + randDir) 
 			part._rotation = _rotation + 180
 			
-			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) - 7 * Sin(_rotation), _y + 6 * Sin(_rotation) + 7 * Cos(_rotation), 0.1, 0.03, 0.3) 
+			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) - 7 * Sin(_rotation), _y + 6 * Sin(_rotation) + 7 * Cos(_rotation), 0.1, 0.03, 0.3,_sector) 
 			randDir:Float = Rand(- 2, 2) 
 			part._xVel = _xVel - 100 * _throttlePosition * Cos(_rotation + randDir) 
 			part._yVel = _yVel - 100 * _throttlePosition * Sin(_rotation + randDir) 
