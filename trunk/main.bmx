@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -41,7 +41,6 @@ Include "includes/types/graphics/i_TDebugWindow.bmx"	'Debugwindow and debugline 
 Include "includes/types/graphics/i_TMinimap.bmx"		'Minimap
 Include "includes/types/graphics/i_TColor.bmx"			'A structure-like type to map color names to their RGB values
 Include "includes/types/graphics/i_TMedia.bmx"			'Type that loads and holds media files
-'Include "includes/types/math/i_TCoordinate.bmx"			'Struct-like type to represent a position in 2d space
 Include "includes/types/i_TDelta.bmx"					'Delta timer
 
 TColor.LoadAll()      				' load all color info from colors.xml (must be loaded before initializing the viewport)
@@ -52,8 +51,8 @@ TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
-Local sSize:Int = 500000	' sector size in pixels
-GenerateTestUniverse(sSize)
+Local sSize:Int = 100000	' sector size in pixels
+Local centralStar:TStar = GenerateTestUniverse(sSize) 
 
 ' generate the player and player's ship
 Global p1:TPlayer = TPlayer.Create("Da Playah") 
@@ -76,19 +75,21 @@ For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
 	EndIf
 Next
 s1.SetCoordinates(orbitedPlanet.GetX() + OrbitedPlanet.GetSize() * 0.7, orbitedPlanet.GetY()) 
-s1.SetOrbitalVelocity(orbitedPlanet, False) 
+s1.SetOrbitalVelocity(orbitedPlanet, True) 
 
-' Create one asteroid to orbit the same planet
-Local ast:TAsteroid = TAsteroid.Create("asteroid.png", TSector.GetActiveSector(), 1000, 1000, 500) 
-ast._scaleX = orbitedPlanet.GetScaleX()
-ast._scaleY = ast._scaleX
-ast._size = CalcImageSize(ast._image, False) * ast._scaleX
-ast._mass = (ast._scaleX ^ 2) * Rand(2000, 5000) 
+' Create one asteroid to orbit the same planet as the player
+Local ascale:Float = orbitedPlanet.GetScaleX() 
+Local asize:Int = CalcImageSize(TImg.LoadImg("asteroid.png"), False) * ascale
+Local amass:Long = (ascale ^ 2) * Rand(3000, 10000) 
+Local ast:TAsteroid = TAsteroid.Create("asteroid.png", TSector.GetActiveSector(), Rand(- sSize, sSize), Rand(- sSize, sSize), amass) 
+ast._scaleX = ascale
+ast._scaleY = ascale
+ast._size = asize
 ast.SetRotationSpd(Rand(- 50, 50)) 
-ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75,1.1))
-ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75,1.1))
+ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
+ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
 ast.SetOrbitalVelocity(orbitedPlanet,True)
-
+ast = null
 'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, sector1, 0.1, 0.3, 400, 0.07) 
 'part1.SetRandomDir(2) 
 's1.AddAttachment(part1, - 28, 0, 0, False) 
@@ -97,7 +98,7 @@ ast.SetOrbitalVelocity(orbitedPlanet,True)
 
 viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
 
-' set up bunch of AI pilots for testing
+' set up bunch of AI pilots
 
 For Local i:Int = 1 To 25
 	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
@@ -107,8 +108,9 @@ For Local i:Int = 1 To 25
 	'ship.SetCoordinates (600, 0)
 	ship.AssignPilot(ai) 
 	ai.SetTarget(s1)		' make the AI ship try to point at the player ship
-	ship._xVel = Rand(- 100, 100) 
-	ship._yVel = Rand(- 100, 100) 
+	'ship._xVel = Rand(- 100, 100) 
+	'ship._yVel = Rand(- 100, 100) 
+	ship.SetOrbitalVelocity(centralStar, Rand(0, 1) )
 Next
 
 viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
@@ -146,7 +148,13 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	viewport.DrawMisc() 
 	
 	G_debugWindow.AddText("FPS: " + G_delta.GetFPS()) 
-	G_debugWindow.AddText("Velocity: " + p1.GetControlledShip().GetVel()) 
+	G_debugWindow.AddText("Asteroids: " + TAsteroid.g_nrAsteroids) 
+	G_debugWindow.AddText("Ships: " + TShip.g_nrShips) 
+	
+	If p1.GetControlledShip() Then
+		G_debugWindow.AddText("Velocity: " + p1.GetControlledShip().GetVel()) 
+		G_debugWindow.AddText("Shields: " + p1.GetControlledShip().GetIntegrity()) 
+	EndIf
 	
 	If G_delta._isFrameRateLimited Then
 		G_delta.LimitFPS()        ' limit framerate
@@ -165,9 +173,9 @@ Function GenerateVectorTextures()
 	TImg.StoreImg(TStar.GenerateStarTexture(800) , "star_generated") 
 End Function
 
-Function GenerateTestUniverse(sSize:int)
+Function GenerateTestUniverse:TStar(sSize:Int) 
 	Local asteroids:Int = 50
-	Local planets:Int = 40
+	Local planets:Int = 10
 	
 	' generate a sector
 	Local sector1:TSector = TSector.Create(0,0,"Sol")
@@ -179,10 +187,10 @@ Function GenerateTestUniverse(sSize:int)
 	Local st1:TStar = TStar.Create(0, 0, sector1, 100000, 10, "Sol") 
 	st1._image = TImg.LoadImg("star_generated") 
 	st1._rotation = -90
-	st1._scaleX = 20
+	st1._scaleX = 10
 	st1._scaleY = st1._scaleX
 	st1._size = CalcImageSize(st1._image, False) * st1._scaleX
-	st1._mass = (st1._scaleX ^ 2) * 100000000
+	st1._mass = (st1._scaleX ^ 2) * 200000000
 	
 	' create some planets
 	For Local i:Int = 1 To planets
@@ -213,14 +221,19 @@ Function GenerateTestUniverse(sSize:int)
 	
 	' create some asteroids
 	For Local i:Int = 1 To asteroids
-		Local ast:TAsteroid = TAsteroid.Create("asteroid.png", sector1, Rand(- sSize, sSize), Rand(- sSize, sSize), Rand(10, 500)) 
-		ast._scaleX = Rnd(0.1, 1.5) 
-		ast._scaleY = ast._scaleX
-		ast._size = CalcImageSize(ast._image, False) * ast._scaleX
-		ast._mass = (ast._scaleX ^ 2) * Rand(2000, 5000) 
-		ast.SetRotationSpd(Rand(- 200, 200)) 
-		ast.SetXVel(Rand(- 1500, 1500)) 
-		ast.SetYVel(Rand(- 1500, 1500)) 
-	Next
+		Local scale:Float = Rnd(0.3, 2) 
+		Local size:Int = CalcImageSize(TImg.LoadImg("asteroid.png"), False) * scale
+		Local mass:Long = (scale ^ 2) * Rand(3000, 10000) 
 		
+		Local ast:TAsteroid = TAsteroid.Create("asteroid.png", sector1, Rand(- sSize, sSize), Rand(- sSize, sSize), mass) 
+		ast._scaleX = scale
+		ast._scaleY = scale
+		ast._size = size
+		ast.SetRotationSpd(Rand(- 200, 200)) 
+		'Make the asteroid orbit the sun
+		ast.SetOrbitalVelocity(st1, Rand(0, 1)) 
+
+	Next
+	
+	Return st1
 End Function

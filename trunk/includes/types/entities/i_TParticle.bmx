@@ -95,6 +95,10 @@ Type TParticleGenerator Extends TMovingObject
 		_randomVel = vel
 	End Method
 	
+	Method Destroy() 
+		
+	End Method
+	
 	Function Create:TParticleGenerator(img:String, x:Float, y:Float, sector:TSector, life:Float = 0.5, alpha:Float = 0.8, vel:Float = 4, scale:Float = 1, rot:Float = 90) 
 		Local pg:TParticleGenerator = New TParticleGenerator
 		pg._particleImg = TImg.LoadImg(img) 
@@ -110,5 +114,63 @@ Type TParticleGenerator Extends TMovingObject
 		If Not TMovingObject.g_L_MovingObjects Then TMovingObject.g_L_MovingObjects = CreateList() 
 		TMovingObject.g_L_MovingObjects.AddLast(pg) 
 		Return pg
+	End Function
+EndType
+
+Type TProjectile Extends TParticle
+	Field _damage:Float = 500	' damage this particle will do on impact
+	Field _shotBy:TShip = Null	' the ship that shot this projectile
+	
+	Method GetDamage:Float() 
+		Return _damage * _alpha
+	End Method
+	
+	Method Destroy() 
+		_shotBy = Null
+		Super.Destroy()  ' call destroy() of TParticle
+	End Method
+	
+	Method SetShooter(sh:TShip) 
+		_shotBy = sh
+	End Method
+	
+	Method GetShooter:TShip() 
+		Return _shotBy
+	End Method
+	
+	Method Explode() 
+		' a makeshift "explosion" effect for testing
+		Local expScale:Float = CalcImageSize(_image) / 128.0 * _scaleX * 2
+		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 0.5, expScale, 1, _sector) 
+		part.SetXVel(_xVel) 
+		part.SetYVel(_yVel) 
+		part.SetRot(Rand(0, 360)) 
+		part.SetRotationSpd(Self.GetRotSpd() + Rnd(- 100, 100)) 
+		 
+		Destroy() 
+	End Method
+
+	Function Create:TProjectile(img:TImage, x:Float, y:Float, life:Float, scale:Float, alpha:Float = 1, sector:TSector) 
+		Local part:TProjectile = New TProjectile
+		part._x = x
+		part._y = y
+		part._life = life
+		part._scaleX = scale
+		part._scaleY = scale
+		part._alpha = alpha
+		part._alphaDelta = alpha / life
+		part._affectedByGravity = False
+		part._isShownOnMap = False
+		part._image = img
+		part._sector = sector
+		part._size = 2
+		part._mass = 500
+		
+		If Not g_L_Particles Then g_L_Particles = CreateList() 
+		g_L_particles.AddLast(part) 
+		
+		sector.AddSpaceObject(part) 
+		
+		Return part
 	End Function
 EndType
