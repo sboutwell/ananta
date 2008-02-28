@@ -25,7 +25,10 @@ rem
 endrem
 
 Type TAttachment Extends TSpaceObject
-	
+	Method Destroy() 
+			
+	End Method
+
 	Function Create:TAttachment(parent:TSpaceObject, image:String, x:Float = 0, y:Float = 0, rot:Float = 0, scaleX:Float = 0, scaleY:Float = 0, onTop:Int = True) 
 		Local a:TAttachment = New TAttachment
 		parent.AddAttachment(a, x, y, rot, onTop) 

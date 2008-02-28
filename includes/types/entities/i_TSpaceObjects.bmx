@@ -33,8 +33,8 @@ Rem
 		TMovingObject
 			TShip
 			TAsteroid
-			TProjectile
 			TParticle
+				TProjectile
 			 
 EndRem
 
@@ -57,7 +57,8 @@ Type TSpaceObject Abstract
 	Field _affectedByGravity:Int = True
 	Field _canCollide:Int = False			' flag to indicate if this object can collide with other objects with the same flag set
 	Field _updated:Int = False			' a flag to indicate if this object has been updated during the frame
-
+	Field _integrity:Float = -1			' the amount of damage the object can handle, -1 for indestructible
+	
 		
 	' attachment-related fields
 	Field _L_TopAttachments:TList		' top attachments to the object	(visually above this object)
@@ -67,6 +68,26 @@ Type TSpaceObject Abstract
 	Field _yOffset:Float = 0			' y-position of the attachment compared to the y of the parent
 	Field _rotationOffset:Float 		' rotation compared to the parent rotation
 	
+	Method Destroy() Abstract
+	
+	Method SustainDamage(dam:Float) 
+		If _integrity = -1 Then Return	' indestructible	
+		_integrity = _integrity - dam
+		If _integrity <= 0 Then Explode() 
+	End Method
+	
+	Method Explode() 
+		' a makeshift "explosion" effect for testing
+		Local expScale:Float = CalcImageSize(_image) / 128.0 * _scaleX * 1.5
+		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 2, expScale, 1, _sector) 
+		part.SetXVel(_xVel) 
+		part.SetYVel(_yVel) 
+		part.SetRot(Rand(0, 360)) 
+		part.SetRotationSpd(Self.GetRotSpd() + Rnd(- 10, 10)) 
+		part._affectedByGravity = True
+		 
+		Destroy() 
+	End Method
 		
 	Method DrawBody(vp:TViewport, drawAsAttachment:Int = False) 
 		
@@ -172,7 +193,7 @@ Type TSpaceObject Abstract
 	Method GetRotSpd:Float()
 		Return _rotationSpd
 	End Method
-
+	
 	Method SetXVel(x:Double) 
 		_xVel = x
 	End Method
@@ -185,6 +206,10 @@ Type TSpaceObject Abstract
 		_rotationSpd = r
 	End Method
 		
+	Method SetRot(r:Float) 
+		_rotation = r
+	End Method
+	
 	Method GetMass:Float() 
 		Return _mass
 	End Method
@@ -205,6 +230,10 @@ Type TSpaceObject Abstract
 		Return _y
 	End Method
 
+	Method GetIntegrity:Float() 
+		Return _integrity
+	End Method
+	
 	Method showsOnMap:Int() 
 		Return _isShownOnMap
 	End Method
@@ -235,6 +264,10 @@ Type TJumpPoint Extends TSpaceObject
 	Global g_L_JumpPoints:TList		' a list to hold all JumpPoints
 	Field _destinationJp:TJumpPoint	' the connected JumpPoint
 	
+	Method Destroy() 
+		
+	End Method
+	
 	Function Create:TJumpPoint(x:Int,y:Int,sector:TSector,destination:TJumpPoint)
 		Local jp:TJumpPoint = New TJumpPoint		' create an instance
 		jp._x = x; jp._y = y						' coordinates
@@ -258,6 +291,10 @@ Type TStellarObject Extends TSpaceObject Abstract
 EndType
 
 Type TStar Extends TStellarObject
+	
+	Method Destroy() 
+		
+	End Method
 
 	' uses Cairo vector graphics library to generate a star image of a radius supplied by a parameter
 	Function GenerateStarTexture:TImage(r:Int) 
@@ -306,6 +343,10 @@ Type TStar Extends TStellarObject
 EndType
 
 Type TPlanet Extends TStellarObject
+	Method Destroy() 
+		
+	End Method
+	
 	Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
 		Local pl:TPlanet = New TPlanet					' create an instance
 		pl._name = name										' give a name
@@ -327,6 +368,10 @@ Type TPlanet Extends TStellarObject
 EndType
 
 Type TSpaceStation Extends TStellarObject
+	Method Destroy() 
+		
+	End Method
+
 	Function Create:TSpaceStation(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
 		Local ss:TSpaceStation = New TSpaceStation	' create an instance
 		ss._name = name										' give a name
@@ -406,9 +451,11 @@ Type TMovingObject Extends TSpaceObject Abstract
 	Method CollideWith(obj:TSpaceObject, actualDistance:Double, collisionDistance:Double) 
 		' Return if the MOVING object we're colliding with hasn't been updated yet
 		' This check ensures that collisions between moving objects are checked only after both
-		' objects' positions have been updated. Failure to do so can lead to a double-collision.
+		' objects' positions have been updated. Failure to do so will lead to a double collision response.
 		If NOT obj._updated AND TMovingObject(obj) Then Return
 		
+		' check for projectile collision
+		CheckProjectileCollision(obj) 
 		
 		' use type casting to convert spaceobject into moving object, if applicable
 		Local mObj:TMovingObject = Null
@@ -443,10 +490,31 @@ Type TMovingObject Extends TSpaceObject Abstract
 		Local optimisedP:Double = (2.0 * (a1 - a2)) / (_mass + obj.GetMass()) 
 		
 		' now find out the resultant vectors
-		optimisedP = optimisedP * 0.7	' 30% elastic collision
-		Self.SetXVel(Self.GetXVel() - (optimisedP * obj.GetMass() * nX)) 
-		Self.SetYVel(Self.GetYVel() - (optimisedP * obj.GetMass() * nY)) 
+		Local elas:Float = 0.7 ' 30% elastic collision
+		Self.SetXVel(Self.GetXVel() - (optimisedP * elas * obj.GetMass() * nX)) 
+		Self.SetYVel(Self.GetYVel() - (optimisedP * elas * obj.GetMass() * nY)) 
 		
+		' find out how much kinetic energy is transformed into damage
+		Local xVelAbsorb:Double = (optimisedP * (1 - elas) * obj.GetMass() * nX) 
+		Local yVelAbsorb:Double = (optimisedP * (1 - elas) * obj.GetMass() * nY) 
+		Local CollEnergy:Float = 0.5 * Self.GetMass() * xVelAbsorb ^ 2 * yVelAbsorb ^ 2 / 100000000
+		
+		'If Self._name = "Player ship" Then
+		'	G_debugWindow.AddText ("CollEnergy: " + collEnergy) 
+		'End If
+		If TStar(obj) Then collEnergy = 99999999
+		If collEnergy > 150 Then SustainDamage(CollEnergy) 
+
+		' damage to the other object...
+		xVelAbsorb:Double = (optimisedP * (1 - elas) * Self.GetMass() * nX) 
+		yVelAbsorb:Double = (optimisedP * (1 - elas) * Self.GetMass() * nY) 
+		CollEnergy:Float = 0.5 * obj.GetMass() * xVelAbsorb ^ 2 * yVelAbsorb ^ 2 / 100000000
+		'If obj._name = "Player ship" Then
+		'	G_debugWindow.AddText ("CollEnergy: " + collEnergy) 
+		'End If
+		If collEnergy > 150 Then obj.SustainDamage(CollEnergy) 
+		
+				
 		'G_DebugWindow.AddText(optimisedP)
 		
 		If mObj Then
@@ -454,9 +522,40 @@ Type TMovingObject Extends TSpaceObject Abstract
 			mObj.SetYVel(mObj.GetYVel() + (optimisedP * Self.GetMass() * nY)) 
 		End If
 		
+		
 		'endrem
 	End Method
-	
+
+	Method CheckProjectileCollision(obj:TSpaceObject) 
+		If TProjectile(Self) And Not TStellarObject(obj) Then
+			Local proj:TProjectile = TProjectile(Self) 
+			Self.SetXVel(obj.GetXVel()) 
+			Self.SetYVel(obj.GetYVel()) 
+			
+			obj.SustainDamage(proj.GetDamage()) 
+			
+			' if the shot object is an asteroid, award the shooter with some shields
+			If TAsteroid(obj) Then proj.GetShooter().SustainDamage(- proj.GetDamage() / 10) 
+			
+			' destroy the projectile
+			Self.Explode() 
+			
+		End If
+		
+		If TProjectile(obj) Then
+			Local proj:TProjectile = TProjectile(obj) 
+			proj.SetXVel(GetXVel()) 
+			proj.SetYVel(GetYVel()) 
+			
+			SustainDamage(proj.GetDamage()) 
+			
+			' if the shot object is an asteroid, award the shooter with some shields
+			If TAsteroid(Self) Then proj.GetShooter().SustainDamage(- proj.GetDamage() / 5) 
+			
+			obj.Explode() 
+		End If
+	EndMethod
+		
 	' CalcOrbitalVelocity calculates the velocity required to maintain a stable orbit around body
 	Method CalcOrbitalVelocity:Double(body:TSpaceObject) 
 		Return Sqr(c_GravConstant * body.GetMass() / Distance(_x, _y, body.GetX(), body.GetY())) 
@@ -518,7 +617,8 @@ EndType
 
 Type TShip Extends TMovingObject
 	Global g_L_Ships:TList					' a list to hold all ships
-
+	Global g_nrShips:Int
+	
 	Field _hull:THull
 	Field _forwardAcceleration:Float			' maximum forward acceleration (calculated by a routine)
 	Field _reverseAcceleration:Float			' maximum reverse acceleration (calculated by a routine)
@@ -537,10 +637,16 @@ Type TShip Extends TMovingObject
 	Field _L_MainEngineEmitters:TList		' particle emitters for main engine trail
 	Field _L_ReverseEngineEmitters:TList	' particle emitters for retro engine trail
 	
+	' temporary fields, integrate these to TWeapon
+	Field _triggerDown:Int = False			' is weapon trigger down
+	Field _ROF:Int = 200					' rate of fire (ms between shots)
+	Field _lastShot:Int						' ms since last shot
+	' --
+	
+	
 	Field _fuel:Float						' on-board fuel for main engines (calculated by a routine)
 	Field _oxygen:Float						' on-board oxygen
 	Field _pilot:TPilot						' The pilot controlling this ship
-	
 	
 	Method Update() 
 		' apply forward and reverse thrusts
@@ -598,6 +704,9 @@ Type TShip Extends TMovingObject
 			'endrem
 		EndIf
 		
+		' firing
+		If _triggerDown Then FireWeapon() 
+		
 		' apply rotation thrusters
 		ApplyRotation(_controllerPosition * _rotAcceleration)
 
@@ -605,7 +714,29 @@ Type TShip Extends TMovingObject
 
 		Super.Update()    ' call update method of TMovingObject
 	EndMethod
-
+	
+	Method FireWeapon() 
+		If MilliSecs() - _lastShot < _ROF Then Return
+		
+		Local shot:TProjectile = TProjectile.Create(TImg.LoadImg("shot.png"), _x, _y, 3, 0.5, 1, _sector) 
+		
+		Local xOff:Float = 25
+		Local yOff:Float = 0
+		Local vel:Float = 800
+		
+		shot._canCollide = True
+		
+	    shot._x = _x + xOff * Cos(_rotation) + yOff * Sin(_rotation) 
+	    shot._y = _y + xOff * Sin(_rotation) - yOff * Cos(_rotation) 
+		shot._rotation = _rotation
+		
+		shot._xVel = _xVel + vel * Cos(_rotation) 
+		shot._yVel = _yVel + vel * Sin(_rotation) 
+		shot.SetShooter(Self) 
+		
+		_lastShot = MilliSecs() 
+	End Method
+		
 	Method GetRotAccel:Float()
 		Return _rotAcceleration
 	End Method
@@ -751,6 +882,15 @@ Type TShip Extends TMovingObject
 		_y = y
 	End Method
 	
+	Method Destroy() 
+		_pilot.Kill() 
+		_pilot = Null
+		
+		_sector.RemoveSpaceObject(self)
+		g_L_Ships.Remove(Self) 
+		g_nrShips:-1
+	End Method
+	
 	Function UpdateAll() 
 		If Not g_L_Ships Then Return
 		For Local o:TShip = EachIn g_L_Ships
@@ -772,9 +912,11 @@ Type TShip Extends TMovingObject
 		sh._name = name					' give a name
 		sh._isShownOnMap = True
 		sh._canCollide = True
+		sh._integrity = sh._hull.GetMass() 
 		
 		If Not g_L_Ships Then g_L_Ships = CreateList() 
 		g_L_Ships.AddLast sh
+		g_nrShips:+1
 		
 		Return sh											' return the pointer to this specific object instance
 	EndFunction
@@ -783,6 +925,20 @@ EndType
 
 Type TAsteroid Extends TMovingObject
 	Global g_L_Asteroids:TList
+	Global g_nrAsteroids:Int
+	
+	Method Destroy() 
+		' remove the asteroid from all lists so that GC can delete the object
+		g_L_Asteroids.Remove(Self) 
+		Self._sector.RemoveSpaceObject(Self) 
+		g_L_MovingObjects.Remove(Self) 
+		g_nrAsteroids:-1
+	End Method
+	
+	' destructor, called automatically by GC
+	Method Delete() 
+		DebugLog "Asteroid deleted by GC"
+	End Method
 	
 	Function Create:TAsteroid(img:String, sector:TSector, x:Float, y:Float, mass:Long) 
 		Local a:TAsteroid = New TAsteroid
@@ -794,9 +950,11 @@ Type TAsteroid Extends TMovingObject
 		a._isShownOnMap = True
 		a._canCollide = True
 		a._affectedByGravity = True
+		a._integrity = mass
 		
 		If Not g_L_Asteroids Then g_L_Asteroids = CreateList() 
 		g_L_Asteroids.AddLast(a) 
+		g_nrAsteroids:+1
 		
 		If Not g_L_MovingObjects Then g_L_MovingObjects = CreateList() 
 		g_L_MovingObjects.AddLast(a) 
@@ -807,9 +965,6 @@ Type TAsteroid Extends TMovingObject
 	End Function
 EndType
 
-Type TProjectile Extends TMovingObject
-
-EndType
 
 ' types directly related to TSpaceObjects
 Include "i_TAttachment.bmx"

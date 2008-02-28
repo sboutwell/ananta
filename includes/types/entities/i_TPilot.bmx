@@ -27,6 +27,8 @@ Type TPilot Abstract
 	Field _health:Int												
 	Field _money:Long
 	
+	Method Kill() Abstract
+	
 	Method SetControlledShip(sh:TShip)
 		_controlledShip = sh
 	End Method
@@ -41,16 +43,32 @@ EndType
 ' TPlayer represents a human pilot
 ' ------------------------------------
 Type TPlayer Extends TPilot
+
+	Method Kill() 
+		SetControlledShip(Null) 
+		'game over?
+	End Method
+
 	' GetInput handles the keyboard and joystick input for the ship
 	Method GetInput()
-		If NOT _controlledShip Then Return	' return if the player has no ship to control
+		If _controlledShip Then
 		' keyboard controls
 		
-		If KeyDown(KEY_UP) _controlledShip.SetThrottle(1) 
-		If KeyDown(KEY_DOWN) 	_controlledShip.SetThrottle(-1)	
-		If KeyDown(KEY_RIGHT) 	_controlledShip.SetController(1)	
-		If KeyDown(KEY_LEFT) 	_controlledShip.SetController(-1)	
-
+			If KeyDown(KEY_UP) _controlledShip.SetThrottle(1) 
+			If KeyDown(KEY_DOWN) _controlledShip.SetThrottle(- 1) 
+			If KeyDown(KEY_RIGHT) _controlledShip.SetController(1) 
+			If KeyDown(KEY_LEFT) _controlledShip.SetController(- 1) 	
+			If KeyDown(KEY_A) Then _controlledShip._TriggerDown = True
+			If Not KeyDown(KEY_A) Then _controlledShip._TriggerDown = False
+			' relase controls if keyboard keys are released
+			If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) 		_controlledShip.SetThrottle(0)
+			If Not KeyDown(KEY_RIGHT) And Not KeyDown(KEY_LEFT) _controlledShip.SetController(0) 
+		EndIf
+		
+		If KeyDown(KEY_F1) Then
+			viewport.ShowInstructions()
+		End If
+		
 		If Not KeyDown(KEY_LSHIFT) And Not KeyDown(KEY_LCONTROL) Then
 			If KeyDown(KEY_Z) Then viewport.ZoomIn() 
 			If KeyDown(KEY_X) Then viewport.ZoomOut() 
@@ -74,14 +92,6 @@ Type TPlayer Extends TPilot
 			viewport.StopZoom() 
 			viewport.GetMiniMap().StopZoom() 
 		EndIf
-
-		If KeyDown(KEY_F1) Then
-			viewport.ShowInstructions()
-		End If
-		
-		' relase controls if keyboard keys are released
-		If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) 		_controlledShip.SetThrottle(0)
-		If Not KeyDown(KEY_RIGHT) And Not KeyDown(KEY_LEFT) 	_controlledShip.SetController(0)
 	EndMethod
 	
 	Function Create:TPlayer(name:String)
@@ -106,12 +116,26 @@ Type TAIPlayer Extends TPilot
 	Field _targetObject:TSpaceObject			' target object (for shooting, pursuing etc)
 	
 
+	Method Kill() 
+		SetControlledShip(Null) 
+		g_L_AIPilots.Remove(Self) 
+	End Method
+
 	' "Think" is the main AI routine to be called
 	Method Think() 
 		If Not _controlledShip Return
 		_desiredRotation = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
 		'_controlledShip.AutoPilotRotation(_desiredRotation) 	' use the ship's autopilot function to rotate the ship as desired
-		RotateTo(_desiredRotation)  	' use the AI logic to manually turn to the desired rotation
+		
+		Local tDist:Double = Distance(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
+		Local rotDiff:Float = Abs(_controlledShip.GetRot() - _desiredRotation) 
+		If tDist > 1000 Or rotDiff > 15 Then
+			RotateTo(_desiredRotation)     	' use the AI logic to manually turn to the desired rotation
+			_controlledShip._triggerDown = False
+		Else
+			RotateTo(_desiredRotation, True)      	' use the AI logic to manually turn to the desired rotation
+			_controlledShip._triggerDown = True
+		EndIf
 	EndMethod
 
 	Method SetTarget(obj:TSpaceObject)
