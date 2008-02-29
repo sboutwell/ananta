@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file is part of Ananta.
+
+    Ananta is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Ananta is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Copyright 2007, 2008 Jussi Pakkanen
+-->
+
+
+<!--Pre-configured ships-->
+<shipmodels>
+  <nadia>
+    <!-- ship id -->
+    <hull>samplehull1</hull>
+    <name>Nadia</name>
+    <description>A small short-range exploration vessel.</description>
+    <components>
+      <engineslot1>
+        <!-- slot ID -->
+        <part1>trilliumengine1</part1>
+      </engineslot1>
+      <engineslot2>
+        <!-- slot ID -->
+        <part1>trilliumengine1</part1>
+      </engineslot2>
+      <leftrotthruster>
+        <!-- slot ID -->
+        <part1>trilliumthruster1</part1>
+      </leftrotthruster>
+      <rightrotthruster>
+        <!-- slot ID -->
+        <part1>trilliumthruster1</part1>
+      </rightrotthruster>
+    </components>
+  </nadia>
+  <olympus>
+    <!-- ship id -->
+    <hull>samplehull2</hull>
+    <name>Olympus</name>
+    <description>Long range fighter.</description>
+    <components>
+      <engineslot1>
+        <!-- slot ID -->
+        <part1>trilliumengine1</part1>
+      </engineslot1>
+      <leftrotthruster>
+        <!-- slot ID -->
+        <part1>trilliumthruster1</part1>
+      </leftrotthruster>
+      <rightrotthruster>
+        <!-- slot ID -->
+        <part1>trilliumthruster1</part1>
+      </rightrotthruster>
+    </components>
+  </olympus>
+</shipmodels>
