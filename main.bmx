@@ -51,7 +51,7 @@ TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
-Local sSize:Int = 100000	' sector size in pixels
+Local sSize:Int = 80000	' sector size in pixels
 Local centralStar:TStar = GenerateTestUniverse(sSize) 
 
 ' generate the player and player's ship
@@ -64,14 +64,14 @@ s1._rotation = 90
 s1.AssignPilot(p1) 
 
 
-' find the closest planet to the center and make the player ship orbit it
+' find the farthest planet to the center and make the player ship orbit it
 Local orbitedPlanet:TStellarObject
-Local minDist:Double = 50000000
+Local maxDist:Double = 0
 For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
 	Local dist:Double = Distance(0, 0,obj.GetX(),obj.GetY())
-	If TPlanet(obj) And dist < minDist Then
+	If TPlanet(obj) And dist > maxDist Then
 		orbitedPlanet = obj
-		minDist = dist
+		maxDist = dist
 	EndIf
 Next
 s1.SetCoordinates(orbitedPlanet.GetX() + OrbitedPlanet.GetSize() * 0.7, orbitedPlanet.GetY()) 
@@ -174,7 +174,7 @@ Function GenerateVectorTextures()
 End Function
 
 Function GenerateTestUniverse:TStar(sSize:Int) 
-	Local asteroids:Int = 50
+	Local asteroids:Int = 30
 	Local planets:Int = 10
 	
 	' generate a sector
@@ -184,7 +184,7 @@ Function GenerateTestUniverse:TStar(sSize:Int)
 	' ================ randomize sector and planetary object for testing ===================
 	SeedRnd(MilliSecs()) 
 	' create a star
-	Local st1:TStar = TStar.Create(0, 0, sector1, 100000, 10, "Sol") 
+	Local st1:TStar = TStar.Create(0, 0, sector1, 100000, 5, "Sol") 
 	st1._image = TImg.LoadImg("star_generated") 
 	st1._rotation = -90
 	st1._scaleX = 10
