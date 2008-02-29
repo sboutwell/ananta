@@ -58,8 +58,8 @@ Type TPlayer Extends TPilot
 			If KeyDown(KEY_DOWN) _controlledShip.SetThrottle(- 1) 
 			If KeyDown(KEY_RIGHT) _controlledShip.SetController(1) 
 			If KeyDown(KEY_LEFT) _controlledShip.SetController(- 1) 	
-			If KeyDown(KEY_A) Then _controlledShip._TriggerDown = True
-			If Not KeyDown(KEY_A) Then _controlledShip._TriggerDown = False
+			If KeyDown(KEY_LCONTROL) Or KeyDown(KEY_RCONTROL) Then _controlledShip._TriggerDown = True
+			If Not KeyDown(KEY_LCONTROL) And Not KeyDown(KEY_RCONTROL) Then _controlledShip._TriggerDown = False
 			' relase controls if keyboard keys are released
 			If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) 		_controlledShip.SetThrottle(0)
 			If Not KeyDown(KEY_RIGHT) And Not KeyDown(KEY_LEFT) _controlledShip.SetController(0) 
@@ -69,22 +69,25 @@ Type TPlayer Extends TPilot
 			viewport.ShowInstructions()
 		End If
 		
-		If Not KeyDown(KEY_LSHIFT) And Not KeyDown(KEY_LCONTROL) Then
-			If KeyDown(KEY_Z) Then viewport.ZoomIn() 
-			If KeyDown(KEY_X) Then viewport.ZoomOut() 
+		If Not KeyDown(KEY_LSHIFT) And ..
+			Not KeyDown(KEY_RSHIFT) And ..
+			Not KeyDown(KEY_RALT) And ..
+			Not KeyDown(KEY_LALT) Then
+				If KeyDown(KEY_Z) Then viewport.ZoomIn() 
+				If KeyDown(KEY_X) Then viewport.ZoomOut() 
 		EndIf
 		
-		If KeyDown(KEY_LSHIFT) Then
+		If KeyDown(KEY_LSHIFT) Or KeyDown(KEY_RSHIFT) Then
 			If KeyDown(KEY_Z) Then viewport.GetMiniMap().ZoomIn() 
 			If KeyDown(KEY_X) Then viewport.GetMiniMap().ZoomOut() 
 		EndIf
 		
-		If KeyDown(KEY_LCONTROL) Then
+		If KeyDown(KEY_LALT) Or KeyDown(KEY_RALT) Then
 			If KeyDown(KEY_Z) Then viewport.ResetZoomFactor() 
 			If KeyDown(KEY_X) Then viewport.GetMiniMap().ResetZoomFactor() 
 		End If
 		
-		If KeyDown(KEY_LALT) Then
+		If KeyDown(KEY_LALT) Or KeyDown(KEY_RALT) Then
 			If KeyDown(KEY_ENTER) Then TViewport.ToggleFullScreen()
 		End If
 		

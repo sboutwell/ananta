@@ -160,7 +160,7 @@ Type TProjectile Extends TParticle
 		part._alpha = alpha
 		part._alphaDelta = alpha / life
 		part._affectedByGravity = False
-		part._isShownOnMap = False
+		part._isShownOnMap = True
 		part._image = img
 		part._sector = sector
 		part._size = 2

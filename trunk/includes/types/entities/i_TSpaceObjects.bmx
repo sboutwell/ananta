@@ -718,9 +718,9 @@ Type TShip Extends TMovingObject
 	Method FireWeapon() 
 		If MilliSecs() - _lastShot < _ROF Then Return
 		
-		Local shot:TProjectile = TProjectile.Create(TImg.LoadImg("shot.png"), _x, _y, 3, 0.5, 1, _sector) 
+		Local shot:TProjectile = TProjectile.Create(TImg.LoadImg("shot.png"), _x, _y, 4, 0.5, 1, _sector) 
 		
-		Local xOff:Float = 25
+		Local xOff:Float = 30
 		Local yOff:Float = 0
 		Local vel:Float = 800
 		
