@@ -252,6 +252,7 @@ Type TViewport
 		G_DebugWindow.AddText("up                   - thrust")
 		G_debugWindow.AddText("down                 - reverse thrust") 
 		G_debugWindow.AddText("ctrl                 - fire") 
+		G_debugWindow.AddText("j                    - jump drive") 
 		G_debugWindow.AddText("z/x                  - zoom in/out") 
 		G_debugWindow.AddText("alt+z                - reset zoom") 
 		G_DebugWindow.AddText("shift+z / shift+x    - map zoom in/out")

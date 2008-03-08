@@ -63,6 +63,12 @@ Type TPlayer Extends TPilot
 			' relase controls if keyboard keys are released
 			If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) 		_controlledShip.SetThrottle(0)
 			If Not KeyDown(KEY_RIGHT) And Not KeyDown(KEY_LEFT) _controlledShip.SetController(0) 
+
+			If KeyDown(KEY_J) Then
+				_controlledShip.JumpDrive(true)
+			Else
+				_controlledShip.JumpDrive(false)		
+			End If
 		EndIf
 		
 		If KeyDown(KEY_F1) Then
@@ -95,6 +101,7 @@ Type TPlayer Extends TPilot
 			viewport.StopZoom() 
 			viewport.GetMiniMap().StopZoom() 
 		EndIf
+		
 	EndMethod
 	
 	Function Create:TPlayer(name:String)

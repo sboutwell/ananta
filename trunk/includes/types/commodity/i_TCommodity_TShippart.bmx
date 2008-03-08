@@ -43,13 +43,17 @@ Type TShippart Extends TCommodity
 	
 	Function LoadAll(RootNode:TxmlNode) 
 		Local searchnode:TxmlNode = xmlGetNode(rootnode, "hulls") 	' find and return the "hulls" node
-		If searchnode <> Null Then THullPrototype.LoadAll(searchnode)		' pass the "hulls" node as a parameter to the LoadAll function
+		If searchnode <> Null Then THullPrototype.LoadAll(searchnode) 		' pass the node as a parameter to the LoadAll function
 
 		searchnode = xmlGetNode(rootnode, "propulsion") 			' find and return the "propulsion" node
-		If searchnode <> Null Then TPropulsion.LoadAll(searchnode)	' pass the "propulsion" node as a parameter to the LoadAll function
+		If searchnode <> Null Then TPropulsion.LoadAll(searchnode) 	' pass the node as a parameter to the LoadAll function
 
-		searchnode = xmlGetNode(rootnode, "fueltanks") 				' find and return the "fueltanks" node
-		If searchnode <> Null Then TFueltank.LoadAll(searchnode)	' pass the "fueltanks" node as a parameter to the LoadAll function
+		searchnode = xmlGetNode(rootnode, "fueltanks")  				' find and return the "fueltanks" node
+		If searchnode <> Null Then TFueltank.LoadAll(searchnode)  	' pass the node as a parameter to the LoadAll function
+		
+		searchnode = xmlGetNode(rootnode, "weapons")   				' find and return the "weapons" node
+		If searchnode <> Null Then TWeapon.LoadAll(searchnode)    	' pass the node as a parameter to the LoadAll function	
+		
 	EndFunction
 EndType
 
@@ -380,6 +384,43 @@ Type TPropulsion Extends TShippart Final
 		g_L_ShipParts.AddLast p
 		
 		Return p	' return the pointer to this specific object instance
+	EndFunction
+EndType
+
+Type TWeapon Extends TShippart Final
+	Global g_L_Weapons:TList				' a list to hold all weapons
+	
+	Function LoadAll(rootnode:TxmlNode)
+		If G_debug Print "    Loading weapons..."
+		
+		Local children:TList = rootnode.getChildren() 			
+		For rootnode = EachIn children							
+			If G_debug Print "      Weapon found: " + rootnode.GetName() 
+			Local weap:TWeapon = TWeapon.Create(rootnode.GetName()) 
+			
+			Local wChildren:TList = rootnode.getChildren() 
+'			For Local value:TxmlNode = EachIn wChildren
+'				If value.GetName() = "damage"		Then weap.damage = value.GetText().ToInt()
+'			Next
+
+			' Load all values common to all commodities and save them to corresponding fields of the object.
+			Super.LoadValues(wChildren, weap)  ' Pass the node list and the newly created object as parameters
+		Next
+		
+		Return
+	EndFunction
+	
+	
+	Function Create:TWeapon(idString:String) 
+		Local w:TWeapon = New TWeapon	' create an instance
+		w._id = idString						' give an ID
+
+		If Not g_L_Weapons Then g_L_Weapons = CreateList() 	' create a list if necessary
+		g_L_Weapons.AddLast w		' add the newly created object to the end of the list
+		If Not g_L_ShipParts Then g_L_ShipParts = CreateList() 
+		g_L_ShipParts.AddLast w
+		
+		Return w	' return the pointer to this specific object instance
 	EndFunction
 EndType
 

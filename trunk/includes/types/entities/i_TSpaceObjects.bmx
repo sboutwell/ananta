@@ -534,6 +534,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 			
 			obj.SustainDamage(proj.GetDamage()) 
 			
+			
 			' if the shot object is an asteroid, award the shooter with some shields
 			If TAsteroid(obj) Then proj.GetShooter().SustainDamage(- proj.GetDamage() / 10) 
 			
@@ -574,9 +575,9 @@ Type TMovingObject Extends TSpaceObject Abstract
 		_xVel = Cos(dir) * vel				 
 	End Method
 	
-	Method UpdatePosition() 
-		_x = _x + _xVel * G_delta.GetDelta() 
-		_y = _y + _yVel * G_delta.GetDelta() 		
+	Method UpdatePosition(jumpValue:Float = 1.0) 
+		_x = _x + _xVel * G_delta.GetDelta() * jumpValue
+		_y = _y + _yVel * G_delta.GetDelta() * jumpValue
 	End Method
 	
 	Method Update() 
@@ -596,7 +597,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		If _rotation>=360 _rotation:-360
 		
 		' update the position
-		UpdatePosition() 
+		UpdatePosition()
     	
 		' call the update-method of TSpaceObject
 		Super.Update() 
@@ -642,7 +643,7 @@ Type TShip Extends TMovingObject
 	Field _ROF:Int = 200					' rate of fire (ms between shots)
 	Field _lastShot:Int						' ms since last shot
 	' --
-	
+	Field _isJumpDriveOn:Int = False
 	
 	Field _fuel:Float						' on-board fuel for main engines (calculated by a routine)
 	Field _oxygen:Float						' on-board oxygen
@@ -712,7 +713,10 @@ Type TShip Extends TMovingObject
 
 		If _controllerPosition = 0 Then ApplyRotKill() 		' if the "joystick" is centered, fire the rotKill thrusters
 
-		Super.Update()    ' call update method of TMovingObject
+		' call update method of TMovingObject
+		Super.Update()
+		
+		If _isJumpDriveOn Then UpdatePosition(20)    
 	EndMethod
 	
 	Method FireWeapon() 
@@ -720,7 +724,7 @@ Type TShip Extends TMovingObject
 		
 		Local shot:TProjectile = TProjectile.Create(TImg.LoadImg("shot.png"), _x, _y, 4, 0.5, 1, _sector) 
 		
-		Local xOff:Float = 30
+		Local xOff:Float = 35
 		Local yOff:Float = 0
 		Local vel:Float = 800
 		
@@ -737,6 +741,17 @@ Type TShip Extends TMovingObject
 		_lastShot = MilliSecs() 
 	End Method
 		
+	Method JumpDrive(isOn:Int)
+		_isJumpDriveOn = isOn
+		
+		If _isJumpDriveOn Then
+			SetThrottle(0)
+			SetController(0)
+			_triggerDown = False
+		EndIf
+
+	End Method
+	
 	Method GetRotAccel:Float()
 		Return _rotAcceleration
 	End Method
