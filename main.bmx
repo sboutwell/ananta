@@ -116,7 +116,6 @@ Next
 viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
 
 
-
 ' Main loop
 While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' calculate the deltatimer (alters global variable G_delta)

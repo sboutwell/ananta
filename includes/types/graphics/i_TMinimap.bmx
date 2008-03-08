@@ -39,6 +39,9 @@ Type TMinimap
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
 	Field _zoomStep:Float = 0.5			' the amount added to the _zoomAmount per each second of zooming
 	
+	' base value for scale gauge step
+	Field _lineStep:Int = 100
+	
 	Field _alpha:Float
 	Field _starColor:TColor
 	Field _planetColor:TColor
@@ -100,6 +103,8 @@ Type TMinimap
 	End Method
 
 	Method DrawDetails() 
+		DrawScale() 
+	 
 		' use type casting to determine if the centered object is a TMovingObject
 		Local obj:TMovingObject = TMovingObject(viewport.GetCenteredObject()) 
 		If Not obj Then Return		' return if object is not a moving object
@@ -121,8 +126,89 @@ Type TMinimap
 		DrawText("Sector map",self._midX-35,self._StartY)
 	End Method	
 		
+	Method DrawScale() 
+		Local lineStepScaled:Double = _lineStep * _scale * _zoomFactor
+		
+		Local k:Int = 0
+		Repeat
+			k:+1
+			lineStepScaled:Double = _lineStep * 10 ^ k * _scale * _zoomFactor
+		Until lineStepScaled > 10
+
+		Local lines:Int = _width / lineStepScaled
+		
+		Local yPos:Int = _height - 5
+		
+		SetScale(1, 1) 
+		SetRotation(0) 
+		SetAlpha(0.5) 
+		SetLineWidth(1) 
+		
+		SetColor(128, 128, 128) 
+		' horizontal line
+		DrawLine(_startX, yPos, _startX + _width, yPos) 
+		
+		For Local i:Int = 1 To lines
+			If i = 10 Then
+				SetColor(255, 255, 255) 
+				DrawLine(_startX + i * lineStepScaled, yPos + 4,  ..
+					_startX + i * lineStepScaled, yPos - 4) 
+				SetColor(128, 128, 128) 
+			ElseIf i = 5 Then
+				SetColor(255, 255, 255) 
+				DrawLine(_startX + i * lineStepScaled, yPos + 2,  ..
+					_startX + i * lineStepScaled, yPos - 2) 
+				SetColor(128, 128, 128) 
+			Else
+				DrawLine(_startX + i * lineStepScaled, yPos + 2,  ..
+					_startX + i * lineStepScaled, yPos - 2) 
+			EndIf
+		Next
+		
+		DisplayLineStep(k) 
+	End Method
+	
+	' draws the scale text indicator on top of the scale line
+	Method DisplayLineStep(k:Int) 
+		Local prefix:String = "k"
+		Local divider:Int = 1000 / _lineStep
+		Local val:Double = 10.0 ^ k / divider
+		
+		If k > 3 Then
+			prefix = "M"
+			val = val / 1000
+		EndIf
+		
+		If k > 6 Then
+			prefix = "G"
+			val = val / 1000
+		EndIf
+
+		If k > 9 Then
+			prefix = "T"
+			val = val / 1000
+		End If
+		
+		If k > 12 Then
+			prefix = "P"
+			val = val / 1000
+		End If
+		
+		If k > 15 Then
+			prefix = "E"
+			val = val / 1000
+		End If
+		
+		SetScale(1, 1) 
+		SetRotation(0) 
+		SetBlend(ALPHABLEND) 
+		SetAlpha(0.6) 
+		SetColor(128, 128, 128) 
+		DrawText(Int(val) + prefix, _startX + 5, _startY + _height - 20) 
+	End Method
+	
 	Method DrawBackground()
-		SetScale(1,1)
+		SetScale(1, 1) 
 		SetAlpha(0.15)
 		SetColor(64,64,255)
 		DrawRect(_startX,_startY,_width,_height)

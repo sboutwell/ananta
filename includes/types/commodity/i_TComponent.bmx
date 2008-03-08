@@ -46,6 +46,7 @@ Type TComponent
 	
 	Method getType:String() 
 		If TPropulsion(_shipPart) Then Return "engine"
+		If TWeapon(_shipPart) Then Return "weapon"
 		Return Null
 	End Method
 	

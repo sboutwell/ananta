@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
+
 <!--
 This file is part of Ananta.
 
@@ -18,7 +19,6 @@ This file is part of Ananta.
 
 Copyright 2007, 2008 Jussi Pakkanen
 -->
-
 <commodities>
   <shipparts>
     <!-- commodity type: SHIPPARTS (special type) -->
@@ -44,7 +44,7 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- the diameter of the hull in meters (for radar blip size, rotational physics and rough collision detection) -->
         <thrusterpos>40</thrusterpos>
         <!-- distance (in meters) of the rotation thrusters from the center of the mass -->
-        <maxspeed>100</maxspeed>
+        <maxspeed>1000</maxspeed>
         <!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
         <maxrotspd>270</maxrotspd>
         <!-- the maximum rotational speed (deg/s) allowed for this hull -->
@@ -111,6 +111,16 @@ Copyright 2007, 2008 Jussi Pakkanen
             <location>external</location>
             <!-- internal/external, affects received damage -->
           </engineslot2>
+          <weaponslot1>
+            <!-- slot ID -->
+            <type>weapon</type>
+            <volume>10</volume>
+            <!-- volume of the slot in m^3 -->
+            <location>external</location>
+            <!-- internal/external, affects received damage -->
+            <xoffset>30</xoffset>
+            <yoffset>0</yoffset>
+          </weaponslot1>
           <equipmentslot1>
             <!-- slot ID -->
             <type>equipment</type>
@@ -162,7 +172,7 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- the diameter of the hull in meters (for radar blip size, rotational physics and rough collision detection) -->
         <thrusterpos>25</thrusterpos>
         <!-- distance (in meters) of the rotation thrusters from the center of the mass -->
-        <maxspeed>60</maxspeed>
+        <maxspeed>800</maxspeed>
         <!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
         <maxrotspd>180</maxrotspd>
         <!-- the maximum rotational speed (deg/s) allowed for this hull -->
@@ -219,6 +229,16 @@ Copyright 2007, 2008 Jussi Pakkanen
             <location>external</location>
             <!-- internal/external, affects received damage -->
           </engineslot1>
+          <weaponslot1>
+            <!-- slot ID -->
+            <type>weapon</type>
+            <volume>10</volume>
+            <!-- volume of the slot in m^3 -->
+            <location>external</location>
+            <!-- internal/external, affects received damage -->
+            <xoffset>35</xoffset>
+            <yoffset>0</yoffset>
+          </weaponslot1>
           <equipmentslot1>
             <!-- slot ID -->
             <type>equipment</type>
@@ -329,6 +349,20 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- tank volume in m^3 -->
       </tank20k>
     </fueltanks>
+    <weapons>
+      <blaster1>
+        <name>Ion blaster</name>
+        <unit>piece</unit>
+        <mass>500</mass>
+        <avgprice>2000</avgprice>
+        <volume>10</volume>
+        <type>projectile</type>
+        <damage>500</damage>
+        <velocity>800</velocity>
+        <ttl>4</ttl>
+        <rof>200</rof>
+      </blaster1>
+    </weapons>
   </shipparts>
   <fuels>
     <!-- commodity type: FUEL (special type) -->
