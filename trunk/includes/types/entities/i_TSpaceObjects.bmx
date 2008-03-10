@@ -638,11 +638,13 @@ Type TShip Extends TMovingObject
 	Field _L_MainEngineEmitters:TList		' particle emitters for main engine trail
 	Field _L_ReverseEngineEmitters:TList	' particle emitters for retro engine trail
 	
-	' temporary fields, integrate these to TWeapon
-	Field _triggerDown:Int = False			' is weapon trigger down
-	Field _ROF:Int = 200					' rate of fire (ms between shots)
+	Field _L_Weapons:TList					' list holding all weapons as TComponent
+	Field _selectedWeaponSlot:TSlot
+	Field _selectedWeapon:TWeapon
+	
 	Field _lastShot:Int						' ms since last shot
-	' --
+	Field _triggerDown:Int = False			' is weapon trigger down
+	
 	Field _isJumpDriveOn:Int = False
 	
 	Field _fuel:Float						' on-board fuel for main engines (calculated by a routine)
@@ -720,18 +722,22 @@ Type TShip Extends TMovingObject
 	EndMethod
 	
 	Method FireWeapon() 
-		If MilliSecs() - _lastShot < _ROF Then Return
+		If Not _selectedWeaponSlot Then Return
+		If Not _selectedWeapon Then Return
 		
-		Local shot:TProjectile = TProjectile.Create(TImg.LoadImg("shot.png"), _x, _y, 4, 0.5, 1, _sector) 
+		If MilliSecs() - _lastShot < _selectedWeapon._ROF Then Return
+		Local vel:Int = _selectedWeapon.GetVelocity() 
+		Local TTL:Int = _selectedWeapon.GetRange() / vel
 		
-		Local xOff:Float = 35
-		Local yOff:Float = 0
-		Local vel:Float = 800
+		Local shot:TProjectile = TProjectile.Create(TImg.LoadImg("shot.png"), _x, _y, TTL, 0.5, 1, _sector) 
+		
+		Local xOff:Float = _selectedWeaponSlot.GetXOffSet() 
+		Local yOff:Float = _selectedWeaponSlot.GetYOffSet() 
 		
 		shot._canCollide = True
 		
-	    shot._x = _x + xOff * Cos(_rotation) + yOff * Sin(_rotation) 
-	    shot._y = _y + xOff * Sin(_rotation) - yOff * Cos(_rotation) 
+	    shot._x = _x + yOff * Cos(_rotation) + xOff * Sin(_rotation) 
+	    shot._y = _y + yOff * Sin(_rotation) - xOff * Cos(_rotation) 
 		shot._rotation = _rotation
 		
 		shot._xVel = _xVel + vel * Cos(_rotation) 
@@ -839,8 +845,21 @@ Type TShip Extends TMovingObject
 		For Local slot:TSlot = EachIn _hull.GetSlotList() 
 			If slot.GetComponentList() Then	' if this slot has components, iterate through all of them
 				For Local component:TComponent = EachIn slot.GetComponentList() 
-					If slot.isEngine() Then _engineThrust = _engineThrust + component.GetThrust() 
-					If slot.isRotThruster() Then _rotThrust = _rotThrust + component.GetThrust() 
+					If slot.isEngine() Then
+						If component.getType() = "engine" Then
+							Local prop:TPropulsion = TPropulsion(component.GetShipPart()) 
+							_engineThrust = _engineThrust + prop.GetThrust() 
+						EndIf
+					EndIf
+					If slot.isRotThruster() Then
+						If component.getType() = "engine" Then
+							Local prop:TPropulsion = TPropulsion(component.GetShipPart()) 
+							_rotThrust = _rotThrust + prop.GetThrust() 
+						EndIf
+					EndIf
+					If slot.isWeapon() Then
+						If component.getType() = "weapon" Then AddWeapon(component, slot) 
+					End If
 					' add the mass of the component to the ship's total mass
 					_mass = _mass + component.GetShipPartMass() 
 				Next
@@ -858,6 +877,14 @@ Type TShip Extends TMovingObject
 		_reverseAcceleration = ((_engineThrust * _hull.GetReverserRatio()) / _mass) 
 		_rotAcceleration = (RadToDeg(CalcRotAcceleration(_rotThrust, _size, _mass, _hull.GetThrusterPos()))) 
 		_maxRotationSpd = _hull.GetMaxRotationSpd() 		
+	End Method
+	
+	Method AddWeapon(comp:TComponent, slot:TSlot) 
+		Local weap:TWeapon = TWeapon(comp.GetShipPart()) 
+		If Not _L_Weapons Then _L_Weapons = CreateList() 
+		_L_Weapons.AddLast(comp) 
+		_SelectedWeapon = weap
+		_SelectedWeaponSlot = slot
 	End Method
 	
 	Method AssignPilot(p:TPilot)

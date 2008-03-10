@@ -133,7 +133,7 @@ Type TMinimap
 		Repeat
 			k:+1
 			lineStepScaled:Double = _lineStep * 10 ^ k * _scale * _zoomFactor
-		Until lineStepScaled > 10
+		Until lineStepScaled > 7
 
 		Local lines:Int = _width / lineStepScaled
 		
@@ -144,25 +144,34 @@ Type TMinimap
 		SetAlpha(0.5) 
 		SetLineWidth(1) 
 		
-		SetColor(128, 128, 128) 
-		' horizontal line
-		DrawLine(_startX, yPos, _startX + _width, yPos) 
+		' center vertical line
+		SetColor(255, 255, 255) 
+		DrawLine(_midX, yPos + 6, _midX, yPos - 6, False) 
 		
-		For Local i:Int = 1 To lines
-			If i = 10 Then
+		' horizontal line
+		SetColor(128, 128, 128) 
+		DrawLine(_startX, yPos, _startX + _width, yPos, False) 
+		
+		' lines to the left of the center object
+		For Local i:Int = 1 To lines / 2
+			If i Mod 5 = 0 Then
 				SetColor(255, 255, 255) 
-				DrawLine(_startX + i * lineStepScaled, yPos + 4,  ..
-					_startX + i * lineStepScaled, yPos - 4) 
-				SetColor(128, 128, 128) 
-			ElseIf i = 5 Then
-				SetColor(255, 255, 255) 
-				DrawLine(_startX + i * lineStepScaled, yPos + 2,  ..
-					_startX + i * lineStepScaled, yPos - 2) 
-				SetColor(128, 128, 128) 
 			Else
-				DrawLine(_startX + i * lineStepScaled, yPos + 2,  ..
-					_startX + i * lineStepScaled, yPos - 2) 
+				SetColor(128, 128, 128) 
 			EndIf
+			DrawLine(_midX - i * lineStepScaled, yPos + 2,  ..
+					_midX - i * lineStepScaled, yPos - 2) 
+		Next
+		
+		' lines to the right of the center object
+		For Local i:Int = 1 To lines / 2
+			If i Mod 5 = 0 Then
+				SetColor(255, 255, 255) 
+			Else
+				SetColor(128, 128, 128) 
+			EndIf
+			DrawLine(_midX + i * lineStepScaled, yPos + 2,  ..
+					_midX + i * lineStepScaled, yPos - 2) 
 		Next
 		
 		DisplayLineStep(k) 

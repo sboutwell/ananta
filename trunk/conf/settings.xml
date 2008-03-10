@@ -80,15 +80,6 @@ Copyright 2007, 2008 Jussi Pakkanen
     <bitdepth>0</bitdepth>
     <!-- The refresh rate for fullscreen mode. Zero for defaults.-->
     <refreshrate>60</refreshrate>
-    <!-- Flag for screen offset (camera leading in front of the moving ship) -->
-    <!-- NOT USED -->
-    <screenoffset>True</screenoffset>
-    <!-- The bigger the magnitude the less offset there is-->
-    <!-- NOT USED -->
-    <screenoffsetmagnitude>4</screenoffsetmagnitude>
-    <!-- Elasticity factor (how smooth camera transitions for offset are)-->
-    <!-- NOT USED -->
-    <screenelasticity>0.08</screenelasticity>
     <!-- Starting ship for the player -->
     <!-- NOT USED -->
     <startership>nadia</startership>

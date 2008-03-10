@@ -244,7 +244,8 @@ Type TViewport
 		_isZooming = False
 	End Method
 	
-	Method ShowInstructions()
+	Method ShowInstructions() 
+		' externalize to a text file
 		G_DebugWindow.AddText("")
 		G_DebugWindow.AddText("============== Controls ==============")
 		G_DebugWindow.AddText("left                 - rotate left")

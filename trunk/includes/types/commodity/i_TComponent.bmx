@@ -38,10 +38,8 @@ Type TComponent
 		Return _ShipPart.GetMass()
 	End Method
 	
-	Method GetThrust:Float() 
-		Local engine:TPropulsion = TPropulsion(_ShipPart)  ' use casting to test the type
-		If not engine Then Return Null	' component is not of type TPropulsion
-		Return engine.GetThrust() 
+	Method GetShipPart:TShippart() 
+		Return _ShipPart
 	End Method
 	
 	Method getType:String() 
