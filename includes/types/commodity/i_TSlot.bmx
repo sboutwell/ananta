@@ -31,6 +31,9 @@ Type TSlot Final
 								' Thrusters and engines need to have exposure! Also, weapons in the future need exposure.
 								' Exposed slots take even more damage than external!
 	
+	Field _xOffSet:Float		' in case of a visual representation of a component, offset defines the position...
+	Field _yOffSet:Float		' ... relative to the object center
+	
 	Method isEngine:Int() 
 		If _slottype = "engine" Then Return True
 		Return False
@@ -45,6 +48,10 @@ Type TSlot Final
 	End Method
 	Method isEquipment:Int() 
 		If _slottype = "equipment" Then Return True
+		Return False
+	End Method
+	Method isWeapon:Int() 
+		If _slottype = "weapon" Then Return True
 		Return False
 	End Method
 																
@@ -72,6 +79,14 @@ Type TSlot Final
 		Return _exposedDir
 	End Method
 
+	Method GetXOffSet:Float() 
+		Return _xOffSet
+	End Method
+	
+	Method GetYOffSet:Float() 
+		Return _yOffSet
+	End Method
+	
 	Method SetVolume(fl:float)
 		_volume = fl
 	End Method
@@ -86,6 +101,14 @@ Type TSlot Final
 	
 	Method SetSlotType(st:String) 
 		_SlotType = st
+	End Method
+	
+	Method SetXOffSet(off:Float) 
+		_xOffSet = off
+	End Method
+
+	Method SetYOffSet(off:Float) 
+		_yOffSet = off
 	End Method
 	
 	Method RemoveComponent:Int(comp:TComponent) 
@@ -121,6 +144,13 @@ Type TSlot Final
 			comp.assignSlot(Self)  		 ' tell the component that it's installed in this slot
 			Return True
 		EndIf
+		
+		If compType = "weapon" And ..
+			(_slotType = "weapon") Then
+			_L_components.AddLast(comp)   ' add the component to the slot
+			comp.assignSlot(Self)  		 ' tell the component that it's installed in this slot
+			Return True			
+		End If
 		
 		' trying to install something that doesn't fit in this slot
 		If G_debug Then Print "Component " + compType + " does not fit in slot " + _slotType

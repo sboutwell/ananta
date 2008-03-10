@@ -100,6 +100,8 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- main engines always point behind... other directions have no effect -->
             <location>external</location>
             <!-- internal/external, affects received damage -->
+	    <xoffset>-5</xoffset>
+	    <yoffset>-45</yoffset>
           </engineslot1>
           <engineslot2>
             <!-- slot ID -->
@@ -110,6 +112,8 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- main engines always point behind... other directions have no effect -->
             <location>external</location>
             <!-- internal/external, affects received damage -->
+	    <xoffset>5</xoffset>
+	    <yoffset>-45</yoffset>	    
           </engineslot2>
           <weaponslot1>
             <!-- slot ID -->
@@ -118,8 +122,8 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- volume of the slot in m^3 -->
             <location>external</location>
             <!-- internal/external, affects received damage -->
-            <xoffset>30</xoffset>
-            <yoffset>0</yoffset>
+            <xoffset>0</xoffset>
+            <yoffset>30</yoffset>
           </weaponslot1>
           <equipmentslot1>
             <!-- slot ID -->
@@ -132,6 +136,7 @@ Copyright 2007, 2008 Jussi Pakkanen
         </slots>
         <emitters>
           <!-- particle emitters (engine trails) -->
+	  <!-- NOT USED -->
           <main1>
             <type>main</type>
             <x>0</x>
@@ -236,8 +241,8 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- volume of the slot in m^3 -->
             <location>external</location>
             <!-- internal/external, affects received damage -->
-            <xoffset>35</xoffset>
-            <yoffset>0</yoffset>
+            <xoffset>0</xoffset>
+            <yoffset>35</yoffset>
           </weaponslot1>
           <equipmentslot1>
             <!-- slot ID -->
@@ -359,8 +364,8 @@ Copyright 2007, 2008 Jussi Pakkanen
         <type>projectile</type>
         <damage>500</damage>
         <velocity>800</velocity>
-        <ttl>4</ttl>
         <rof>200</rof>
+	<range>3000</range>
       </blaster1>
     </weapons>
   </shipparts>

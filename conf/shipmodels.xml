@@ -44,6 +44,9 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- slot ID -->
         <part1>trilliumthruster1</part1>
       </rightrotthruster>
+	<weaponslot1>
+	  <part1>blaster1</part1>
+	</weaponslot1>      
     </components>
   </nadia>
   <olympus>
@@ -64,6 +67,9 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- slot ID -->
         <part1>trilliumthruster1</part1>
       </rightrotthruster>
+	<weaponslot1>
+	  <part1>blaster1</part1>
+	</weaponslot1>
     </components>
   </olympus>
 </shipmodels>

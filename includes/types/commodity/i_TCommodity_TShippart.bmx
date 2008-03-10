@@ -192,6 +192,8 @@ Type THull Extends TShippart
 		slot.SetExposedDir(protoslot.GetExposedDir())
 		slot.SetLocation(protoslot.GetLocation()) 
 		slot.SetSlotType(protoslot.getSlotType()) 
+		slot.SetXOffSet(protoslot.GetXOffSet()) 
+		slot.SetYOffSet(protoslot.GetYOffSet()) 
 	End Function
 EndType
 
@@ -237,7 +239,9 @@ Type THullPrototype Extends THull
 				' assign the rest of the slot characteristics to their corresponding fields
 				If value.GetName() = "volume" 	Then slot.SetVolume (value.GetText().ToFloat())
 				If value.GetName() = "exposure" Then slot.SetExposedDir (value.GetText())
-				If value.GetName() = "location"	Then slot.SetLocation (value.GetText())
+				If value.GetName() = "location" Then slot.SetLocation (value.GetText()) 
+				If value.getName() = "xoffset" Then slot.SetXOffset (value.GetText().ToFloat()) 
+				If value.getName() = "yoffset" Then slot.SetYOffset (value.GetText().ToFloat()) 
 			Next
 		Next
 
@@ -389,6 +393,31 @@ EndType
 
 Type TWeapon Extends TShippart Final
 	Global g_L_Weapons:TList				' a list to hold all weapons
+	Field _damage:Float
+	Field _ROF:Int			' rate of fire (ms)
+	Field _range:Int		' range in pixels
+	Field _type:String		' projectile, beam, missile
+	Field _velocity:Int		' projectile/missile velocity
+	
+	Method GetROF:Int() 
+		Return _ROF
+	End Method
+	
+	Method GetRange:Int() 
+		Return _range
+	End Method
+	
+	Method GetType:String() 
+		Return _type
+	End Method
+	
+	Method GetVelocity:Int() 
+		Return _velocity
+	End Method
+	
+	Method GetDamage:Float() 
+		Return _damage
+	End Method
 	
 	Function LoadAll(rootnode:TxmlNode)
 		If G_debug Print "    Loading weapons..."
@@ -399,9 +428,13 @@ Type TWeapon Extends TShippart Final
 			Local weap:TWeapon = TWeapon.Create(rootnode.GetName()) 
 			
 			Local wChildren:TList = rootnode.getChildren() 
-'			For Local value:TxmlNode = EachIn wChildren
-'				If value.GetName() = "damage"		Then weap.damage = value.GetText().ToInt()
-'			Next
+			For Local value:TxmlNode = EachIn wChildren
+				If value.GetName() = "damage" Then weap._damage = value.GetText().ToFloat() 
+				If value.GetName() = "type" Then weap._type = value.GetText().ToString() 
+				If value.GetName() = "rof" Then weap._ROF = value.GetText().ToInt() 
+				If value.GetName() = "range" Then weap._range = value.GetText().ToInt() 
+				If value.GetName() = "velocity" Then weap._velocity = value.GetText().ToInt() 
+			Next
 
 			' Load all values common to all commodities and save them to corresponding fields of the object.
 			Super.LoadValues(wChildren, weap)  ' Pass the node list and the newly created object as parameters
