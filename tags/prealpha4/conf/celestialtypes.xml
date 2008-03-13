@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file is part of Ananta.
+
+    Ananta is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Ananta is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Copyright 2007, 2008 Jussi Pakkanen
+-->
+
+<!--Stellar objects-->
+<celestialtypes>
+	<stars>
+		<sun1>	<!-- Stellar object ID -->
+			<image>sun1.png</image>	<!-- the pic representing this object -->
+			<description>A middle-aged yellow star.</description>
+			<minscale>1</minscale>		<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>1000000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		</sun1>		
+		<sun2>
+			<image>redgiant1.png</image>	<!-- the pic representing this object -->
+			<description>An ancient red giant star.</description>
+			<minscale>1.5</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>10000000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->		
+		</sun2>
+		<sun3>
+			<image>whitedwarf1.png</image>	<!-- the pic representing this object -->
+			<description>A cold supernova remnant that used to be a sun.</description>
+			<minscale>0.5</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>1</maxscale>	<!-- the max scale of the visual image -->
+			<mass>100000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->		
+		</sun3>
+	</stars>
+	
+	<planets>
+		<rocky1>	<!-- Stellar object ID -->
+			<image>planet1.png</image>	<!-- the pic representing this object -->
+			<description>A rocky planet with no atmosphere.</description>
+			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>50000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		</rocky1>
+		<gas1>	<!-- Stellar object ID -->
+			<image>gasplanet1.png</image>	<!-- the pic representing this object -->
+			<description>A gas giant with a solid core.</description>
+			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>150000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		</gas1>
+		<terra1>	<!-- Stellar object ID -->
+			<image>terra1.png</image>	<!-- the pic representing this object -->
+			<description>A cold planet with large polar caps and indigenous life near the equator.</description>
+			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>15000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		</terra1>
+		<terra2>	<!-- Stellar object ID -->
+			<image>terra2.png</image>	<!-- the pic representing this object -->
+			<description>A lush and wet jungle planet teeming with life.</description>
+			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
+			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
+			<mass>15000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		</terra2>
+	</planets>
+</celestialtypes>
