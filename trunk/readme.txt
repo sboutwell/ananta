@@ -58,7 +58,7 @@ Controls:
 	Up arrow        - forward thrust
 	Down arrow      - reverse thrust
 	Ctrl            - fire weapon
-	
+	j		- jump drive
 	z               - viewport zoom in
 	x               - viewport zoom out
 	shift+z         - minimap zoom in
