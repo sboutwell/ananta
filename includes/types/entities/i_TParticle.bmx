@@ -69,22 +69,22 @@ EndType
 
 Type TParticleGenerator Extends TMovingObject
 	Field _life:Float			' life of the particle in seconds
-	Field _meanVel:Float 		' velocity of an emitted particle
+	Field _meanVel:Float 		' base velocity of an emitted particle
 	Field _randomDir:Float = 0	' amount of randomness to the direction of the particle
 	Field _randomVel:Float = 0	' amount of randomness to the velocity of the particle
 	Field _particleImg:TImage
+	Field _interval:Int			' particles emitting interval in ms
+	Field _lastEmit:Int			' last emit in MilliSecs()
 	
 	Method Emit(vel:Float = Null) 
 		If Not vel Then vel = _meanVel
 		
-		rem
-		Local part:TParticle = TParticle.Create(_particleImg, _x, _y, _life, _scaleX, _alpha) 
+		Local part:TParticle = TParticle.Create(_particleImg, _x, _y, _life, _scaleX, _alpha, _sector) 
 		Local randDir:Float = Rand(- _randomDir, _randomDir) 
 		Local randVel:Float = Rand(- _randomVel, _randomVel) 
 		part.SetXVel(_xVel - (vel + randVel) * Cos(_rotation + randDir)) 
 		part.SetYVel(_yVel - (vel + randVel) * Sin(_rotation + randDir)) 
 		part._rotation = _rotation
-		endrem
 	End Method
 	
 	Method SetRandomDir(dir:Float) 

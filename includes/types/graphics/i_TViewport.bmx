@@ -38,8 +38,8 @@ Type TViewport
 	Field _height:Int
 	Field _midX:Int
 	Field _midY:Int
-	Field _cameraPosition_X:Float
-	Field _cameraPosition_Y:Float
+	Field _cameraPosition_X:Double
+	Field _cameraPosition_Y:Double
 	Field _centeredObject:TSpaceObject	' the object the camera is centered on
 	Field _marginalTop:Int
 	Field _marginalBottom:Int
@@ -116,7 +116,8 @@ Type TViewport
 		Else
 			SetAlpha 0.95
 		EndIf
-		TileImage G_media_spacedust, _CameraPosition_X * _zoomFactor, _CameraPosition_Y * _zoomFactor
+		'TileImage G_media_spacedust, _CameraPosition_X * _zoomFactor, _CameraPosition_Y * _zoomFactor
+		TileImage G_media_spacedust, _CameraPosition_X, _CameraPosition_Y
 		' ---------
 		
 		' draw a colored border around the viewport

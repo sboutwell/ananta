@@ -436,7 +436,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 	End Method
 
 	Method ApplyGravityAndCollision() 
-		' don't bother iterating if gravity or collisions have no effect to this object
+		' don't bother iterating if gravity and collisions have no effect to this object
 		If Not _affectedByGravity And Not _canCollide Then Return
 		
 		' iterate through all objects in the active sector
@@ -455,7 +455,15 @@ Type TMovingObject Extends TSpaceObject Abstract
 		If NOT obj._updated AND TMovingObject(obj) Then Return
 		
 		' check for projectile collision
-		CheckProjectileCollision(obj) 
+		Local proj:TProjectile = TProjectile(Self) 
+		Local proj2:TProjectile = TProjectile(obj) 
+		If proj Or proj2 Then
+			Local ship:TShip = TShip(obj) 
+			' don't collide if the projectile was shot by the colliding ship
+			If ship And proj And proj._shotBy = ship Then Return
+			If ship And proj2 And proj2._shotBy = ship Then Return
+			CheckProjectileCollision(obj) 
+		EndIf
 		
 		' use type casting to convert spaceobject into moving object, if applicable
 		Local mObj:TMovingObject = Null
@@ -527,8 +535,8 @@ Type TMovingObject Extends TSpaceObject Abstract
 	End Method
 
 	Method CheckProjectileCollision(obj:TSpaceObject) 
-		If TProjectile(Self) And Not TStellarObject(obj) Then
-			Local proj:TProjectile = TProjectile(Self) 
+		Local proj:TProjectile = TProjectile(Self) 
+		If proj Then
 			Self.SetXVel(obj.GetXVel()) 
 			Self.SetYVel(obj.GetYVel()) 
 			
@@ -624,7 +632,8 @@ Type TShip Extends TMovingObject
 	Field _forwardAcceleration:Float			' maximum forward acceleration (calculated by a routine)
 	Field _reverseAcceleration:Float			' maximum reverse acceleration (calculated by a routine)
 	Field _rotAcceleration:Float				' maximum rotation acceleration (calculated by a routine)
-	Field _engineThrust:Float				' thrust (in newtons) given by the ship's engines
+	Field _engineThrust:Float				' thrust (in newtons) given by the ship's main engines
+	Field _reverseThrust:Float				' thrust (in newtons) given by the ship's reverse engines
 	Field _rotThrust:Float					' thrust (in newtons) given by the ship's rotation thrusters
 	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per second)
 	Field _rotKillPercentage:Float = 0.8		' the magnitude of the rotation damper. Values 0 to 1. 1 means max efficiency.
@@ -635,8 +644,7 @@ Type TShip Extends TMovingObject
 	Field _throttlePosition:Float = 0		' -1 = full back, +1 = full forward
 	Field _controllerPosition:Float = 0		' -1 = full left, +1 = full right
 
-	Field _L_MainEngineEmitters:TList		' particle emitters for main engine trail
-	Field _L_ReverseEngineEmitters:TList	' particle emitters for retro engine trail
+	Field _L_Engines:TList					' all ship's engines as TComponent
 	
 	Field _L_Weapons:TList					' list holding all weapons as TComponent
 	Field _selectedWeaponSlot:TSlot
@@ -657,54 +665,37 @@ Type TShip Extends TMovingObject
 			ApplyImpulse(_throttlePosition * _forwardAcceleration) 
 			
 			' add the engine trail effect
-			If _L_mainEngineEmitters Then
-				For Local emitter:TParticleGenerator = EachIn _L_mainEngineEmitters
-					emitter.Emit(_throttlePosition * _forwardAcceleration) 
+			If _L_Engines Then
+				For Local eng:TComponent = EachIn _L_Engines
+					If eng.GetSlot().GetExposedDir() = "tail" Then
+						Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"),  ..
+						_x + eng.GetSlot().GetYOffSet() * Cos(_rotation) + eng.GetSlot().GetXOffSet() * Sin(_rotation),  ..
+						_y + eng.GetSlot().GetYOffSet() * Sin(_rotation) - eng.GetSlot().GetXOffSet() * Cos(_rotation),  ..
+						0.1, 0.03, 0.5, _sector) 
+						Local randDir:Float = Rand(- 2, 2) 
+						part._xVel = _xVel - 150 * Cos(_rotation + randDir) 
+						part._yVel = _yVel - 150 * Sin(_rotation + randDir) 
+						part._rotation = _rotation											
+					EndIf
 				Next
 			EndIf
-			
-			' temporary engine trail emitting until the code above gets functional
-			'rem
-			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) + 2 * Sin(_rotation), _y - 27 * Sin(_rotation) - 2 * Cos(_rotation), 0.1, 0.03, 0.5,_sector) 
-			Local randDir:Float = Rand(- 2, 2) 
-			part._xVel = _xVel - 150 * Cos(_rotation + randDir) 
-			part._yVel = _yVel - 150 * Sin(_rotation + randDir) 
-			part._rotation = _rotation
-			'endrem
-			'rem
-			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x - 27 * Cos(_rotation) - 2 * Sin(_rotation), _y - 27 * Sin(_rotation) + 2 * Cos(_rotation), 0.1, 0.03, 0.5,_sector ) 
-			randDir:Float = Rand(- 2, 2) 
-			part._xVel = _xVel - 150 * Cos(_rotation + randDir) 
-			part._yVel = _yVel - 150 * Sin(_rotation + randDir) 
-			part._rotation = _rotation
-			'endrem
 			
 		EndIf
 		If _throttlePosition < 0 Then
 			ApplyImpulse(_throttlePosition * _reverseAcceleration) 
-			
-			' add the engine trail effect
-			If _L_reverseEngineEmitters Then
-				For Local emitter:TParticleGenerator = EachIn _L_reverseEngineEmitters
-					emitter.Emit(_throttlePosition * _reverseAcceleration) 
-				Next
-			EndIf
-			
-			' temporary engine trail emitting until the code above gets functional
-			'rem
-			' add the engine trail effect
-			Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) + 7 * Sin(_rotation), _y + 6 * Sin(_rotation) - 7 * Cos(_rotation), 0.1, 0.03, 0.3,_sector) 
-			Local randDir:Float = Rand(- 2, 2) 
-			part._xVel = _xVel - 100 * _throttlePosition * Cos(_rotation + randDir) 
-			part._yVel = _yVel - 100 * _throttlePosition * Sin(_rotation + randDir) 
-			part._rotation = _rotation + 180
-			
-			part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"), _x + 6 * Cos(_rotation) - 7 * Sin(_rotation), _y + 6 * Sin(_rotation) + 7 * Cos(_rotation), 0.1, 0.03, 0.3,_sector) 
-			randDir:Float = Rand(- 2, 2) 
-			part._xVel = _xVel - 100 * _throttlePosition * Cos(_rotation + randDir) 
-			part._yVel = _yVel - 100 * _throttlePosition * Sin(_rotation + randDir) 
-			part._rotation = _rotation + 180
-			'endrem
+
+			For Local eng:TComponent = EachIn _L_Engines
+				If eng.GetSlot().GetExposedDir() = "nose" Then
+					Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"),  ..
+					_x + eng.GetSlot().GetYOffSet() * Cos(_rotation) + eng.GetSlot().GetXOffSet() * Sin(_rotation),  ..
+					_y + eng.GetSlot().GetYOffSet() * Sin(_rotation) - eng.GetSlot().GetXOffSet() * Cos(_rotation),  ..
+					0.1, 0.03, 0.5, _sector) 
+					Local randDir:Float = Rand(- 2, 2) 
+					part._xVel = _xVel + 150 * Cos(_rotation + randDir) 
+					part._yVel = _yVel + 150 * Sin(_rotation + randDir) 
+					part._rotation = _rotation + 180
+				EndIf
+			Next
 		EndIf
 		
 		' firing
@@ -840,6 +831,7 @@ Type TShip Extends TMovingObject
 	Method PreCalcPhysics() 
 		_mass = 0
 		_engineThrust = 0
+		_reverseThrust = 0
 		_rotThrust = 0
 		
 		For Local slot:TSlot = EachIn _hull.GetSlotList() 
@@ -848,7 +840,8 @@ Type TShip Extends TMovingObject
 					If slot.isEngine() Then
 						If component.getType() = "engine" Then
 							Local prop:TPropulsion = TPropulsion(component.GetShipPart()) 
-							_engineThrust = _engineThrust + prop.GetThrust() 
+							If slot.GetExposedDir() = "tail" Then _engineThrust = _engineThrust + prop.GetThrust() 
+							If slot.GetExposedDir() = "nose" Then _reverseThrust = _reverseThrust + prop.GetThrust() 
 						EndIf
 					EndIf
 					If slot.isRotThruster() Then
@@ -874,9 +867,10 @@ Type TShip Extends TMovingObject
 
 	Method UpdatePerformance() 
 		_forwardAcceleration = (_engineThrust / _mass) 
-		_reverseAcceleration = ((_engineThrust * _hull.GetReverserRatio()) / _mass) 
+		'_reverseAcceleration = ((_engineThrust * _hull.GetReverserRatio()) / _mass) 
+		_reverseAcceleration = (_reverseThrust / _mass) 
 		_rotAcceleration = (RadToDeg(CalcRotAcceleration(_rotThrust, _size, _mass, _hull.GetThrusterPos()))) 
-		_maxRotationSpd = _hull.GetMaxRotationSpd() 		
+		_maxRotationSpd = _hull.GetMaxRotationSpd() 
 	End Method
 	
 	Method AddWeapon(comp:TComponent, slot:TSlot) 
@@ -897,13 +891,18 @@ Type TShip Extends TMovingObject
 		Local slot:TSlot = _hull.FindSlot(slotID) 
 		If not slot Return Null
 		Local result:Int = AddComponentToSlot(comp, slot) 
-		Self.PreCalcPhysics() 	' updates the ship performance after component installation
 		Return result
 	End Method
 
 	' As opposed to AddComponentToSlotID, AddComponentToSlot takes the actual slot (not ID) as a parameter
 	Method AddComponentToSlot:Int(comp:TComponent, slot:TSlot) 
 		Local result:Int = _hull.AddComponent(comp, slot) 
+		If TPropulsion(comp.GetShipPart()) Then
+			If Not _L_Engines Then _L_Engines = CreateList() 
+			_L_Engines.AddLast(comp) 
+		EndIf
+		 
+		Self.PreCalcPhysics()  	' updates the ship performance after component installation
 		Return result
 	End Method
 	

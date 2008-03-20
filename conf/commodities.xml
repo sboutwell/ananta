@@ -48,8 +48,6 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
         <maxrotspd>270</maxrotspd>
         <!-- the maximum rotational speed (deg/s) allowed for this hull -->
-        <reverser>0.6</reverser>
-        <!-- the portion of the main engine thrust that can be reversed -->
         <slots>
           <leftrotthruster>
             <!-- slot ID -->
@@ -91,30 +89,52 @@ Copyright 2007, 2008 Jussi Pakkanen
             <location>external</location>
             <!-- internal/external, affects received damage -->
           </transleft>
-          <engineslot1>
+          <mainengineslot1>
             <!-- slot ID -->
             <type>engine</type>
             <volume>5</volume>
             <!-- the volume of the slot in m^3 -->
             <exposure>tail</exposure>
-            <!-- main engines always point behind... other directions have no effect -->
             <location>external</location>
             <!-- internal/external, affects received damage -->
-	    <xoffset>-5</xoffset>
-	    <yoffset>-45</yoffset>
-          </engineslot1>
-          <engineslot2>
+	    <xoffset>-2</xoffset>
+	    <yoffset>-27</yoffset>
+          </mainengineslot1>
+          <mainengineslot2>
             <!-- slot ID -->
             <type>engine</type>
             <volume>5</volume>
             <!-- the volume of the slot in m^3 -->
             <exposure>tail</exposure>
-            <!-- main engines always point behind... other directions have no effect -->
             <location>external</location>
             <!-- internal/external, affects received damage -->
-	    <xoffset>5</xoffset>
-	    <yoffset>-45</yoffset>	    
-          </engineslot2>
+	    <xoffset>2</xoffset>
+	    <yoffset>-27</yoffset>	    
+          </mainengineslot2>
+
+          <reverseengineslot1>
+            <!-- slot ID -->
+            <type>engine</type>
+            <volume>3</volume>
+            <!-- the volume of the slot in m^3 -->
+            <exposure>nose</exposure>
+            <location>external</location>
+            <!-- internal/external, affects received damage -->
+	    <xoffset>7</xoffset>
+	    <yoffset>7</yoffset>	    
+          </reverseengineslot1>
+          <reverseengineslot2>
+            <!-- slot ID -->
+            <type>engine</type>
+            <volume>3</volume>
+            <!-- the volume of the slot in m^3 -->
+            <exposure>nose</exposure>
+            <location>external</location>
+            <!-- internal/external, affects received damage -->
+	    <xoffset>-7</xoffset>
+	    <yoffset>7</yoffset>	    
+          </reverseengineslot2>
+
           <weaponslot1>
             <!-- slot ID -->
             <type>weapon</type>
@@ -123,7 +143,7 @@ Copyright 2007, 2008 Jussi Pakkanen
             <location>external</location>
             <!-- internal/external, affects received damage -->
             <xoffset>0</xoffset>
-            <yoffset>30</yoffset>
+            <yoffset>25</yoffset>
           </weaponslot1>
           <equipmentslot1>
             <!-- slot ID -->
@@ -134,28 +154,6 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- internal/external, affects received damage -->
           </equipmentslot1>
         </slots>
-        <emitters>
-          <!-- particle emitters (engine trails) -->
-	  <!-- NOT USED -->
-          <main1>
-            <type>main</type>
-            <x>0</x>
-            <y>-28</y>
-            <rndDir>2</rndDir>
-          </main1>
-          <rev1>
-            <type>reverse</type>
-            <x>5</x>
-            <y>10</y>
-            <rndDir>2</rndDir>
-          </rev1>
-          <rev2>
-            <type>reverse</type>
-            <x>5</x>
-            <y>-10</y>
-            <rndDir>2</rndDir>
-          </rev2>
-        </emitters>
       </samplehull1>
       <samplehull2>
         <!-- Hull ID -->
@@ -181,8 +179,6 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
         <maxrotspd>180</maxrotspd>
         <!-- the maximum rotational speed (deg/s) allowed for this hull -->
-        <reverser>0.6</reverser>
-        <!-- the portion of the main engine thrust that can be reversed  -->
         <slots>
           <leftrotthruster>
             <!-- slot ID -->
@@ -253,29 +249,6 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- internal/external, affects received damage -->
           </equipmentslot1>
         </slots>
-        <emitters>
-          <!-- particle emitters (engine trails) -->
-          <main1>
-            <type>main</type>
-            <x>15</x>
-            <y>-30</y>
-          </main1>
-          <main2>
-            <type>main</type>
-            <x>-15</x>
-            <y>-30</y>
-          </main2>
-          <rev1>
-            <type>reverse</type>
-            <x>5</x>
-            <y>10</y>
-          </rev1>
-          <rev2>
-            <type>reverse</type>
-            <x>5</x>
-            <y>-10</y>
-          </rev2>
-        </emitters>
       </samplehull2>
     </hulls>
     <propulsion>
