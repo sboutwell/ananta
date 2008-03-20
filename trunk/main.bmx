@@ -51,6 +51,7 @@ TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
+
 Local sSize:Int = 80000	' sector size in pixels
 Local centralStar:TStar = GenerateTestUniverse(sSize) 
 
@@ -146,6 +147,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
 	
+	' *********** DEBUG INFO ****************
 	G_debugWindow.AddText("FPS: " + G_delta.GetFPS()) 
 	G_debugWindow.AddText("Asteroids: " + TAsteroid.g_nrAsteroids) 
 	G_debugWindow.AddText("Ships: " + TShip.g_nrShips) 
@@ -154,6 +156,8 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 		G_debugWindow.AddText("Velocity: " + p1.GetControlledShip().GetVel()) 
 		G_debugWindow.AddText("Shields: " + p1.GetControlledShip().GetIntegrity()) 
 	EndIf
+	' ***************************************
+	
 	
 	If G_delta._isFrameRateLimited Then
 		G_delta.LimitFPS()        ' limit framerate

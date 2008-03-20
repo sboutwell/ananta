@@ -21,7 +21,7 @@ endrem
 ' TSlot is a special "container" in a ship hull that holds other ship parts. 
 ' Slots are created when a new ship (hull) is created.
 ' See i_TCommodity_TShippart.bmx
-Type TSlot Final
+Type TSlot
 	Field _id:String
 	Field _slottype:String		' type of the slot (rotthruster, thruster, engine, equipment)
 	Field _volume:Float			' volume of the slot in m^3
@@ -31,7 +31,7 @@ Type TSlot Final
 								' Thrusters and engines need to have exposure! Also, weapons in the future need exposure.
 								' Exposed slots take even more damage than external!
 	
-	Field _xOffSet:Float		' in case of a visual representation of a component, offset defines the position...
+	Field _xOffSet:Float		' in ase of a visual representation of a component, offset defines the position...
 	Field _yOffSet:Float		' ... relative to the object center
 	
 	Method isEngine:Int() 

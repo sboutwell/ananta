@@ -60,8 +60,8 @@ EndType
 ' THull is the actual hull instance of a created ship.
 ' The hull data is extracted from a prototype hull when a new ship is created.
 Type THull Extends TShippart
-	Field _L_Slots:TList					' equipment slots for the hull (see TSlot)
-
+	Field _L_Slots:TList					' all equipment slots for the hull (see TSlot)
+	
 	Field _image:TImage						' visual representation of the hull
 	Field _scale:Float
 	Field _size:Float						' size affects rotational physics and radar blip size
@@ -69,7 +69,6 @@ Type THull Extends TShippart
 	Field _thrusterPos:Float				' rotational thruster position (distance from the centre of mass). More distance gives more "leverage"
 	Field _maxSpd:Float						' maximum speed for fly-by-wire velocity limiter (read from xml)
 	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per second) (calculated by a routine)
-	Field _reverserRatio:Float				' thrust percentage of main engines that can be directed backward (read from xml)
 
 	Method AddComponent(comp:TComponent, slot:TSlot) 
 		Local result:Int = slot.AddComponent(comp) 
@@ -116,11 +115,7 @@ Type THull Extends TShippart
 		Return _maxSpd
 	End Method
 	
-	Method GetReverserRatio:Float()
-		Return _reverserRatio
-	End Method
-	
-	Method GetMaxRotationSpd:Float()
+	Method GetMaxRotationSpd:Float() 
 		Return _maxRotationSpd
 	End Method
 	
@@ -148,10 +143,6 @@ Type THull Extends TShippart
 		_maxRotationSpd = val
 	End Method
 
-	Method SetReverserRatio(val:Float)
-		_reverserRatio = val
-	End Method
-	
 	' THull.Create creates a new hull and copies its values from the prototype hull
 	Function Create:THull(idString:String)
 		' get a hull prototype matching the ID we've given as a parameter
@@ -176,8 +167,6 @@ Type THull Extends TShippart
 		hull.SetThrusterPos(proto.GetThrusterPos())
 		hull.SetMaxSpd(proto.GetMaxSpd())
 		hull.SetMaxRotationSpd(proto.GetMaxRotationSpd())
-		hull.SetReverserRatio(proto.GetReverserRatio())
-
 		
 		' iterate through prototype slots to create copies of them
 		For Local protoslot:TSlot = EachIn proto.GetSlotList() 
@@ -285,7 +274,6 @@ Type THullPrototype Extends THull
 				If value.GetName() = "thrusterpos" 	Then hull.SetThrusterPos(value.GetText().ToFloat())
 				If value.GetName() = "maxspd" 		Then hull.SetMaxSpd(value.GetText().ToFloat())
 				If value.GetName() = "maxrotspd" 	Then hull.SetMaxRotationSpd(value.GetText().ToFloat())
-				If value.GetName() = "reverser" 	Then hull.SetReverserRatio(value.GetText().ToFloat())
 				If value.GetName() = "slots" 		Then hull.LoadSlots(value)		' call LoadSlots to initialize all slots for this hull
 			Next
 
