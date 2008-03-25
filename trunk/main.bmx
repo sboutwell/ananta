@@ -31,7 +31,8 @@ Include "includes/functions/f_stringfunctions.bmx"	'Functions related to string 
 
 ' Type definitions
 Include "includes/types/entities/i_TPilot.bmx"			'Pilot entities and methods for AI routines
-Include "includes/types/entities/i_TSector.bmx"			'Sector of space
+Include "includes/types/entities/i_TSystem.bmx"			'A solar system
+Include "includes/types/entities/i_TUni.bmx"			'The galaxy and sectors
 Include "includes/types/entities/i_TSpaceObjects.bmx"	'All spaceborne objects and their drawing
 Include "includes/types/entities/i_TShipModel.bmx"		'Type describing ship models
 Include "includes/types/commodity/i_TCommodity.bmx"		'Tradeable/usable commodities (contents read from an xml file)
@@ -39,6 +40,7 @@ Include "includes/types/graphics/i_TViewport.bmx"		'Draw-to-screen related stuff
 Include "includes/types/graphics/i_TMessageWindow.bmx"	'Messagewindow and messageline types
 Include "includes/types/graphics/i_TDebugWindow.bmx"	'Debugwindow and debugline types
 Include "includes/types/graphics/i_TMinimap.bmx"		'Minimap
+Include "includes/types/graphics/i_TStarmap.bmx"		'Star map
 Include "includes/types/graphics/i_TColor.bmx"			'A structure-like type to map color names to their RGB values
 Include "includes/types/graphics/i_TMedia.bmx"			'Type that loads and holds media files
 Include "includes/types/i_TDelta.bmx"					'Delta timer
@@ -52,17 +54,27 @@ TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
 
-Local sSize:Int = 80000	' sector size in pixels
-Local centralStar:TStar = GenerateTestUniverse(sSize) 
+
+TUni.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")
+Local sect:TSector = TSector.Create(7000,7000)
+sect.Populate()
+
+For Local syst:TSystem = EachIn sect._L_systems
+	syst.SetAsActive()
+Next
+
+Local sSize:Int = 500000	' System size in pixels
+Local centralStar:TStar = GenerateTestSystem(sSize) 
 
 ' generate the player and player's ship
 Global p1:TPlayer = TPlayer.Create("Da Playah") 
 Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
 s1.SetName("Player ship") 
-s1.SetSector(TSector.GetActiveSector()) 
+s1.SetSystem(TSystem.GetActiveSystem()) 
 s1._rotation = 90
 ' assign the ship for the player to control
 s1.AssignPilot(p1) 
+
 
 
 ' find the farthest planet to the center and make the player ship orbit it
@@ -82,7 +94,7 @@ s1.SetOrbitalVelocity(orbitedPlanet, True)
 Local ascale:Float = orbitedPlanet.GetScaleX() 
 Local asize:Int = CalcImageSize(TImg.LoadImg("asteroid.png"), False) * ascale
 Local amass:Long = (ascale ^ 2) * Rand(3000, 10000) 
-Local ast:TAsteroid = TAsteroid.Create("asteroid.png", TSector.GetActiveSector(), Rand(- sSize, sSize), Rand(- sSize, sSize), amass) 
+Local ast:TAsteroid = TAsteroid.Create("asteroid.png", TSystem.GetActiveSystem(), Rand(- sSize, sSize), Rand(- sSize, sSize), amass) 
 ast._scaleX = ascale
 ast._scaleY = ascale
 ast._size = asize
@@ -91,7 +103,7 @@ ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1))
 ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
 ast.SetOrbitalVelocity(orbitedPlanet,True)
 ast = null
-'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, sector1, 0.1, 0.3, 400, 0.07) 
+'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, System1, 0.1, 0.3, 400, 0.07) 
 'part1.SetRandomDir(2) 
 's1.AddAttachment(part1, - 28, 0, 0, False) 
 
@@ -104,7 +116,7 @@ viewport.CreateMsg("Total ship mass: " + s1.GetMass())
 For Local i:Int = 1 To 25
 	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
 	Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
-	ship.SetSector(TSector.GetActiveSector()) 
+	ship.SetSystem(TSystem.GetActiveSystem()) 
 	ship.SetCoordinates(Rand(- sSize, sSize), Rand(- sSize, sSize)) 
 	'ship.SetCoordinates (600, 0)
 	ship.AssignPilot(ai) 
@@ -140,8 +152,8 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' update and draw particles 
 	TParticle.UpdateAndDrawAll()
 	 
-	' draw each object in the currently active sector
-	TSector.GetActiveSector().DrawAllInSector(viewport) 
+	' draw each object in the currently active System
+	TSystem.GetActiveSystem().DrawAllInSystem(viewport) 
 
 
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
@@ -176,18 +188,17 @@ Function GenerateVectorTextures()
 	TImg.StoreImg(TStar.GenerateStarTexture(800) , "star_generated") 
 End Function
 
-Function GenerateTestUniverse:TStar(sSize:Int) 
+Function GenerateTestSystem:TStar(sSize:Int) 
 	Local asteroids:Int = 30
 	Local planets:Int = 10
 	
-	' generate a sector
-	Local sector1:TSector = TSector.Create(0,0,"Sol")
-	sector1.SetAsActive() ' set the newly created sector as the "active sector"
+	' generate a system
+	Local system1:TSystem = TSystem.GetActiveSystem()
 
-	' ================ randomize sector and planetary object for testing ===================
+	' ================ randomize System and planetary object for testing ===================
 	SeedRnd(MilliSecs()) 
 	' create a star
-	Local st1:TStar = TStar.Create(0, 0, sector1, 100000, 5, "Sol") 
+	Local st1:TStar = TStar.Create(0, 0, System1, 100000, 5, "Sol") 
 	st1._image = TImg.LoadImg("star_generated") 
 	st1._rotation = -90
 	st1._scaleX = 10
@@ -197,8 +208,8 @@ Function GenerateTestUniverse:TStar(sSize:Int)
 	
 	' create some planets
 	For Local i:Int = 1 To planets
-		'Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
-		Local pl2:TPlanet = TPlanet.Create(Rand(- sSize, sSize), Rand(- sSize, sSize), sector1, 100000, 10, "Jupiter " + i) 
+		'Function Create:TPlanet(x:Int,y:Int,System:TSystem,mass:Long,size:Int,name:String)
+		Local pl2:TPlanet = TPlanet.Create(Rand(- sSize, sSize), Rand(- sSize, sSize), System1, 100000, 10, "Jupiter " + i) 
 		
 		' Re-randomize the coordinates if the planet is too close to the sun 
 		Local again:Int = False
@@ -228,7 +239,7 @@ Function GenerateTestUniverse:TStar(sSize:Int)
 		Local size:Int = CalcImageSize(TImg.LoadImg("asteroid.png"), False) * scale
 		Local mass:Long = (scale ^ 2) * Rand(3000, 10000) 
 		
-		Local ast:TAsteroid = TAsteroid.Create("asteroid.png", sector1, Rand(- sSize, sSize), Rand(- sSize, sSize), mass) 
+		Local ast:TAsteroid = TAsteroid.Create("asteroid.png", System1, Rand(- sSize, sSize), Rand(- sSize, sSize), mass) 
 		ast._scaleX = scale
 		ast._scaleY = scale
 		ast._size = size

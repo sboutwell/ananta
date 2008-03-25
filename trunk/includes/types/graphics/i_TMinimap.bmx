@@ -59,7 +59,7 @@ Type TMinimap
 		Local y:Int = (viewport.GetCameraPosition_Y() - o.GetY()) * _scale * _zoomFactor + midY + _startY
 		Local size:Int = o.GetSize() * _scale * _zoomFactor
 		If size < 2 Then size = 2
-		Local blip:TBlip = TBlip.Create(x, y, size) 
+		Local blip:TMapBlip = TMapBlip.Create(x, y, size) 
 		
 		' use casting to find out the type of the object
 		blip.SetBColor(_miscColor) 
@@ -84,7 +84,7 @@ Type TMinimap
 		SetAlpha(_alpha) 
 		SetMaskColor(255, 255, 255) 
 		SetScale(1, 1) 
-		For Local blip:TBlip = EachIn _L_Blips
+		For Local blip:TMapBlip = EachIn _L_Blips
 			' If no part of the blip would be visible on the screen, don't bother to draw it
 			If blip.isOverBoundaries(_startX, _startY, _width, _height) Then
 				Continue
@@ -299,7 +299,7 @@ Type TMinimap
 	End Function
 EndType
 
-Type TBlip
+Type TMapBlip
 	Field _x:Int, _y:Int
 	Field _size:Float
 	Field _color:TColor
@@ -340,8 +340,8 @@ Type TBlip
 		DrawOval (_x, _y, _size, _size) 
 	End Method
 	
-	Function Create:TBlip(x:Int, y:Int, size:Int) 
-		Local blip:TBlip = New TBlip
+	Function Create:TMapBlip(x:Int, y:Int, size:Int) 
+		Local blip:TMapBlip = New TMapBlip
 		blip._x = x
 		blip._y = y
 		blip._size = size

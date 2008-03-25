@@ -55,6 +55,17 @@ Type TImg Extends TMedia
 		g_L_imageFiles.AddLast(img) 
 	End Function
 	
+	' finds a previously loaded image and removes it from the image list
+	Function UnLoadImg(filename:String)
+		If Not g_L_imageFiles Then Return
+		For Local img:TImg = EachIn g_L_imageFiles
+			If img.GetFileName() = filename Then 
+				img._image = Null
+				g_L_imageFiles.Remove(img)
+			EndIf
+		Next	
+	EndFunction
+	
 	' LoadImg returns a TImage matching a filename string. 
 	Function LoadImg:TImage(filename:String, automid:Int = True) 
 		AutoImageFlags MASKEDIMAGE | FILTEREDIMAGE | MIPMAPPEDIMAGE	' flags For LoadImage()

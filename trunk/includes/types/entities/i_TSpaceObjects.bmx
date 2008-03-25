@@ -22,7 +22,7 @@ Rem
 	*************************************************************************************************
 	***************************************** SPACEOBJECTS ******************************************
 	*************************************************************************************************
-	Description: All drawable objects that can exist in a star sector
+	Description: All drawable objects that can exist in a star System
 
 	TSpaceObject
 		TJumpPoint
@@ -42,7 +42,7 @@ Type TSpaceObject Abstract
 	Field _image:TImage					' The image to represent the object
 	Field _alpha:Float = 1				' Alpha channel value of the image
 	Field _x:Double, _y:Double			' x-y coordinates of the object
-	Field _sector:TSector				' the sector the object is in
+	Field _system:TSystem				' the system the object is in
 	Field _rotation:Float				' rotation in degrees
 	Field _mass:Long					' The mass of the object in kg
 	Field _size:Int						' The visual diameter of the object, to display the object in correct scale in the minimap
@@ -79,7 +79,7 @@ Type TSpaceObject Abstract
 	Method Explode() 
 		' a makeshift "explosion" effect for testing
 		Local expScale:Float = CalcImageSize(_image) / 128.0 * _scaleX * 1.5
-		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 2, expScale, 1, _sector) 
+		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 2, expScale, 1, _System) 
 		part.SetXVel(_xVel) 
 		part.SetYVel(_yVel) 
 		part.SetRot(Rand(0, 360)) 
@@ -210,6 +210,10 @@ Type TSpaceObject Abstract
 		_rotation = r
 	End Method
 	
+	Method SetSystem(s:TSystem)
+		_system = s
+	End Method
+	
 	Method GetMass:Float() 
 		Return _mass
 	End Method
@@ -268,17 +272,17 @@ Type TJumpPoint Extends TSpaceObject
 		
 	End Method
 	
-	Function Create:TJumpPoint(x:Int,y:Int,sector:TSector,destination:TJumpPoint)
+	Function Create:TJumpPoint(x:Int,y:Int,System:TSystem,destination:TJumpPoint)
 		Local jp:TJumpPoint = New TJumpPoint		' create an instance
 		jp._x = x; jp._y = y						' coordinates
-		jp._sector = sector									' the sector
+		jp._System = System									' the System
 		jp._destinationJp = destination					' the destination JumpPoint
 		jp._isShownOnMap = True
 		
 		If Not g_L_JumpPoints Then g_L_JumpPoints = CreateList()	' create a list if necessary
 		g_L_JumpPoints.AddLast jp											' add the newly created object to the end of the list
 
-		sector.AddSpaceObject(jp) 		' add the jumppoint to the sector's space object list
+		System.AddSpaceObject(jp) 		' add the jumppoint to the System's space object list
 
 		Return jp																		' return the pointer to this specific object instance
 	EndFunction
@@ -322,11 +326,11 @@ Type TStar Extends TStellarObject
 		Return image
 	End Function
 		
-	Function Create:TStar(x:Int=0,y:Int=0,sector:TSector,mass:Long,size:Int,name:String)
+	Function Create:TStar(x:Int=0,y:Int=0,System:TSystem,mass:Long,size:Int,name:String)
 		Local st:TStar = New Tstar				' create an instance
 		st._name = name								' give a name
 		st._x = x; st._y = y							' coordinates
-		st._sector = sector							' the sector
+		st._System = System							' the System
 		st._mass = mass								' mass in kg
 		st._size = size								' size in pixels
 		st._hasGravity = True
@@ -336,7 +340,7 @@ Type TStar Extends TStellarObject
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
 		g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list
 
-		sector.AddSpaceObject(st)		' add the body to sector's space objects list
+		System.AddSpaceObject(st)		' add the body to System's space objects list
 		
 		Return st																' Return the pointer To this specific Object instance
 	EndFunction
@@ -347,11 +351,11 @@ Type TPlanet Extends TStellarObject
 		
 	End Method
 	
-	Function Create:TPlanet(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
+	Function Create:TPlanet(x:Int,y:Int,System:TSystem,mass:Long,size:Int,name:String)
 		Local pl:TPlanet = New TPlanet					' create an instance
 		pl._name = name										' give a name
 		pl._x = x; pl._y = y									' coordinates
-		pl._sector = sector									' the sector
+		pl._System = System									' the System
 		pl._mass = mass										' mass in kg
 		pl._size = size										' size in pixels
 		pl._hasGravity = True
@@ -361,7 +365,7 @@ Type TPlanet Extends TStellarObject
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
 		g_L_StellarObjects.AddLast pl											' add the newly created object to the end of the list
 		
-		sector.AddSpaceObject(pl)		' add the body to sector's space objects list
+		System.AddSpaceObject(pl)		' add the body to System's space objects list
 		
 		Return pl																' return the pointer to this specific object instance
 	EndFunction
@@ -372,11 +376,11 @@ Type TSpaceStation Extends TStellarObject
 		
 	End Method
 
-	Function Create:TSpaceStation(x:Int,y:Int,sector:TSector,mass:Long,size:Int,name:String)
+	Function Create:TSpaceStation(x:Int,y:Int,System:TSystem,mass:Long,size:Int,name:String)
 		Local ss:TSpaceStation = New TSpaceStation	' create an instance
 		ss._name = name										' give a name
 		ss._x = x; ss._y = y									' coordinates
-		ss._sector = sector									' the sector
+		ss._System = System									' the System
 		ss._mass = mass										' mass in kg
 		ss._size = size										' size in pixels
 		ss._hasGravity = False
@@ -386,7 +390,7 @@ Type TSpaceStation Extends TStellarObject
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
 		g_L_StellarObjects.AddLast ss												' add the newly created object to the end of the list
 		
-		sector.AddSpaceObject(ss)		' add the body to sector's space objects list
+		System.AddSpaceObject(ss)		' add the body to System's space objects list
 		
 		Return ss																			' return the pointer to this specific object instance
 	EndFunction
@@ -439,10 +443,10 @@ Type TMovingObject Extends TSpaceObject Abstract
 		' don't bother iterating if gravity and collisions have no effect to this object
 		If Not _affectedByGravity And Not _canCollide Then Return
 		
-		' iterate through all objects in the active sector
-		For Local obj:TSpaceObject = EachIn TSector.GetActiveSector()._L_SpaceObjects
+		' iterate through all objects in the active System
+		For Local obj:TSpaceObject = EachIn TSystem.GetActiveSystem()._L_SpaceObjects
 			If obj = Self Then Continue						' don't apply gravity or collision if source is self!
-			'If obj._sector <> Self._sector Then Continue 	' return if the object is in another sector
+			'If obj._System <> Self._System Then Continue 	' return if the object is in another System
 			DoGravityAndCollisions(obj)  	' do gravity and collision checking against 'obj'
 		Next
 	End Method
@@ -671,7 +675,7 @@ Type TShip Extends TMovingObject
 						Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"),  ..
 						_x + eng.GetSlot().GetYOffSet() * Cos(_rotation) + eng.GetSlot().GetXOffSet() * Sin(_rotation),  ..
 						_y + eng.GetSlot().GetYOffSet() * Sin(_rotation) - eng.GetSlot().GetXOffSet() * Cos(_rotation),  ..
-						0.1, 0.03, 0.5, _sector) 
+						0.1, 0.03, 0.5, _System) 
 						Local randDir:Float = Rand(- 2, 2) 
 						part._xVel = _xVel - 150 * Cos(_rotation + randDir) 
 						part._yVel = _yVel - 150 * Sin(_rotation + randDir) 
@@ -689,7 +693,7 @@ Type TShip Extends TMovingObject
 					Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"),  ..
 					_x + eng.GetSlot().GetYOffSet() * Cos(_rotation) + eng.GetSlot().GetXOffSet() * Sin(_rotation),  ..
 					_y + eng.GetSlot().GetYOffSet() * Sin(_rotation) - eng.GetSlot().GetXOffSet() * Cos(_rotation),  ..
-					0.1, 0.03, 0.5, _sector) 
+					0.1, 0.03, 0.5, _System) 
 					Local randDir:Float = Rand(- 2, 2) 
 					part._xVel = _xVel + 150 * Cos(_rotation + randDir) 
 					part._yVel = _yVel + 150 * Sin(_rotation + randDir) 
@@ -720,7 +724,7 @@ Type TShip Extends TMovingObject
 		Local vel:Int = _selectedWeapon.GetVelocity() 
 		Local TTL:Int = _selectedWeapon.GetRange() / vel
 		
-		Local shot:TProjectile = TProjectile.Create(TImg.LoadImg("shot.png"), _x, _y, TTL, 0.5, 1, _sector) 
+		Local shot:TProjectile = TProjectile.Create(TImg.LoadImg("shot.png"), _x, _y, TTL, 0.5, 1, _System) 
 		
 		Local xOff:Float = _selectedWeaponSlot.GetXOffSet() 
 		Local yOff:Float = _selectedWeaponSlot.GetYOffSet() 
@@ -913,9 +917,9 @@ Type TShip Extends TMovingObject
 		Return result
 	End Method
 	
-	Method SetSector(sect:TSector) 
-		_sector = sect
-		sect.AddSpaceObject(self) 		' add the ship to the sector's space objects list		
+	Method SetSystem(sys:TSystem) 
+		_System = sys
+		sys.AddSpaceObject(self) 		' add the ship to the System's space objects list		
 	End Method
 
 	Method SetCoordinates(x:Int, y:Int) 
@@ -927,7 +931,7 @@ Type TShip Extends TMovingObject
 		_pilot.Kill() 
 		_pilot = Null
 		
-		_sector.RemoveSpaceObject(self)
+		_System.RemoveSpaceObject(self)
 		g_L_Ships.Remove(Self) 
 		g_nrShips:-1
 	End Method
@@ -971,7 +975,7 @@ Type TAsteroid Extends TMovingObject
 	Method Destroy() 
 		' remove the asteroid from all lists so that GC can delete the object
 		g_L_Asteroids.Remove(Self) 
-		Self._sector.RemoveSpaceObject(Self) 
+		Self._System.RemoveSpaceObject(Self) 
 		g_L_MovingObjects.Remove(Self) 
 		g_nrAsteroids:-1
 	End Method
@@ -981,11 +985,11 @@ Type TAsteroid Extends TMovingObject
 		DebugLog "Asteroid deleted by GC"
 	End Method
 	
-	Function Create:TAsteroid(img:String, sector:TSector, x:Float, y:Float, mass:Long) 
+	Function Create:TAsteroid(img:String, System:TSystem, x:Float, y:Float, mass:Long) 
 		Local a:TAsteroid = New TAsteroid
 		a._image = TImg.LoadImg(img) 
 		a._mass = mass
-		a._sector = sector
+		a._System = System
 		a._x = x
 		a._y = y
 		a._isShownOnMap = True
@@ -1000,7 +1004,7 @@ Type TAsteroid Extends TMovingObject
 		If Not g_L_MovingObjects Then g_L_MovingObjects = CreateList() 
 		g_L_MovingObjects.AddLast(a) 
 		
-		sector.AddSpaceObject(a) 
+		System.AddSpaceObject(a) 
 		
 		Return a
 	End Function
