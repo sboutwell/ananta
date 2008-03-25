@@ -5,9 +5,8 @@ Import brl.standardio
 Import brl.Pixmap
 Import brl.pngloader
 SetGraphicsDriver D3D7Max2DDriver() 
-Graphics(100, 100) 
+Graphics(1024, 1024) 
 
-Include "mway.bmx"
 
 TUni.LoadGalaxy("galaxy.png") 
 
@@ -38,14 +37,25 @@ endrem
 
 Local img:TImage = LoadImage(pix) 
 
-SetScale(0.1, 0.1) 
+Local map:TStarMap = TStarMap.Create(200,200,400,400)
+
+Local sect:TSector = TSector.Create(3000,6000)
+sect.Populate()
+
+SetScale(1, 1) 
+' -------- main loop -------
 Repeat
 	DrawImage(img, 0, 0) 
+	For local sys:TSystem = EachIn sect._L_systems
+		map.AddBlip(sys)
+	Next
+		
+	map.draw()
 	Flip;Cls
 Until KeyDown(KEY_ESCAPE) Or AppTerminate() 
 
 
-Local sect:TSector = TSector.Create(3000,6000)
+sect:TSector = TSector.Create(3000,6000)
 sect.Populate()
 For local sys:TSystem = EachIn sect._L_systems
 	Print "x: " + sys._x + "~ty: " + sys._y + "~tm: " + sys._multiple + "~tt: " + sys._type
@@ -89,7 +99,28 @@ End Function
 
 Type TUni
 	Global TheMilkyWay:Int[] 
-	Global SystemDensity:Int[] 
+	Global SystemDensity:Int[] = [ ..
+    $BF78, $5B2F, $DF85, $3C14, $DADD, $38DF, $E08F, $88D7,  ..
+    $B3AB, $EA86, $1200, $8DB3, $FF0D, $A593, $EC66, $1988,  ..
+    $8500, $C1E7, $9281, $D7EB, $5F77, $D6A5, $310B, $2C98,  ..
+    $906E, $2CB6, $F137, $8ADC, $0FC7, $76B8, $B587, $2D1B,  ..
+    $AD4C, $1AEB, $B749, $C60D, $B914, $1B3A, $AA5E, $3764,  ..
+    $D7A0, $650E, $DB8D, $3E98, $1DDD, $D3BB, $54A4, $66BA,  ..
+    $164F, $F3B8, $7460, $BF9A, $7AA7, $459C, $61EC, $F706,  ..
+    $958C, $8B54, $86E8, $C653, $5D7C, $6AC9, $AD35, $8B1F,  ..
+    $30C6, $7EF7, $4E4F, $D1F3, $D042, $4AAC, $6F5A, $15C4,  ..
+    $4DC3, $923C, $04E2, $2C8B, $AB14, $9689, $5553, $92F7,  ..
+    $3BC6, $7C86, $5E8D, $FF7F, $8F5C, $0450, $0BD3, $B01F,  ..
+    $2744, $DF20, $E40E, $932C, $8B90, $CF40, $6E2B, $81BE,  ..
+    $200B, $A64F, $2BA4, $DCB8, $EA35, $ACC4, $1421, $9025,  ..
+    $9A98, $4993, $99EF, $B4FD, $0BCF, $7434, $7287, $C67F,  ..
+    $1967, $F486, $12AD, $DF33, $DF74, $2913, $2FF4, $D76B,  ..
+    $5A2A, $8B80, $CB01, $742B, $09B4, $C203, $56AF, $DAD6,  ..
+    $8000, $5555, $4000, $3333, $2AAA, $2492, $1FF0, $1C71,  ..
+    $1999, $1745, $1555, $13B1, $1249, $1111, $0FF0, $0F0F ..
+	] 
+
+	
 	Global StarChance_Type:Int[] = ..
 	[0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8]
 	Global StarChance_Multiples:Int[] = ..
@@ -111,8 +142,6 @@ Type TUni
 			
 	Function LoadGalaxy(file:String)
 		Local pix:TPixmap = LoadPixMap(file)
-		
-		'TheMilkyWay = [10,50,80,110,140,180,200,230,255]
 		
 		' add an extra row and column to the array for "edge interpolation"
 		TheMilkyWay = TheMilkyWay[..(pix.width + 1) * (pix.height + 1)] 
@@ -239,6 +268,7 @@ End Type
 Type TSystem
 	Field _x:Int
 	Field _y:Int
+	Field _size:Int = 10
 	Field _type:Int
 	Field _multiple:Int
 	
@@ -263,9 +293,9 @@ Type TStarMap
 	Field _midX:Float	' middle X coordinate
 	Field _midY:Float	' middle Y coordinate
 	
-	Field _scale:Float = 0.01
+	Field _scale:Float = 0.2
 
-	Field _defaultZoom:Float = 0.2
+	Field _defaultZoom:Float = 0.01
 	Field _zoomFactor:Float
 	Field _zoomAmount:Float 			' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
@@ -278,21 +308,21 @@ Type TStarMap
 	
 	Field _attitudeIndicator:TImage
 
-rem		
-	Method AddBlip(o:TSpaceObject) 
+	Method AddBlip(o:TSystem) 
 		Local midX:Int = _width / 2
 		Local midY:Int = _height / 2
-		Local x:Int = (viewport.GetCameraPosition_X() - o.GetX()) * _scale * _zoomFactor + midX + _startX
-		Local y:Int = (viewport.GetCameraPosition_Y() - o.GetY()) * _scale * _zoomFactor + midY + _startY
-		Local size:Int = o.GetSize() * _scale * _zoomFactor
+		'Local x:Int = (viewport.GetCameraPosition_X() - o.GetX()) * _scale * _zoomFactor + midX + _startX
+		'Local y:Int = (viewport.GetCameraPosition_Y() - o.GetY()) * _scale * _zoomFactor + midY + _startY
+		Local x:Int = o._x * _scale * _zoomFactor + midX + _startX
+		Local y:Int = o._y * _scale * _zoomFactor + midY + _startY
+		Local size:Int = o._size * _scale * _zoomFactor
 		If size < 2 Then size = 2
-		Local blip:TBlip = TBlip.Create(x, y, size) 
+		Local blip:TStarBlip = TStarBlip.Create(x, y, size) 
 		
 
 		If Not _L_blips Then _L_blips = New TList
 		If blip.GetSize() > 0 Then _L_blips.AddLast(blip) 
 	End Method
-endrem
 	
 	Method draw() 
 		If Not _L_Blips Then Return
