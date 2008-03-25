@@ -32,7 +32,7 @@ Type TParticle Extends TMovingObject
 	End Method
 	
 	Method Destroy() 
-		_sector.RemoveSpaceObject(Self) 
+		_System.RemoveSpaceObject(Self) 
 		If g_L_Particles Then g_L_Particles.Remove(Self) 
 	End Method
 			
@@ -44,7 +44,7 @@ Type TParticle Extends TMovingObject
 		Next
 	End Function
 	
-	Function Create:TParticle(img:TImage, x:Float, y:Float, life:Float, scale:Float, alpha:Float = 0.8, sector:TSector) 
+	Function Create:TParticle(img:TImage, x:Float, y:Float, life:Float, scale:Float, alpha:Float = 0.8, System:TSystem) 
 		Local part:TParticle = New TParticle
 		part._x = x
 		part._y = y
@@ -56,12 +56,12 @@ Type TParticle Extends TMovingObject
 		part._affectedByGravity = False
 		part._isShownOnMap = False
 		part._image = img
-		part._sector = sector
+		part._System = System
 		
 		If Not g_L_Particles Then g_L_Particles = CreateList() 
 		g_L_particles.AddLast(part) 
 		
-		sector.AddSpaceObject(part) 
+		System.AddSpaceObject(part) 
 		
 		Return part
 	EndFunction
@@ -79,7 +79,7 @@ Type TParticleGenerator Extends TMovingObject
 	Method Emit(vel:Float = Null) 
 		If Not vel Then vel = _meanVel
 		
-		Local part:TParticle = TParticle.Create(_particleImg, _x, _y, _life, _scaleX, _alpha, _sector) 
+		Local part:TParticle = TParticle.Create(_particleImg, _x, _y, _life, _scaleX, _alpha, _System) 
 		Local randDir:Float = Rand(- _randomDir, _randomDir) 
 		Local randVel:Float = Rand(- _randomVel, _randomVel) 
 		part.SetXVel(_xVel - (vel + randVel) * Cos(_rotation + randDir)) 
@@ -99,12 +99,12 @@ Type TParticleGenerator Extends TMovingObject
 		
 	End Method
 	
-	Function Create:TParticleGenerator(img:String, x:Float, y:Float, sector:TSector, life:Float = 0.5, alpha:Float = 0.8, vel:Float = 4, scale:Float = 1, rot:Float = 90) 
+	Function Create:TParticleGenerator(img:String, x:Float, y:Float, System:TSystem, life:Float = 0.5, alpha:Float = 0.8, vel:Float = 4, scale:Float = 1, rot:Float = 90) 
 		Local pg:TParticleGenerator = New TParticleGenerator
 		pg._particleImg = TImg.LoadImg(img) 
 		pg._x = x
 		pg._y = y
-		pg._sector = sector
+		pg._System = System
 		pg._meanVel = vel
 		pg._life = life
 		pg._alpha = alpha
@@ -141,7 +141,7 @@ Type TProjectile Extends TParticle
 	Method Explode() 
 		' a makeshift "explosion" effect for testing
 		Local expScale:Float = CalcImageSize(_image) / 128.0 * _scaleX * 2
-		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 0.5, expScale, 1, _sector) 
+		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 0.5, expScale, 1, _System) 
 		part.SetXVel(_xVel) 
 		part.SetYVel(_yVel) 
 		part.SetRot(Rand(0, 360)) 
@@ -150,7 +150,7 @@ Type TProjectile Extends TParticle
 		Destroy() 
 	End Method
 
-	Function Create:TProjectile(img:TImage, x:Float, y:Float, life:Float, scale:Float, alpha:Float = 1, sector:TSector) 
+	Function Create:TProjectile(img:TImage, x:Float, y:Float, life:Float, scale:Float, alpha:Float = 1, System:TSystem) 
 		Local part:TProjectile = New TProjectile
 		part._x = x
 		part._y = y
@@ -162,14 +162,14 @@ Type TProjectile Extends TParticle
 		part._affectedByGravity = False
 		part._isShownOnMap = True
 		part._image = img
-		part._sector = sector
+		part._System = System
 		part._size = 2
 		part._mass = 500
 		
 		If Not g_L_Particles Then g_L_Particles = CreateList() 
 		g_L_particles.AddLast(part) 
 		
-		sector.AddSpaceObject(part) 
+		System.AddSpaceObject(part) 
 		
 		Return part
 	End Function

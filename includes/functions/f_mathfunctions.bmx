@@ -89,3 +89,45 @@ End Function
 Function ToggleBoolean(bool:Int Var) 
 	bool = Not bool
 End Function
+
+' presents long integers with prefix multipliers (kilo, mega, giga, etc)
+Function getPrefix(pref:String var, val:Long var) 
+	Local prefixes:String[] =["", "", "",  ..
+							"k", "k", "k",  ..
+							"M", "M", "M",  ..
+							"G", "G", "G",  ..
+							"T", "T", "T",  ..
+							"P", "P", "P",  ..
+							"E", "E", "E" ..
+							] 
+	Local vString:String = String(val) 
+	Local zeroes:Int = 0
+	For Local char:Int = vString.Length - 1 To 0 Step - 1
+		If Chr(vString[char] ) = "0" Then zeroes:+1
+	Next
+	
+	If zeroes > prefixes.Length - 1 Then zeroes = prefixes.Length - 1
+	pref = prefixes[zeroes] 
+	For Local i:Int = 3 To zeroes Step 3
+		val = val / 1000
+	Next
+	
+End Function
+
+Function MakeCol:Int(a:Byte, r:Byte, g:Byte, b:Byte) 
+	Local n:Int
+	Local m:Byte ptr = VarPtr n
+	m[0] = b
+	m[1] = g
+	m[2] = r
+	m[3] = a
+	Return n
+EndFunction
+
+Function GetCol(px:Int,a:Byte var, r:Byte var, g:Byte var, b:Byte var)
+	a = px Shr 24
+	b = px Shr 16
+	g = px Shr 8
+	r = px	
+End Function
+
