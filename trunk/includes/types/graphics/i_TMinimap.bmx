@@ -123,7 +123,7 @@ Type TMinimap
 		SetColor(255,255,255)
 		SetScale(1,1)
 		SetRotation(0)
-		DrawText("Sector map",self._midX-35,self._StartY)
+		DrawText("System map",self._midX-35,self._StartY)
 	End Method	
 		
 	Method DrawScale() 

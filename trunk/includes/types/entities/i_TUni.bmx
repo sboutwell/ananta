@@ -98,16 +98,22 @@ Type TUni
 End Type
 
 Type TSector
+	Global _g_L_ActiveSectors:TList		' list holding all sectors that have been created
 	Field _L_systems:TList
 	Field _x:Int
 	Field _y:Int
+	Field _isPopulated:Int = False
 	
 	Method Forget()
 		_L_systems.Clear()
+		_isPopulated = False
+		_g_L_ActiveSectors.Remove(self)
 	End Method
-	
+		
 	Method Populate()
-	    Local i:int
+		If _isPopulated Then Return
+	    
+		Local i:int
 	
 	    TUni.RndSeed_0 = (_x shl 16)+_y
 	    TUni.RndSeed_1 = (_y shl 16)+_x
@@ -136,7 +142,7 @@ Type TSector
 			Local system:TSystem = TSystem.Create(x,y,"noname",typ,mult)
 			_L_systems.AddLast(system)
 		Next
-			
+		_isPopulated = True
 	End Method
 	
 	Method getNrSystems:Int() 
@@ -151,10 +157,10 @@ Type TSector
 	    nr = TUni.TheMilkyWay[pixelval + 1024] 			' Next Row
 	    nrc = TUni.TheMilkyWay[pixelval + 1025]  			' Next row, next column
 	    
-		_x = (_x * 4096) & $7e00
-	    _y = (_y * 4096) & $7e00
-	    ebx = (nc - c) * _x + (nr - c) * _y
-	    esi = (_x * _y) Shr 15
+		Local tempx:Int = (_x * 4096) & $7e00
+	    Local tempy:Int = (_y * 4096) & $7e00
+	    ebx = (nc - c) * _x + (nr - c) * tempy
+	    esi = (tempx * tempy) Shr 15
 	    edi = nrc - nr - nc + c
 	    esi:*edi
 	    ebx:+esi
@@ -164,8 +170,8 @@ Type TSector
 	    ecx = ebx Shr 8
         
 		' galaxyscale if
-		ebx = _x + ecx
-        eax = _x * _y
+		ebx = tempx + ecx
+        eax = tempx * tempy
         eax = eax shr 15
         ebx = ebx^eax
         ebx = ebx shr 5
@@ -181,11 +187,23 @@ Type TSector
 	    Return Int(c) 
 	End Method
 
-
+	Method GetSystemList:TList()
+		Return _L_Systems
+	End Method
+	
 	Function Create:TSector(x:Int,y:Int)
+		If not _g_L_ActiveSectors Then _g_L_ActiveSectors = CreateList()
+		' if the sector matching the coordinates has already been created, return it
+		For Local sect:TSector = EachIn _g_L_ActiveSectors
+			if sect._x = x AND sect._y = y Then 
+				Return sect
+			EndIf
+		Next
+		
 		Local s:TSector = New TSector
 		s._x = x
 		s._y = y
+		_g_L_ActiveSectors.AddLast(s)
 		Return s
 	End Function
 End Type

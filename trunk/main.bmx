@@ -54,17 +54,19 @@ TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
 
-
 TUni.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")
 Local sect:TSector = TSector.Create(7000,7000)
 sect.Populate()
 
 For Local syst:TSystem = EachIn sect._L_systems
 	syst.SetAsActive()
+	Print(syst.GetX() + " " + syst.GetY())
 Next
 
 Local sSize:Int = 500000	' System size in pixels
 Local centralStar:TStar = GenerateTestSystem(sSize) 
+
+Local sMap:TStarMap = TStarMap.Create(viewport.GetResX() - 195, 200,195,195,7000,7000)
 
 ' generate the player and player's ship
 Global p1:TPlayer = TPlayer.Create("Da Playah") 
@@ -155,9 +157,11 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' draw each object in the currently active System
 	TSystem.GetActiveSystem().DrawAllInSystem(viewport) 
 
-
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
+	
+	sMap.Update()
+	sMap.draw()
 	
 	' *********** DEBUG INFO ****************
 	G_debugWindow.AddText("FPS: " + G_delta.GetFPS()) 

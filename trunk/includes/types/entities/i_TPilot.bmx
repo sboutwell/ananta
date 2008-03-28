@@ -50,9 +50,10 @@ Type TPlayer Extends TPilot
 	End Method
 
 	' GetInput handles the keyboard and joystick input for the ship
+	' (redo this using event handler)
 	Method GetInput()
 		If _controlledShip Then
-		' keyboard controls
+		' ship controls
 		
 			If KeyDown(KEY_UP) _controlledShip.SetThrottle(1) 
 			If KeyDown(KEY_DOWN) _controlledShip.SetThrottle(- 1) 
@@ -64,11 +65,13 @@ Type TPlayer Extends TPilot
 			If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) 		_controlledShip.SetThrottle(0)
 			If Not KeyDown(KEY_RIGHT) And Not KeyDown(KEY_LEFT) _controlledShip.SetController(0) 
 
-			If KeyDown(KEY_J) Then
+			If KeyHit(KEY_J) Then
 				ToggleBoolean(_controlledShip._isJumpDriveOn) 
 			End If
 		EndIf
 		
+		
+		' misc controls
 		If KeyDown(KEY_F1) Then
 			viewport.ShowInstructions()
 		End If
@@ -99,7 +102,6 @@ Type TPlayer Extends TPilot
 			viewport.StopZoom() 
 			viewport.GetMiniMap().StopZoom() 
 		EndIf
-		
 	EndMethod
 	
 	Function Create:TPlayer(name:String)
