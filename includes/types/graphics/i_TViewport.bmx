@@ -87,6 +87,7 @@ Type TViewport
 		_zoomFactor = _defaultZoom
 		
 		_miniMap = TMinimap.Create(Self.g_ResolutionX - 195, 0, 195, 195) 
+
 	EndMethod
 
 	Method DrawLevel() 

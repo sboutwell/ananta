@@ -23,8 +23,8 @@ Type TSystem Final
 	Global g_L_Systems:TList					' a list to hold all Systems
 	Global _g_ActiveSystem:TSystem				' the System the player is in
 	Field _name:String							' Name of the System	
-	Field _x:Int,_y:Int							' System's x-y-coordinates in the galaxy map
-	Field _size:Int = 10						' size of the central star (for starmap blip size)
+	Field _x:Int,_y:Int							' System's x-y-coordinates in the sector map
+	Field _size:Int = 5							' size of the central star (for starmap blip size)
 	Field _type:Int								' type of the central star
 	Field _multiple:Int							' multiple star status for the system
 	
@@ -37,7 +37,7 @@ Type TSystem Final
 			If vp.GetMiniMap() And obj.showsOnMap() Then	' draw a minimap blip if minimap is defined for the viewport
 				vp.GetMiniMap().AddBlip(obj)
 			End If
-			obj._updated = False
+			obj._updated = False	' optimization to clear updated status during the drawing cycle
 		Next
 	EndMethod
 
@@ -54,8 +54,20 @@ Type TSystem Final
 		_L_SpaceObjects.Remove(obj) 
 	EndMethod
 
+	Method Populate()
+		
+	End Method
+	
 	Method SetAsActive()
 		_g_ActiveSystem = self
+	End Method
+	
+	Method GetX:Int()
+		Return _x
+	End Method
+	
+	Method GetY:Int()
+		Return _y
 	End Method
 	
 	Function GetActiveSystem:TSystem()

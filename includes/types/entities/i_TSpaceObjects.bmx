@@ -77,7 +77,7 @@ Type TSpaceObject Abstract
 	End Method
 	
 	Method Explode() 
-		' a makeshift "explosion" effect for testing
+		' a makeshift "explosion" effect for testing. Redo this with some pretty particle fireworks.
 		Local expScale:Float = CalcImageSize(_image) / 128.0 * _scaleX * 1.5
 		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 2, expScale, 1, _System) 
 		part.SetXVel(_xVel) 
