@@ -44,7 +44,7 @@ Type TParticle Extends TMovingObject
 		Next
 	End Function
 	
-	Function Create:TParticle(img:TImage, x:Float, y:Float, life:Float, scale:Float, alpha:Float = 0.8, System:TSystem) 
+	Function Create:TParticle(img:TImage, x:Double, y:Double, life:Float, scale:Float, alpha:Float = 0.8, System:TSystem) 
 		Local part:TParticle = New TParticle
 		part._x = x
 		part._y = y
@@ -150,7 +150,7 @@ Type TProjectile Extends TParticle
 		Destroy() 
 	End Method
 
-	Function Create:TProjectile(img:TImage, x:Float, y:Float, life:Float, scale:Float, alpha:Float = 1, System:TSystem) 
+	Function Create:TProjectile(img:TImage, x:Double, y:Double, life:Float, scale:Float, alpha:Float = 1, System:TSystem) 
 		Local part:TProjectile = New TProjectile
 		part._x = x
 		part._y = y

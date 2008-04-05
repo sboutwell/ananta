@@ -475,7 +475,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		' ---
 		
 		Local collNormalAngle:Float = ATan2(obj.GetY() - _y, obj.GetX() - _x) 
-		' position exactly touching, no intersection
+		' position the two balls exactly touching
 		Local moveDist1:Double = (collisionDistance - actualDistance) * (obj.GetMass() / Float((_mass + obj.GetMass()))) 
 		Local moveDist2:Double = (collisionDistance - actualDistance) * (_mass / Float((_mass + obj.GetMass()))) 
 		_x = _x + moveDist1 * Cos(collNormalAngle + 180) 
@@ -485,12 +485,11 @@ Type TMovingObject Extends TSpaceObject Abstract
 		
 		
 		' COLLISION RESPONSE
-		' n = vector connecting the centers of the circles
-		' we are finding the components of the normalised vector n
+		' n = vector connecting the centers of the colliding circles
+		' find the components of the normalised vector n
 		Local nX:Double = Cos(collNormalAngle) 
 		Local nY:Double = Sin(collNormalAngle) 
-		' now find the length of the components of each movement vectors
-		' along n, by using dot product.
+		' find the length of the components of movement vectors (dot product)
 		Local a1:Double = GetXVel() * nX + GetYVel() * nY
 		Local a2:Double = 0
 		If mObj Then
@@ -525,7 +524,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		'	G_debugWindow.AddText ("CollEnergy: " + collEnergy) 
 		'End If
 		If collEnergy > 150 Then obj.SustainDamage(CollEnergy) 
-		
+
 				
 		'G_DebugWindow.AddText(optimisedP)
 		
