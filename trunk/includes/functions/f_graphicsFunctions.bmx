@@ -18,6 +18,7 @@ This file is part of Ananta.
 Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
+' TileImage2 courtesy of Joe Lesko, modified by Jussi Pakkanen
 Function TileImage2 (image:TImage, x:Double=0:Double, y:Double=0:Double, frame:Int=0)
 
     Local scale_x#, scale_y#

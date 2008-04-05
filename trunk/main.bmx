@@ -41,7 +41,7 @@ Include "includes/types/graphics/i_TViewport.bmx"		'Draw-to-screen related stuff
 Include "includes/types/graphics/i_TMessageWindow.bmx"	'Messagewindow and messageline types
 Include "includes/types/graphics/i_TDebugWindow.bmx"	'Debugwindow and debugline types
 Include "includes/types/graphics/i_TMinimap.bmx"		'Minimap
-Include "includes/types/graphics/i_TStarmap.bmx"		'Star map
+Include "includes/types/graphics/i_TSystemMap.bmx"		'System map extended of TMinimap
 Include "includes/types/graphics/i_TColor.bmx"			'A structure-like type to map color names to their RGB values
 Include "includes/types/graphics/i_TMedia.bmx"			'Type that loads and holds media files
 Include "includes/types/i_TDelta.bmx"					'Delta timer
@@ -69,7 +69,8 @@ Local sSize:Long = 300000000:Long	' real solar system size
 'Local sSize:Long = 500000
 Local centralStar:TStar = GenerateTestSystem(sSize) 
 
-Local sMap:TStarMap = TStarMap.Create(viewport.GetResX() - 195, 200,195,195,7000,7000)
+Local sMap:TMiniMap = TMiniMap.Create(viewport.GetResX() - 195, 200,195,195)
+sMap._scale = 0.01
 
 ' generate the player and player's ship
 Global p1:TPlayer = TPlayer.Create("Da Playah") 
@@ -163,7 +164,8 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
 	
-	sMap.Update()
+	sMap.AddBlip(10,10,50)
+	sMap.AddBlip(-10000,100,5)
 	sMap.draw()
 	
 	' *********** DEBUG INFO ****************
