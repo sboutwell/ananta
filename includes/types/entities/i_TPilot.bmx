@@ -85,13 +85,13 @@ Type TPlayer Extends TPilot
 		EndIf
 		
 		If KeyDown(KEY_LSHIFT) Or KeyDown(KEY_RSHIFT) Then
-			If KeyDown(KEY_Z) Then viewport.GetMiniMap().ZoomIn() 
-			If KeyDown(KEY_X) Then viewport.GetMiniMap().ZoomOut() 
+			If KeyDown(KEY_Z) Then viewport.GetSystemMap().ZoomIn() 
+			If KeyDown(KEY_X) Then viewport.GetSystemMap().ZoomOut() 
 		EndIf
 		
 		If KeyDown(KEY_LALT) Or KeyDown(KEY_RALT) Then
 			If KeyDown(KEY_Z) Then viewport.ResetZoomFactor() 
-			If KeyDown(KEY_X) Then viewport.GetMiniMap().ResetZoomFactor() 
+			If KeyDown(KEY_X) Then viewport.GetSystemMap().ResetZoomFactor() 
 		End If
 		
 		If KeyDown(KEY_LALT) Or KeyDown(KEY_RALT) Then
@@ -100,7 +100,7 @@ Type TPlayer Extends TPilot
 		
 		If Not KeyDown(KEY_Z) And Not KeyDown(KEY_X) Then
 			viewport.StopZoom() 
-			viewport.GetMiniMap().StopZoom() 
+			viewport.GetSystemMap().StopZoom() 
 		EndIf
 	EndMethod
 	

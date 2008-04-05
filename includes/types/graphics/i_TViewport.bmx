@@ -47,7 +47,7 @@ Type TViewport
 	Field _marginalRight:Int
 	Field _borderWidth:Int
 	Field _borderColor:TColor
-	Field _miniMap:TMinimap			' the minimap associated with this viewport
+	Field _systemMap:TSystemMap ' the minimap associated with this viewport
 	Field _msgWindow:TMessageWindow = TMessageWindow.Create()  ' create a message window for the viewport
 	
 	Field _defaultZoom:Float = 1
@@ -86,7 +86,7 @@ Type TViewport
 		_defaultZoom = 1.0
 		_zoomFactor = _defaultZoom
 		
-		_miniMap = TMinimap.Create(Self.g_ResolutionX - 195, 0, 195, 195) 
+		_systemMap = TSystemMap.Create(Self.g_ResolutionX - 195, 0, 195, 195) 
 		'_miniMap = TMinimap.Create(50, 50, 500, 500) 
 
 	EndMethod
@@ -159,7 +159,7 @@ Type TViewport
 	Method DrawMisc() 
 		TMessageWindow.DrawAll()  	' draw message windows
 		G_debugWindow.DrawAllLines() 
-		_MiniMap.Draw() 
+		_systemMap.Draw() 
 
 		SetViewport(0, 0, viewport.GetResX(), viewport.GetResY()) 
 		SetScale(1, 1) 
@@ -184,8 +184,8 @@ Type TViewport
 		Return g_ResolutionY
 	End Method
 	
-	Method GetMiniMap:TMinimap() 
-		If _minimap Then Return _minimap
+	Method GetSystemMap:TSystemMap() 
+		If _systemMap Then Return _systemMap
 		Return Null
 	End Method
 

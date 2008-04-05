@@ -34,8 +34,8 @@ Type TSystem Final
 		If Not _L_SpaceObjects Return							' Exit if a body list doesn't exist
 		For Local obj:TSpaceObject = EachIn _L_SpaceObjects	' Iterate through each drawable object in the System
 			obj.DrawBody(vp)     							' Calls the DrawBody method of each drawable object in the System
-			If vp.GetMiniMap() And obj.showsOnMap() Then	' draw a minimap blip if minimap is defined for the viewport
-				vp.GetMiniMap().AddBlip(obj)
+			If vp.GetSystemMap() And obj.showsOnMap() Then	' draw a minimap blip if minimap is defined for the viewport
+				vp.GetSystemMap().AddSystemMapBlip(obj)
 			End If
 			obj._updated = False	' optimization to clear updated status during the drawing cycle
 		Next

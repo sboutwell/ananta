@@ -19,10 +19,10 @@ Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
 Rem
-	Zoomable starmap and the related types and functions
+	Zoomable generic minimap and the related types and functions
 EndRem
 
-Type TStarMap
+Type TMiniMap
 	Field _L_blips:TList
 	Field _startX:Int	' top left X coordinate
 	Field _startY:Int	' top left Y coordinate
@@ -30,14 +30,7 @@ Type TStarMap
 	Field _width:Int	' width of the minimap in pixels
 	Field _midX:Float	' middle X coordinate
 	Field _midY:Float	' middle Y coordinate
-	Field _alpha:Float
-	
-	Field _cameraX:Float	' x-y coordinates (in sector!) of the camera
-	Field _cameraY:Float	' 
-	Field _centeredSectorX:Int 	' x-y coordinates (in galaxy!) of the centered sector
-	Field _centeredSectorY:Int 	'
-	
-	Field _L_renderedSectors:TList	' list of the sectors to be rendered
+	Field _alpha:Float = 0.8 ' alpha of the map. Affects everything: blips, lines and text.
 	
 	Field _defaultZoom:Float = 0.2
 	Field _zoomFactor:Float
@@ -45,23 +38,32 @@ Type TStarMap
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
 	Field _zoomStep:Float = 0.5			' the amount added to the _zoomAmount per each second of zooming
 	
+	Field _scale:Float = 1	' how many map pixels does a real world distance unit represent
+	
+	Field _hasScaleIndicator:Int = TRUE
 	' base value for scale gauge step
 	Field _lineStep:Int = 100
-	
-	Method AddBlip(o:TSystem) 
+
+	Field _title:String = "Map"
+	Field _titleXOffset:Float = 0
+	Field _titleYOffset:Float = 0
+		
+	Method AddBlip:TMapBlip(x:Double, y:Double, size:Int) 
 		Local midX:Int = _width / 2
 		Local midY:Int = _height / 2
-		Local x:Int = (_cameraX - o.GetX()) * _zoomFactor + midX + _startX
-		Local y:Int = (_cameraY - o.GetY()) * _zoomFactor + midY + _startY
-		Local size:Int = o._size * _zoomFactor
-		If size < 2 Then size = 2
-		Local blip:TStarBlip = TStarBlip.Create(x, y, size) 
+		x = x * _zoomFactor * _scale + midX + _startX
+		y = y * _zoomFactor * _scale + midY + _startY
 		
-
+		size = size * _zoomFactor * _scale
+		If size < 2 Then size = 2	' ensure blip sizes are larger than 1
+		Local blip:TMapBlip = TMapBlip.Create(x, y, size) 
+		
 		If Not _L_blips Then _L_blips = New TList
 		If blip.GetSize() > 0 Then _L_blips.AddLast(blip) 
+		return blip
 	End Method
 	
+rem		 - move this to extended starmap type! -
 	Method Update()
 		Local cSect:TSector = TSector.Create(_centeredSectorX,_centeredSectorY)
 		cSect.Populate()
@@ -69,7 +71,8 @@ Type TStarMap
 			AddBlip(sys)
 		Next
 	End Method
-	
+endrem
+		
 	Method draw() 
 		SetViewport(_startX, _startY, _width, _height) 
 		SetBlend(ALPHABLEND) 
@@ -77,8 +80,8 @@ Type TStarMap
 		SetMaskColor(255, 255, 255) 
 		SetScale(1, 1) 
 		If _L_Blips Then
-			For Local blip:TStarBlip = EachIn _L_Blips
-				' If no part of the blip would be visible on the screen, don't bother to draw it
+			For Local blip:TMapBlip = EachIn _L_Blips
+				' If no part of the blip would be visible on the viewport, don't bother to draw it
 				If blip.isOverBoundaries(_startX, _startY, _width, _height) Then
 					Continue
 				Else
@@ -96,7 +99,7 @@ Type TStarMap
 	End Method
 
 	Method DrawDetails() 
-		DrawScale() 
+		If _hasScaleIndicator Then DrawScale() 
 	 
 		' draw the background tint
 		DrawBackGround()
@@ -106,16 +109,16 @@ Type TStarMap
 		SetColor(255,255,255)
 		SetScale(1,1)
 		SetRotation(0)
-		DrawText("Galaxy map", Self._midX - 35, Self._StartY) 
+		DrawText(_title, Self._midX + _titleXoffset, Self._StartY + _titleYoffset) 
 	End Method	
 		
 	Method DrawScale() 
-		Local lineStepScaled:Double = _lineStep * _zoomFactor
+		Local lineStepScaled:Double = _lineStep * _zoomFactor * _scale
 		
 		Local k:Int = 0
 		Repeat
 			k:+1
-			lineStepScaled:Double = _lineStep * 10 ^ k * _zoomFactor
+			lineStepScaled:Double = _lineStep * 10 ^ k * _zoomFactor * _scale
 		Until lineStepScaled > 7
 
 		Local lines:Int = _width / lineStepScaled
@@ -162,34 +165,12 @@ Type TStarMap
 	
 	' draws the scale text indicator on top of the scale line
 	Method DisplayLineStep(k:Int) 
-		Local prefix:String = "k"
-		Local divider:Int = 1000 / _lineStep
-		Local val:Double = 10.0 ^ k / divider
+		Local prefix:String
+		'Local divider:Int = 1000 / _lineStep
+		'Local val:Double = 10.0 ^ k / divider
+		Local val:Long = 10.0 ^ k * _lineStep
 		
-		If k > 3 Then
-			prefix = "M"
-			val = val / 1000
-		EndIf
-		
-		If k > 6 Then
-			prefix = "G"
-			val = val / 1000
-		EndIf
-
-		If k > 9 Then
-			prefix = "T"
-			val = val / 1000
-		End If
-		
-		If k > 12 Then
-			prefix = "P"
-			val = val / 1000
-		End If
-		
-		If k > 15 Then
-			prefix = "E"
-			val = val / 1000
-		End If
+		GetPrefix(prefix,val)
 		
 		SetScale(1, 1) 
 		SetRotation(0) 
@@ -206,6 +187,10 @@ Type TStarMap
 		DrawRect(_startX,_startY,_width,_height)
 	End Method
 	
+	Method SetTitle(t:String)
+		_title = t
+	End Method
+	
 	Method SetZoomFactor(z:Float) 
 		_zoomfactor = z
 	End Method
@@ -219,53 +204,44 @@ Type TStarMap
 	End Method
 	
 	Method ZoomIn() 
-		'_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta() 
-		'_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
-		_zoomFactor:+_zoomFactor * _zoomAmount
-		_zoomAmount = _zoomAmount + _zoomStep
+		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta() 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
 	End Method
 	
 	Method ZoomOut() 
-		'_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta() 
-		'_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
-		_zoomFactor:-_zoomFactor * _zoomAmount
-		_zoomAmount = _zoomAmount + _zoomStep
+		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta() 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
 	End Method
 	
 	Method StopZoom() 
 		_zoomAmount = _zoomAmountReset
 	End Method
 	
-	Function Create:TStarMap(x:Int, y:Int, h:Int, w:Int, centX:Int, centY:Int) 
-		Local map:TStarMap = New TStarMap
-		If x + w > viewport.GetResX() Then x = viewport.GetResX() - w
-		If y + h > viewport.GetResY() Then y = viewport.GetResY() - h
+	Method Init()
+		_midX = _startX + _width / 2.0
+		_midY = _startY + _height / 2.0
+		_zoomFactor = _defaultZoom
+		_titleXOffset = -4 * _title.Length	' center the title text
+	End method
+	
+	Function Create:TMiniMap(x:Int, y:Int, h:Int, w:Int) 
+		Local map:TMiniMap = New TMiniMap
 		map._startX = x
 		map._startY = y
 		map._height = h
 		map._width = w
-		map._midX = x + w / 2.0
-		map._midY = y + h / 2.0
 		
-		map._centeredSectorX = centX
-		map._centeredSectorY = centY
-		map._cameraX = 128
-		map._cameraY = 128
-		
-		map._defaultZoom = 0.4
-		map._zoomFactor = map._defaultZoom
-		
-		map._alpha = 0.8
-		
+		map.Init() 	' calculate the rest of the minimap values
 		Return map
 	End Function
 EndType
 
 
-Type TStarBlip
+Type TMapBlip
 	Field _x:Int, _y:Int
 	Field _size:Float
-
+	Field _color:TColor
+	
 	Method GetSize:Float() 
 		Return _size
 	End Method
@@ -282,6 +258,10 @@ Type TStarBlip
 		_size = sz
 	End Method
 	
+	Method SetBColor(col:TColor) 
+		_color = col
+	End Method
+
 	' isOverBoundaries checks if the blip would show on the minimap
 	Method isOverBoundaries:Int(startX:Int, startY:Int, width:Int, height:Int) 
 		Return _x + _size / 2 < startX Or ..
@@ -290,15 +270,19 @@ Type TStarBlip
 			_y - _size / 2 > startY + height
 	End Method
 	
-	
 	Method Draw() 
 		If _size = 0 Then Return		' don't draw 0-sized blips
 		SetHandle(_size / 2, _size / 2)     ' oval handle to the middle of the oval
+		If _color Then 
+			TColor.SetTColor(_color)
+		Else
+			SetColor(255,255,255)
+		EndIf
 		DrawOval (_x, _y, _size, _size) 
 	End Method
 	
-	Function Create:TStarBlip(x:Int, y:Int, size:Int) 
-		Local blip:TStarBlip = New TStarBlip
+	Function Create:TMapBlip(x:Int, y:Int, size:Int) 
+		Local blip:TMapBlip = New TMapBlip
 		blip._x = x
 		blip._y = y
 		blip._size = size
