@@ -87,6 +87,7 @@ Type TViewport
 		_zoomFactor = _defaultZoom
 		
 		_miniMap = TMinimap.Create(Self.g_ResolutionX - 195, 0, 195, 195) 
+		'_miniMap = TMinimap.Create(50, 50, 500, 500) 
 
 	EndMethod
 
@@ -105,20 +106,19 @@ Type TViewport
 		If _zoomFactor < 0.1 Then SetAlpha (0.8 / 0.1 * _zoomFactor) 
 		SetColor 128, 128, 255
 		SetMaskColor 255, 255, 255
-		TileImage G_media_spaceBG, (_CameraPosition_X) / 50, (_CameraPosition_Y) / 50
+		TileImage2(G_media_spaceBG, (_CameraPosition_X) / 50, (_CameraPosition_Y) / 50)
 		' -----
 		
 		SetColor 255, 255, 255
 		' ----- draw the space dust with zoom-dependent alpha
 		If Not _isZooming And _zoomFactor < 0.1 Then ' if we're zoomed out far enough, gradually fade the space dust
 			SetAlpha (0.95 / 0.1 * _zoomFactor) 
-		ElseIf _isZooming Then  ' if we are zooming in or out, don't draw the space dust
+		ElseIf _isZooming Then  ' while we are zooming in or out, don't draw the space dust
 			SetAlpha 0
 		Else
 			SetAlpha 0.95
 		EndIf
-		'TileImage G_media_spacedust, _CameraPosition_X * _zoomFactor, _CameraPosition_Y * _zoomFactor
-		TileImage G_media_spacedust, _CameraPosition_X, _CameraPosition_Y
+		TileImage2 (G_media_spacedust, _CameraPosition_X * _zoomFactor, _CameraPosition_Y * _zoomFactor)
 		' ---------
 		
 		' draw a colored border around the viewport

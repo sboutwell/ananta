@@ -80,6 +80,7 @@ Type TMinimap
 	Method Draw() 
 		If Not _L_Blips Then Return
 		SetViewport(_startX, _startY, _width, _height) 
+		'SetViewport(0, 0, 800, 600) 
 		SetBlend(ALPHABLEND) 
 		SetAlpha(_alpha) 
 		SetMaskColor(255, 255, 255) 
@@ -137,7 +138,7 @@ Type TMinimap
 
 		Local lines:Int = _width / lineStepScaled
 		
-		Local yPos:Int = _height - 5
+		Local yPos:Int = _starty + _height - 5
 		
 		SetScale(1, 1) 
 		SetRotation(0) 

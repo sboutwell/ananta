@@ -23,11 +23,12 @@ Import bah.Libxml		' XML parser library wrapper for BlitzMax by Bruce A. Henders
 Import bah.Cairo		' vector graphics library wrapper for BlitzMax by Bruce A. Henderson
 
 AppTitle = "Ananta"
-Include "includes/i_constants.bmx"					'Global constants. All constants must begin with C_
-Include "includes/i_globals.bmx"					'Global variables and types. All globals must begin with G_
-Include "includes/functions/f_XMLfunctions.bmx"		'Functions related to XML loading, parsing and searching
-Include "includes/functions/f_mathfunctions.bmx"	'General math related functions
-Include "includes/functions/f_stringfunctions.bmx"	'Functions related to string manipulation
+Include "includes/i_constants.bmx"						'Global constants. All constants must begin with C_
+Include "includes/i_globals.bmx"						'Global variables and types. All globals must begin with G_
+Include "includes/functions/f_XMLfunctions.bmx"			'Functions related to XML loading, parsing and searching
+Include "includes/functions/f_mathfunctions.bmx"		'General math related functions
+Include "includes/functions/f_stringfunctions.bmx"		'Functions related to string manipulation
+Include "includes/functions/f_graphicsFunctions.bmx"	'Graphics-related functions
 
 ' Type definitions
 Include "includes/types/entities/i_TPilot.bmx"			'Pilot entities and methods for AI routines
@@ -63,7 +64,9 @@ For Local syst:TSystem = EachIn sect._L_systems
 	Print(syst.GetX() + " " + syst.GetY())
 Next
 
-Local sSize:Int = 500000	' System size in pixels
+'Local sSize:Long = 148000000:Long	' real solar system size
+Local sSize:Long = 300000000:Long	' real solar system size
+'Local sSize:Long = 500000
 Local centralStar:TStar = GenerateTestSystem(sSize) 
 
 Local sMap:TStarMap = TStarMap.Create(viewport.GetResX() - 195, 200,195,195,7000,7000)
@@ -189,10 +192,10 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 Wend
 
 Function GenerateVectorTextures() 
-	TImg.StoreImg(TStar.GenerateStarTexture(800) , "star_generated") 
+	TImg.StoreImg(TStar.GenerateStarTexture(1600) , "star_generated") 
 End Function
 
-Function GenerateTestSystem:TStar(sSize:Int) 
+Function GenerateTestSystem:TStar(sSize:Long) 
 	Local asteroids:Int = 30
 	Local planets:Int = 10
 	
@@ -205,7 +208,7 @@ Function GenerateTestSystem:TStar(sSize:Int)
 	Local st1:TStar = TStar.Create(0, 0, System1, 100000, 5, "Sol") 
 	st1._image = TImg.LoadImg("star_generated") 
 	st1._rotation = -90
-	st1._scaleX = 10
+	st1._scaleX = 20
 	st1._scaleY = st1._scaleX
 	st1._size = CalcImageSize(st1._image, False) * st1._scaleX
 	st1._mass = (st1._scaleX ^ 2) * 200000000
