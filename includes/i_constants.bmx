@@ -24,4 +24,5 @@ Const c_commoditiesFile:String = "conf/commodities.xml"
 Const c_colorsFile:String = "conf/colors.xml"
 Const c_shipModelsFile:String = "conf/shipmodels.xml"
 
-Const c_GravConstant:Float = 0.3	' gravitational constant
+Const c_GravConstant:Float = 0.03	' gravitational constant
+'Const c_GravConstant:Float = 0.0001	' gravitational constant

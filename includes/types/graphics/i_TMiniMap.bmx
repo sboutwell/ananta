@@ -166,8 +166,6 @@ endrem
 	' draws the scale text indicator on top of the scale line
 	Method DisplayLineStep(k:Int) 
 		Local prefix:String
-		'Local divider:Int = 1000 / _lineStep
-		'Local val:Double = 10.0 ^ k / divider
 		Local val:Long = 10.0 ^ k * _lineStep
 		
 		GetPrefix(prefix,val)
@@ -204,13 +202,13 @@ endrem
 	End Method
 	
 	Method ZoomIn() 
-		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta() 
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
+		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(false) 
 	End Method
 	
 	Method ZoomOut() 
-		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta() 
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
+		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(false) 
 	End Method
 	
 	Method StopZoom() 

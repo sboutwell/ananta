@@ -35,3 +35,4 @@ Global G_delta:TDelta = TDelta.Create(XMLGetSingleValue(c_SettingsFile,  ..
 	"settings/graphics/framerate").ToInt(),  ..
 	XMLGetSingleValue(c_settingsFile, "settings/graphics/limitframerate").ToInt(),  ..
 	XMLGetSingleValue(c_settingsFile, "settings/graphics/maxdelta").ToInt()) 
+G_delta._timeCompression = 1

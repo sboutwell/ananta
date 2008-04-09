@@ -89,7 +89,7 @@ Type TSpaceObject Abstract
 		Destroy() 
 	End Method
 		
-	Method DrawBody(vp:TViewport, drawAsAttachment:Int = False) 
+	Method DrawBody(vp:TViewport, drawAsAttachment:Int = False)
 		
 		If Not _image Then Return
 		
@@ -111,8 +111,8 @@ Type TSpaceObject Abstract
 		Local midX:Int = vp.GetMidX()
 		Local midY:Int = vp.GetMidY()
 		' *********
-		Local x:Double = (vp.GetCameraPosition_X() - _x) * viewport._zoomFactor + midX + startX
-		Local y:Double = (vp.GetCameraPosition_Y() - _y) * viewport._zoomFactor + midY + startY
+		Local x:Double = (vp.GetCameraPosition_X() - _x) * viewport.GetZoomFactor() + midX + startX
+		Local y:Double = (vp.GetCameraPosition_Y() - _y) * viewport.GetZoomFactor() + midY + startY
 		
 		'If x + _size * _scaleX * viewport._zoomfactor / 2 < startX Then Return
 		'If x - _size * _scaleX * viewport._zoomFactor / 2 > startX + vp.GetWidth() Then Return
