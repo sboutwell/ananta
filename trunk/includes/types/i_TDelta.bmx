@@ -30,12 +30,14 @@ Type TDelta
 	Field _FPSTime:Double
 	Field _currentDelta:Double
 	Field _isFirstRound:Int = True
+	Field _timeCompression:Float = 1
 	
 	Method GetFPS:Int() 
 		Return _currentFPS
 	End Method
 	
-	Method GetDelta:Double() 
+	Method GetDelta:Double(compression:Int = True) 
+		If compression = True Then Return _currentDelta * _timeCompression
 		Return _currentDelta
 	EndMethod
 	

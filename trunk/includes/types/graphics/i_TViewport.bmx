@@ -91,9 +91,9 @@ Type TViewport
 
 	EndMethod
 
-	Method DrawLevel() 
-		_CameraPosition_X = _centeredObject.GetX() 
-		_CameraPosition_Y = _centeredObject.GetY()
+	Method DrawLevel()
+		_CameraPosition_X:Double = _centeredObject.GetX() 
+		_CameraPosition_Y:Double = _centeredObject.GetY()
 
 		SetViewport(_startX ,_startY, _width, _height)  ' limit the drawing area to viewport margins
 	
@@ -106,7 +106,7 @@ Type TViewport
 		If _zoomFactor < 0.1 Then SetAlpha (0.8 / 0.1 * _zoomFactor) 
 		SetColor 128, 128, 255
 		SetMaskColor 255, 255, 255
-		TileImage2(G_media_spaceBG, (_CameraPosition_X) / 50, (_CameraPosition_Y) / 50)
+		TileImage2(G_media_spaceBG, (_CameraPosition_X:Double) / 50, (_CameraPosition_Y:Double) / 50)
 		' -----
 		
 		SetColor 255, 255, 255
@@ -118,7 +118,7 @@ Type TViewport
 		Else
 			SetAlpha 0.95
 		EndIf
-		TileImage2 (G_media_spacedust, _CameraPosition_X * _zoomFactor, _CameraPosition_Y * _zoomFactor)
+		TileImage2 (G_media_spacedust, _CameraPosition_X:Double * _zoomFactor, _CameraPosition_Y:Double * _zoomFactor)
 		' ---------
 		
 		' draw a colored border around the viewport
@@ -213,14 +213,18 @@ Type TViewport
 		Return _MidY
 	End Method
 
-	Method GetCameraPosition_X:Float()
+	Method GetCameraPosition_X:Double()
 		Return _CameraPosition_X
 	End Method
 
-	Method GetCameraPosition_Y:Float()
+	Method GetCameraPosition_Y:Double()
 		Return _CameraPosition_Y
 	End Method
 		
+	Method GetZoomFactor:Float()
+		Return _zoomFactor
+	End Method
+	
 	Method SetZoomFactor(z:Float) 
 		_zoomFactor = z
 	End Method
@@ -230,14 +234,14 @@ Type TViewport
 	End Method
 	
 	Method ZoomIn() 
-		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta() 
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
+		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(false) 
 		_isZooming = True
 	End Method
 	
 	Method ZoomOut() 
-		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta() 
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta() 
+		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(false) 
 		_isZooming = True
 	End Method
 	

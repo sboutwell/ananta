@@ -109,14 +109,15 @@ ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1))
 ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
 ast.SetOrbitalVelocity(orbitedPlanet,True)
 ast = null
-'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, System1, 0.1, 0.3, 400, 0.07) 
+
+'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
 'part1.SetRandomDir(2) 
 's1.AddAttachment(part1, - 28, 0, 0, False) 
 
 'TAttachment.Create(s1, "attach.png", - 10, 10, 0, 0.1, 0.1, False) 
 
 viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
-
+'s1.SetCoordinates(100000,100000)
 ' set up bunch of AI pilots
 
 For Local i:Int = 1 To 25
@@ -207,13 +208,13 @@ Function GenerateTestSystem:TStar(sSize:Long)
 	' ================ randomize System and planetary object for testing ===================
 	SeedRnd(MilliSecs()) 
 	' create a star
-	Local st1:TStar = TStar.Create(0, 0, System1, 100000, 5, "Sol") 
+	Local st1:TStar = TStar.Create(0, 0, System1, 1000000, 5, "Sol") 
 	st1._image = TImg.LoadImg("star_generated") 
 	st1._rotation = -90
 	st1._scaleX = 20
 	st1._scaleY = st1._scaleX
 	st1._size = CalcImageSize(st1._image, False) * st1._scaleX
-	st1._mass = (st1._scaleX ^ 2) * 200000000
+	st1._mass = (st1._scaleX ^ 2) * 2000000000
 	
 	' create some planets
 	For Local i:Int = 1 To planets
@@ -238,7 +239,7 @@ Function GenerateTestSystem:TStar(sSize:Long)
 		pl2._scaleX = Rnd(0.5, 2) 
 		pl2._scaleY = pl2._scaleX
 		pl2._size = CalcImageSize(pl2._image, False) * pl2._scaleX
-		pl2._mass = (pl2._scaleX ^ 2) * Rand(30000000, 50000000) 
+		pl2._mass = (pl2._scaleX ^ 2) * Rand(200000000, 400000000) 
 		pl2._hasGravity = True
 	Next
 	
