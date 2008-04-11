@@ -19,8 +19,19 @@ Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
 SuperStrict
+Framework brl.glmax2d
+Import brl.d3d7max2d
+Import brl.standardio
+Import brl.jpgloader
+Import brl.pngloader
+Import brl.linkedlist
+Import brl.Pixmap
+Import brl.math
+
+' Brucey's modules
 Import bah.Libxml		' XML parser library wrapper for BlitzMax by Bruce A. Henderson
 Import bah.Cairo		' vector graphics library wrapper for BlitzMax by Bruce A. Henderson
+Import bah.random		' SFMT pseudo-random number generator for consistent galaxy creation
 
 AppTitle = "Ananta"
 Include "includes/i_constants.bmx"						'Global constants. All constants must begin with C_
@@ -135,9 +146,8 @@ Next
 
 viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
 
-
 ' Main loop
-While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
+While Not KeyHit(KEY_ESCAPE) And Not AppTerminate() 
 	' calculate the deltatimer (alters global variable G_delta)
 	G_delta.Calc() 
 	

@@ -63,10 +63,11 @@ Function StringSplit:TList(str:String,delim:String)
 		Local pos:Int = str.Find(delim)
 		If pos <> -1 Then
 			Local splicedStr:String = str[..pos]	' extract a splice from the beginning of the string to the delimiter position
-			str = Trim(str[pos+delimLength..])	' splice the extracted substring + the delimiter out of the main string
+			'str = Trim(str[pos+delimLength..])	' splice the extracted substring + the delimiter out of the main string
+			str = (str[Pos + delimLength..] ).Trim() 	' splice the extracted substring + the delimiter out of the main string
 			L_Strings.AddLast splicedStr	' add the substring to the list
 		Else	' no more delimiters found
-			L_Strings.AddLast Trim(str)	' add the rest of the string to the list and exit the loop
+			L_Strings.AddLast str.Trim() 	' add the rest of the string to the list and exit the loop
 			Exit
 		EndIf
 	Forever
@@ -80,9 +81,10 @@ Function FloatToFixedPoint:String(f:Float, decimals:Int=2)
 	Local value:String = String.fromlong(i)
 		
 	If value.length<=decimals
-		return "0."+(RSet("",decimals-value.length)).Replace(" ","0")+value
+		'return "0."+(RSet("",decimals-value.length)).Replace(" ","0")+value
+		Return "0." + ""[Len("") - decimals - value.Length..].Replace(" ", "0") + value
 	ElseIf decimals = 0
-		return value[0..value.length-decimals]
+		Return value[0..value.Length - decimals] 
 	Else
 		return value[0..value.length-decimals] + "." + value[value.length-decimals..value.length]  
 	EndIf
