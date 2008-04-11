@@ -65,6 +65,7 @@ TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
+SeedRnd(1337)
 
 TUni.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")
 Local sect:TSector = TSector.Create(7000,7000)
@@ -216,7 +217,7 @@ Function GenerateTestSystem:TStar(sSize:Long)
 	Local system1:TSystem = TSystem.GetActiveSystem()
 
 	' ================ randomize System and planetary object for testing ===================
-	SeedRnd(MilliSecs()) 
+	'SeedRnd(MilliSecs()) 
 	' create a star
 	Local st1:TStar = TStar.Create(0, 0, System1, 1000000, 5, "Sol") 
 	st1._image = TImg.LoadImg("star_generated") 
