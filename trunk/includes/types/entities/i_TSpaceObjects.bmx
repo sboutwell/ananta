@@ -666,43 +666,18 @@ Type TShip Extends TMovingObject
 		' apply forward and reverse thrusts
 		If _throttlePosition > 0 Then
 			ApplyImpulse(_throttlePosition * _forwardAcceleration) 
-			
 			' add the engine trail effect
-			If _L_Engines Then
-				For Local eng:TComponent = EachIn _L_Engines
-					If eng.GetSlot().GetExposedDir() = "tail" Then
-						Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"),  ..
-						_x + eng.GetSlot().GetYOffSet() * Cos(_rotation) + eng.GetSlot().GetXOffSet() * Sin(_rotation),  ..
-						_y + eng.GetSlot().GetYOffSet() * Sin(_rotation) - eng.GetSlot().GetXOffSet() * Cos(_rotation),  ..
-						0.1, 0.03, 0.5, _System) 
-						Local randDir:Float = Rand(- 2, 2) 
-						part._xVel = _xVel - 150 * Cos(_rotation + randDir) 
-						part._yVel = _yVel - 150 * Sin(_rotation + randDir) 
-						part._rotation = _rotation											
-					EndIf
-				Next
-			EndIf
-			
+			If _L_Engines AND NOT _isJumpDriveOn Then EmitEngineTrail("tail")		
 		EndIf
+		
 		If _throttlePosition < 0 Then
 			ApplyImpulse(_throttlePosition * _reverseAcceleration) 
-
-			For Local eng:TComponent = EachIn _L_Engines
-				If eng.GetSlot().GetExposedDir() = "nose" Then
-					Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"),  ..
-					_x + eng.GetSlot().GetYOffSet() * Cos(_rotation) + eng.GetSlot().GetXOffSet() * Sin(_rotation),  ..
-					_y + eng.GetSlot().GetYOffSet() * Sin(_rotation) - eng.GetSlot().GetXOffSet() * Cos(_rotation),  ..
-					0.1, 0.03, 0.5, _System) 
-					Local randDir:Float = Rand(- 2, 2) 
-					part._xVel = _xVel + 150 * Cos(_rotation + randDir) 
-					part._yVel = _yVel + 150 * Sin(_rotation + randDir) 
-					part._rotation = _rotation + 180
-				EndIf
-			Next
+			' add the engine trail effect
+			If _L_Engines AND NOT _isJumpDriveOn Then EmitEngineTrail("nose")		
 		EndIf
 		
 		' firing
-		If _triggerDown Then FireWeapon() 
+		If _triggerDown AND NOT _isJumpDriveOn Then FireWeapon() 
 		
 		' apply rotation thrusters
 		ApplyRotation(_controllerPosition * _rotAcceleration)
@@ -714,6 +689,25 @@ Type TShip Extends TMovingObject
 		
 		If _isJumpDriveOn Then UpdatePosition(20)    
 	EndMethod
+	
+	Method EmitEngineTrail(dir:String = "tail")
+		Local direct:Int = 1	
+		If dir = "nose" Then direct = -1
+		For Local eng:TComponent = EachIn _L_Engines
+			If eng.GetSlot().GetExposedDir() = dir Then
+				Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"),  ..
+				_x + eng.GetSlot().GetYOffSet() * Cos(_rotation) + eng.GetSlot().GetXOffSet() * Sin(_rotation),  ..
+				_y + eng.GetSlot().GetYOffSet() * Sin(_rotation) - eng.GetSlot().GetXOffSet() * Cos(_rotation),  ..
+				0.1, 0.03, 0.5, _System) 
+				Local randDir:Float = Rand(- 2, 2) 
+				part._xVel = _xVel - 150*direct * Cos(_rotation + randDir) 
+				part._yVel = _yVel - 150*direct * Sin(_rotation + randDir) 
+				part._rotation = _rotation
+				IF dir = "nose" Then part._rotation:+180											
+			EndIf
+		Next
+	End Method
+	
 	
 	Method FireWeapon() 
 		If Not _selectedWeaponSlot Then Return
