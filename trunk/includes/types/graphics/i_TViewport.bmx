@@ -275,7 +275,7 @@ Type TViewport
 			SetGraphicsDriver GLMax2DDriver() 
 		EndIf
 		Graphics g_ResolutionX, g_ResolutionY, g_BitDepth, g_RefreshRate, 0
-		HideMouse()
+		'HideMouse()
 	EndFunction
 	
 	Function ToggleFullScreen() 

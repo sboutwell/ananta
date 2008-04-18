@@ -83,6 +83,9 @@ Local centralStar:TStar = GenerateTestSystem(sSize)
 
 Local sMap:TMiniMap = TMiniMap.Create(viewport.GetResX() - 195, 200,195,195)
 sMap._scale = 0.01
+sMap.AddBlip(10,10,50)
+sMap.AddBlip(-10000,100,5)
+sMap._isPersistent = TRUE
 
 ' generate the player and player's ship
 Global p1:TPlayer = TPlayer.Create("Da Playah") 
@@ -176,8 +179,6 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
 	
-	sMap.AddBlip(10,10,50)
-	sMap.AddBlip(-10000,100,5)
 	sMap.draw()
 	
 	' *********** DEBUG INFO ****************
