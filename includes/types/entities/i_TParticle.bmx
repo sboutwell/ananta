@@ -140,6 +140,7 @@ Type TProjectile Extends TParticle
 	
 	Method Explode() 
 		' a makeshift "explosion" effect for testing
+		If not _system Then Return
 		Local expScale:Float = CalcImageSize(_image) / 128.0 * _scaleX * 2
 		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 0.5, expScale, 1, _System) 
 		part.SetXVel(_xVel) 

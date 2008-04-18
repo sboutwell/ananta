@@ -29,6 +29,7 @@ Type TSystemMap Extends TMiniMap
 	Field _selfColor:TColor
 	Field _velColor:TColor
 	Field _miscColor:TColor
+	Field _projColor:TColor
 	
 	Field _attitudeIndicator:TImage
 	
@@ -36,11 +37,15 @@ Type TSystemMap Extends TMiniMap
 		Local blip:TMapBlip = AddBlip(viewport.GetCameraPosition_X() - o.GetX(),viewport.GetCameraPosition_Y() - o.GetY(),o.GetSize())
 		
 		' use casting to find out the type of the object
-		blip.SetBColor(_miscColor) 
-		If TStar(o) Then blip.SetBColor(_starColor) 
-		If TPlanet(o) Then blip.SetBColor(_planetColor) 
-		If TShip(o) Then blip.SetBColor(_ShipColor) 
-		
+		If TStar(o) Then 
+			blip.SetBColor(_starColor) 
+		Else If TPlanet(o) Then blip.SetBColor(_planetColor) 
+		Else If TShip(o) Then blip.SetBColor(_ShipColor) 
+		Else If TProjectile(o) Then blip.SetBColor(_ProjColor) 
+		Else 
+			blip.SetBColor(_miscColor) 
+		EndIf
+ 	
 		' special behaviour for the centered blip
 		If o = viewport._centeredObject Then
 			blip.SetBColor(_selfColor) 
@@ -99,9 +104,10 @@ Type TSystemMap Extends TMiniMap
 		map._shipColor = TColor.FindColor("crimson") 
 		map._selfColor = TColor.FindColor("lime") 
 		map._planetColor = TColor.FindColor("cobalt") 
+		
 		map._velColor = TColor.FindColor("lime") 
 		map._miscColor = TColor.FindColor("cyan") 
-		
+		map._projColor = TColor.FindColor("pink")
 		map._attitudeIndicator = TImg.LoadImg("attitude.png") 
 		
 		map.Init() ' calculate the rest of the minimap values

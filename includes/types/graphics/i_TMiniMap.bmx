@@ -40,6 +40,8 @@ Type TMiniMap
 	
 	Field _scale:Float = 1	' how many map pixels does a real world distance unit represent
 	
+	Field _isPersistent:Int = False  ' no auto clearing the map blips after drawing them? Useful for maps with stationary blips.
+	
 	Field _hasScaleIndicator:Int = TRUE
 	' base value for scale gauge step
 	Field _lineStep:Int = 100
@@ -90,7 +92,7 @@ endrem
 			Next
 			
 			' after drawing all blips, clear the list
-			If _L_blips Then _L_Blips.Clear() 
+			If Not _isPersistent Then ClearMinimap()
 		EndIf
 		
 		SetHandle(0, 0) 
@@ -98,6 +100,10 @@ endrem
 		DrawDetails() 
 	End Method
 
+	Method ClearMinimap()
+ 		_L_Blips.Clear() 		
+	End Method
+	
 	Method DrawDetails() 
 		If _hasScaleIndicator Then DrawScale() 
 	 
@@ -196,7 +202,7 @@ endrem
 	Method GetDefaultZoom:Float() 
 		Return _defaultZoom
 	End Method
-	
+
 	Method ResetZoomFactor() 
 		_zoomfactor = _defaultZoom
 	End Method
