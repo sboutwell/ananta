@@ -79,3 +79,11 @@ Function TileImage2 (image:TImage, x:Double=0:Double, y:Double=0:Double, frame:I
     SetOrigin origin_x, origin_y
 
 End Function
+
+' function to draw a non-filled rectangle
+Function DrawOblong( x#, y#, w#, h# )
+	DrawLine( x , y , x + w , y)
+	DrawLine( x+w , y , x + w , y+h)
+	DrawLine( x+w , y+h , x , y+h)
+	DrawLine( x , y+h , x , y)
+End Function

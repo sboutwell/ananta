@@ -141,14 +141,7 @@ Type TViewport
 		TColor.SetTColor(color)
 		SetRotation(0)
 		SetScale(1,1)
-		' top border
-		DrawLine(_startX - w, _startY - w, _width + _startX + w, _startY - w)
-		' bottom border
-		DrawLine(_startX - w, _startY + _height + w, _startX + _width + w, _startY + _height + w)
-		' left border
-		DrawLine(_startX - w, _startY - w, _startX - w, _startY + _height + w)
-		' right border
-		DrawLine(_startX + _width + w, _startY - w, _startX + _width + w, _startY + _height + w)
+		DrawOblong( _startX-w, _startY-w, _startX + _width, _startY+_height)
 	EndMethod
 
 	Method CreateMsg(str:String,colString:String="")
@@ -268,9 +261,16 @@ Type TViewport
 		G_DebugWindow.AddText("ESC                  - exit")
 	End Method
 	
-	Function InitGraphicsMode() 
-		If g_Renderer = "directx" Then
+	Function InitGraphicsMode()
+		Local isWin:Int = False
+		?win32
+		isWin = True
+		?
+		
+		If g_Renderer = "directx" And isWin Then
+			?win32
 			SetGraphicsDriver D3D7Max2DDriver() 
+			?
 		Else
 			SetGraphicsDriver GLMax2DDriver() 
 		EndIf

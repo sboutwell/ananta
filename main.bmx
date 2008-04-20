@@ -20,7 +20,9 @@ endrem
 
 SuperStrict
 Framework brl.glmax2d
+?win32
 Import brl.d3d7max2d
+?
 Import brl.standardio
 Import brl.jpgloader
 Import brl.pngloader
