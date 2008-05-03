@@ -87,6 +87,9 @@ Type TPlayer Extends TPilot
 		If KeyDown(KEY_LSHIFT) Or KeyDown(KEY_RSHIFT) Then
 			If KeyDown(KEY_Z) Then viewport.GetSystemMap().ZoomIn() 
 			If KeyDown(KEY_X) Then viewport.GetSystemMap().ZoomOut() 
+			
+			If KeyDown(KEY_C) Then viewport.GetStarMap()._isPersistent = FALSE; viewport.GetStarMap().ZoomIn()
+			If KeyDown(KEY_V) Then viewport.GetStarMap()._isPersistent = FALSE; viewport.GetStarMap().ZoomOut()
 		EndIf
 		
 		If KeyDown(KEY_LALT) Or KeyDown(KEY_RALT) Then
@@ -101,6 +104,12 @@ Type TPlayer Extends TPilot
 		If Not KeyDown(KEY_Z) And Not KeyDown(KEY_X) Then
 			viewport.StopZoom() 
 			viewport.GetSystemMap().StopZoom() 
+		EndIf
+		
+		If Not viewport.GetStarMap()._isPersistent AND Not KeyDown(KEY_C) And Not KeyDown(KEY_V) Then
+			viewport.GetStarMap()._isPersistent = TRUE
+			viewport.GetStarMap().StopZoom() 
+			viewport.GetStarMap().Update()
 		EndIf
 	EndMethod
 	

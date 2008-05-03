@@ -22,11 +22,13 @@ endrem
 Type TSystem Final
 	Global g_L_Systems:TList					' a list to hold all Systems
 	Global _g_ActiveSystem:TSystem				' the System the player is in
-	Field _name:String							' Name of the System	
-	Field _x:Int,_y:Int							' System's x-y-coordinates in the sector map
-	Field _size:Int = 5							' size of the central star (for starmap blip size)
+	Field _name:String							' Name of the System
+	Field _sectorX:Int, _sectorY:Int			' coordinates of the sector this system is in (0 - 7192)
+	Field _x:Int,_y:Int							' System's x-y-coordinates in the sector map (0 - 256)
+	Field _size:Float = 5						' size of the central star (for starmap blip size)
 	Field _type:Int								' type of the central star
 	Field _multiple:Int							' multiple star status for the system
+	Field _mainStar:TStar
 	
 	Field _L_SpaceObjects:TList					' a list to hold all TSpaceObjects in this System
 
@@ -54,6 +56,7 @@ Type TSystem Final
 		_L_SpaceObjects.Remove(obj) 
 	EndMethod
 
+	' placeholder method for procedural planet generation
 	Method Populate()
 		
 	End Method
@@ -70,13 +73,25 @@ Type TSystem Final
 		Return _y
 	End Method
 	
+	Method GetSize:Int()
+		Return _size
+	End Method
+	
+	' returns the main star of the system
+	Method GetMainStar:TStar()
+		Return self._mainStar
+	End Method
+
+	' returns the system that is currently "active"
 	Function GetActiveSystem:TSystem()
 		Return _g_ActiveSystem
 	End Function
 	
-	Function Create:TSystem(x:Int,y:Int,name:String,typ:Int,mult:Int)
+	Function Create:TSystem(sectX:Int, sectY:Int,x:Int,y:Int,name:String,typ:Int,mult:Int)
 		Local se:TSystem = New TSystem								' create an instance of the System
 		se._name = name	
+		se._sectorX = sectX
+		se._sectorY = sectY
 		se._x = x	; se._y = y	
 		se._type = typ
 		se._multiple = mult

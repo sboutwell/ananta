@@ -33,7 +33,7 @@ Import brl.math
 ' Brucey's modules
 Import bah.Libxml		' XML parser library wrapper for BlitzMax by Bruce A. Henderson
 Import bah.Cairo		' vector graphics library wrapper for BlitzMax by Bruce A. Henderson
-Import bah.random		' SFMT pseudo-random number generator for consistent galaxy creation
+Import bah.random		' SFMT pseudo-random number generator wrapper for consistent galaxy creation
 
 AppTitle = "Ananta"
 Include "includes/i_constants.bmx"						'Global constants. All constants must begin with C_
@@ -55,6 +55,7 @@ Include "includes/types/graphics/i_TMessageWindow.bmx"	'Messagewindow and messag
 Include "includes/types/graphics/i_TDebugWindow.bmx"	'Debugwindow and debugline types
 Include "includes/types/graphics/i_TMinimap.bmx"		'Minimap
 Include "includes/types/graphics/i_TSystemMap.bmx"		'System map extended of TMinimap
+Include "includes/types/graphics/i_TStarMap.bmx"		'Star map extended of TMinimap
 Include "includes/types/graphics/i_TColor.bmx"			'A structure-like type to map color names to their RGB values
 Include "includes/types/graphics/i_TMedia.bmx"			'Type that loads and holds media files
 Include "includes/types/i_TDelta.bmx"					'Delta timer
@@ -67,90 +68,12 @@ TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
-SeedRnd(1337)
+SeedRnd(1337)	' seed the SFMT pseudo-random generator
 
-TUni.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")
-Local sect:TSector = TSector.Create(7000,7000)
-sect.Populate()
+TUni.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the galaxy image for universe creation
 
-For Local syst:TSystem = EachIn sect._L_systems
-	syst.SetAsActive()
-	Print(syst.GetX() + " " + syst.GetY())
-Next
+SetupTestEnvironment()		' create the player, and a test system with some planets, asteroids and AI ships
 
-'Local sSize:Long = 148000000:Long	' real solar system size
-Local sSize:Long = 300000000:Long	' real solar system size
-'Local sSize:Long = 500000
-Local centralStar:TStar = GenerateTestSystem(sSize) 
-
-Local sMap:TMiniMap = TMiniMap.Create(viewport.GetResX() - 195, 200,195,195)
-sMap._scale = 0.01
-sMap.AddBlip(10,10,50)
-sMap.AddBlip(-10000,100,5)
-sMap._isPersistent = TRUE
-
-' generate the player and player's ship
-Global p1:TPlayer = TPlayer.Create("Da Playah") 
-Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
-s1.SetName("Player ship") 
-s1.SetSystem(TSystem.GetActiveSystem()) 
-s1._rotation = 90
-' assign the ship for the player to control
-s1.AssignPilot(p1) 
-
-
-
-' find the farthest planet to the center and make the player ship orbit it
-Local orbitedPlanet:TStellarObject
-Local maxDist:Double = 0
-For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
-	Local dist:Double = Distance(0, 0,obj.GetX(),obj.GetY())
-	If TPlanet(obj) And dist > maxDist Then
-		orbitedPlanet = obj
-		maxDist = dist
-	EndIf
-Next
-s1.SetCoordinates(orbitedPlanet.GetX() + OrbitedPlanet.GetSize() * 0.7, orbitedPlanet.GetY()) 
-s1.SetOrbitalVelocity(orbitedPlanet, True) 
-
-' Create one asteroid to orbit the same planet as the player
-Local ascale:Float = orbitedPlanet.GetScaleX() 
-Local asize:Int = CalcImageSize(TImg.LoadImg("asteroid.png"), False) * ascale
-Local amass:Long = (ascale ^ 2) * Rand(3000, 10000) 
-Local ast:TAsteroid = TAsteroid.Create("asteroid.png", TSystem.GetActiveSystem(), Rand(- sSize, sSize), Rand(- sSize, sSize), amass) 
-ast._scaleX = ascale
-ast._scaleY = ascale
-ast._size = asize
-ast.SetRotationSpd(Rand(- 50, 50)) 
-ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
-ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
-ast.SetOrbitalVelocity(orbitedPlanet,True)
-ast = null
-
-'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
-'part1.SetRandomDir(2) 
-'s1.AddAttachment(part1, - 28, 0, 0, False) 
-
-'TAttachment.Create(s1, "attach.png", - 10, 10, 0, 0.1, 0.1, False) 
-
-viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
-'s1.SetCoordinates(100000,100000)
-' set up bunch of AI pilots
-
-For Local i:Int = 1 To 25
-	Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
-	Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
-	ship.SetSystem(TSystem.GetActiveSystem()) 
-	ship.SetCoordinates(Rand(- sSize, sSize), Rand(- sSize, sSize)) 
-	'ship.SetCoordinates (600, 0)
-	ship.AssignPilot(ai) 
-	ai.SetTarget(s1)		' make the AI ship try to point at the player ship
-	'ship._xVel = Rand(- 100, 100) 
-	'ship._yVel = Rand(- 100, 100) 
-	ship.SetOrbitalVelocity(centralStar, Rand(0, 1) )
-Next
-
-viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
 
 ' Main loop
 While Not KeyHit(KEY_ESCAPE) And Not AppTerminate() 
@@ -158,7 +81,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	G_delta.Calc() 
 	
 	' checks for keypresses (or other control inputs) and applies their actions
-	p1.GetInput()
+	G_Player.GetInput()
 	
 	' Update every AI pilot and apply their control inputs to their controlled ships
 	TAIPlayer.UpdateAllAI() 
@@ -181,16 +104,14 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
 	
-	sMap.draw()
-	
 	' *********** DEBUG INFO ****************
 	G_debugWindow.AddText("FPS: " + G_delta.GetFPS()) 
 	G_debugWindow.AddText("Asteroids: " + TAsteroid.g_nrAsteroids) 
 	G_debugWindow.AddText("Ships: " + TShip.g_nrShips) 
 	
-	If p1.GetControlledShip() Then
-		G_debugWindow.AddText("Velocity: " + p1.GetControlledShip().GetVel()) 
-		G_debugWindow.AddText("Shields: " + p1.GetControlledShip().GetIntegrity()) 
+	If G_Player.GetControlledShip() Then
+		G_debugWindow.AddText("Velocity: " + G_Player.GetControlledShip().GetVel()) 
+		G_debugWindow.AddText("Shields: " + G_Player.GetControlledShip().GetIntegrity()) 
 	EndIf
 	' ***************************************
 	
@@ -205,7 +126,6 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' clear the whole viewport backbuffer
 	SetViewPort(0,0,viewport.GetResX(),viewport.GetResY())
 	Cls
-
 Wend
 
 Function GenerateVectorTextures() 
@@ -229,6 +149,8 @@ Function GenerateTestSystem:TStar(sSize:Long)
 	st1._scaleY = st1._scaleX
 	st1._size = CalcImageSize(st1._image, False) * st1._scaleX
 	st1._mass = (st1._scaleX ^ 2) * 2000000000
+	
+	system1._mainStar = st1
 	
 	' create some planets
 	For Local i:Int = 1 To planets
@@ -274,4 +196,90 @@ Function GenerateTestSystem:TStar(sSize:Long)
 	Next
 	
 	Return st1
+End Function
+
+Function SetupTestEnvironment()
+	Local sect:TSector = TSector.Create(7000,7000)
+	sect.Populate()
+	
+	
+	For Local syst:TSystem = EachIn sect._L_systems
+		syst.SetAsActive()
+		Print(syst.GetX() + " " + syst.GetY())
+	Next
+	
+	'Local sSize:Long = 148000000:Long	' real solar system size
+	Local sSize:Long = 300000000:Long
+	Local centralStar:TStar = GenerateTestSystem(sSize) 
+	
+	' ----------- STARMAP ----------
+	Local sMap:TStarMap = viewport.GetStarMap()
+	sMap.SetCenteredSector(7000,7000)
+	sMap.Center()	' move the starmap "camera" to the middle of the centered sector
+	sMap.Update()
+	sMap._isPersistent = TRUE
+	' -----------------------------
+	
+	' generate the player and player's ship
+	G_Player = TPlayer.Create("Da Playah") 
+	Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
+	s1.SetName("Player ship") 
+	s1.SetSystem(TSystem.GetActiveSystem()) 
+	s1._rotation = 90
+	' assign the ship for the player to control
+	s1.AssignPilot(G_Player) 
+	
+	
+	
+	' find the farthest planet to the center and make the player ship orbit it
+	Local orbitedPlanet:TStellarObject
+	Local maxDist:Double = 0
+	For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
+		Local dist:Double = Distance(0, 0,obj.GetX(),obj.GetY())
+		If TPlanet(obj) And dist > maxDist Then
+			orbitedPlanet = obj
+			maxDist = dist
+		EndIf
+	Next
+	s1.SetCoordinates(orbitedPlanet.GetX() + OrbitedPlanet.GetSize() * 0.7, orbitedPlanet.GetY()) 
+	s1.SetOrbitalVelocity(orbitedPlanet, True) 
+	
+	' Create one asteroid to orbit the same planet as the player
+	Local ascale:Float = orbitedPlanet.GetScaleX() 
+	Local asize:Int = CalcImageSize(TImg.LoadImg("asteroid.png"), False) * ascale
+	Local amass:Long = (ascale ^ 2) * Rand(3000, 10000) 
+	Local ast:TAsteroid = TAsteroid.Create("asteroid.png", TSystem.GetActiveSystem(), Rand(- sSize, sSize), Rand(- sSize, sSize), amass) 
+	ast._scaleX = ascale
+	ast._scaleY = ascale
+	ast._size = asize
+	ast.SetRotationSpd(Rand(- 50, 50)) 
+	ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
+	ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
+	ast.SetOrbitalVelocity(orbitedPlanet,True)
+	ast = null
+	
+	'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
+	'part1.SetRandomDir(2) 
+	's1.AddAttachment(part1, - 28, 0, 0, False) 
+	
+	'TAttachment.Create(s1, "attach.png", - 10, 10, 0, 0.1, 0.1, False) 
+	
+	viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
+	's1.SetCoordinates(100000,100000)
+	' set up bunch of AI pilots
+	
+	For Local i:Int = 1 To 25
+		Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
+		Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
+		ship.SetSystem(TSystem.GetActiveSystem()) 
+		ship.SetCoordinates(Rand(- sSize, sSize), Rand(- sSize, sSize)) 
+		'ship.SetCoordinates (600, 0)
+		ship.AssignPilot(ai) 
+		ai.SetTarget(s1)		' make the AI ship try to point at the player ship
+		'ship._xVel = Rand(- 100, 100) 
+		'ship._yVel = Rand(- 100, 100) 
+		ship.SetOrbitalVelocity(centralStar, Rand(0, 1) )
+	Next
+	
+	viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
 End Function
