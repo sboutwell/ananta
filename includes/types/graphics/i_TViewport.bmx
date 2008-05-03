@@ -47,7 +47,8 @@ Type TViewport
 	Field _marginalRight:Int
 	Field _borderWidth:Int
 	Field _borderColor:TColor
-	Field _systemMap:TSystemMap ' the minimap associated with this viewport
+	Field _systemMap:TSystemMap ' the system minimap associated with this viewport
+	Field _starMap:TStarMap		' the star minimap
 	Field _msgWindow:TMessageWindow = TMessageWindow.Create()  ' create a message window for the viewport
 	
 	Field _defaultZoom:Float = 1
@@ -86,8 +87,9 @@ Type TViewport
 		_defaultZoom = 1.0
 		_zoomFactor = _defaultZoom
 		
-		_systemMap = TSystemMap.Create(Self.g_ResolutionX - 195, 0, 195, 195) 
-		'_miniMap = TMinimap.Create(50, 50, 500, 500) 
+		' create minimaps
+		_systemMap = TSystemMap.Create(g_ResolutionX - 195, 0, 195, 195) 
+		_starMap = TStarMap.Create(g_ResolutionX - 195, 200,195,195)
 
 	EndMethod
 
@@ -120,7 +122,7 @@ Type TViewport
 		EndIf
 		TileImage2 (G_media_spacedust, _CameraPosition_X:Double * _zoomFactor, _CameraPosition_Y:Double * _zoomFactor)
 		' ---------
-		
+
 		' draw a colored border around the viewport
 		DrawBorder(_borderWidth, _borderColor) 
 		
@@ -153,6 +155,8 @@ Type TViewport
 		TMessageWindow.DrawAll()  	' draw message windows
 		G_debugWindow.DrawAllLines() 
 		_systemMap.Draw() 
+		If NOT _starMap._isPersistent Then _starMap.Update()
+		_starMap.Draw()
 
 		SetViewport(0, 0, viewport.GetResX(), viewport.GetResY()) 
 		SetScale(1, 1) 
@@ -179,6 +183,11 @@ Type TViewport
 	
 	Method GetSystemMap:TSystemMap() 
 		If _systemMap Then Return _systemMap
+		Return Null
+	End Method
+	
+	Method GetStarMap:TStarMap() 
+		If _starMap Then Return _starMap
 		Return Null
 	End Method
 

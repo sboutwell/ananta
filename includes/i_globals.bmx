@@ -27,6 +27,8 @@ Global viewport:TViewport = TViewport.Create()
 
 Global G_debugWindow:TDebugWindow = TDebugWindow.Create(10, 25) 
 
+Global G_player:TPlayer
+
 'Global G_delta:TDelta = TDelta.Create(XMLGetSingleValue(c_SettingsFile,  ..
 '	"settings/graphics/framerate").ToInt(),  ..
 '	XMLGetSingleValue(c_settingsFile, "settings/graphics/limitframerate").ToInt(),  ..

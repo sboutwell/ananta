@@ -18,8 +18,32 @@ This file is part of Ananta.
 Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
+rem
+	Ok, here's the true heart of the game: 
+	Procedurally generated universe with 500+ million nearly unique stars.
+
+	Credit to the universe creation geniousness goes to - most of all - David Braben,
+	and to Jongware, who reverse-engineered the Elite II Frontier Milky Way 
+	creation algorithms and published the whole thing on his website www.jongware.com. 
+
+	--- The Galaxy ---
+	A grayscale galaxy image (1024x1024 pixels) is parsed and each pixel represents 
+	8x8=64 "sectors", making the whole galaxy contain 8192x8192=67 million sectors. 
+	Each sector can hold from 0 to 64 stars and the star count is dependent on the 
+	general brightness of the pixel. Therefore, totally black (0) areas of the 
+	galaxy map contain no stars while white (255) areas contain 64 stars.
+	
+	The pixel values are also interpolated so that sector transition between two
+	different colour pixels will be smoothed out. So, there will be no abrupt changes
+	in star counts between a totally black and a totally white pixel.
+	
+	The star positions within a sector are semi-randomized using Brucey's SIMD-oriented 
+	Fast Mersenne Twister (SFMT) wrapper resulting in a consistent hardware-independent
+	galaxy.
+endrem
+
 Type TUni
-	Global TheMilkyWay:Int[] 
+	Global TheMilkyWay:Int[]  ' global array holding pixel values for the entire galaxy image
 	Global SystemDensity:Int[] = [ ..
     $BF78, $5B2F, $DF85, $3C14, $DADD, $38DF, $E08F, $88D7,  ..
     $B3AB, $EA86, $1200, $8DB3, $FF0D, $A593, $EC66, $1988,  ..
@@ -45,7 +69,7 @@ Type TUni
 	Global StarChance_Type:Int[] = ..
 	[0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8]
 	
-	' chance array for multi-star systems
+	' chance array for multi-star systems (0 = single star, 1 = binary system, 2 = trinary system, etc)
 	Global StarChance_Multiples:Int[] = ..
 	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 4, 5]
 	
@@ -64,7 +88,7 @@ Type TUni
 		RndSeed_1 = Abs((Tmp2 Shl 5) | (Tmp2 Shr 27)) 
 	End Function	
 
-			
+	' load an image representing the galaxy to the global TheMilkyWay int array
 	Function LoadGalaxy(file:String)
 		Local pix:TPixmap = LoadPixMap(file)
 		
@@ -97,49 +121,43 @@ Type TUni
 	End Function	
 End Type
 
+' TSector is a star sector in the galaxy, 
 Type TSector
 	Global _g_L_ActiveSectors:TList		' list holding all sectors that have been created
-	Field _L_systems:TList
-	Field _x:Int
+	Global _g_sectorSize:Int = $0000FF	
+	Field _L_systems:TList	' systems in this sector
+	Field _x:Int			' sector's coordinates (0 - 8192)
 	Field _y:Int
-	Field _isPopulated:Int = False
+	Field _isPopulated:Int = False	' flag to indicate if the systems have been created in this sector
 	
 	Method Forget()
 		_L_systems.Clear()
 		_isPopulated = False
 		_g_L_ActiveSectors.Remove(self)
 	End Method
-		
-	Method Populate()
-		If _isPopulated Then Return
-	    
-		Local i:int
-	
-	    TUni.RndSeed_0 = (_x shl 16)+_y
-	    TUni.RndSeed_1 = (_y shl 16)+_x
-	
-	    TUni.RotateRndSeeds()
-	    TUni.RotateRndSeeds()
-	    TUni.RotateRndSeeds()
-	    TUni.RotateRndSeeds()
 
+	Method Populate()
+		If _isPopulated Then Return		' do not populate this sector if it's already populated
+	    
+		SeedRnd((_x shl 16)+_y)
+		
 		If not _L_systems Then _L_systems = CreateList()
-	    for i = 0 To getNrSystems() - 1
+	    for Local i:Int = 0 To getNrSystems() - 1
 	        Local coordsOk:Int = True
 			Local y:Int, x:Int, mult:Int, typ:Int
 			Repeat
 				coordsOk = TRUE
-				TUni.RotateRndSeeds()
-				y = ((TUni.RndSeed_0 & $0001FE) Shr 1)
-		        TUni.RotateRndSeeds()
-				x = ((TUni.RndSeed_0 & $0001FE) Shr 1)
+				y = _y * _g_sectorSize
+				x = _x * _g_sectorSize
+				y = y + Rand(0,_g_sectorSize)
+				x = x + Rand(0,_g_sectorSize)
 				For Local sys:TSystem = EachIn _L_systems
 					If sys._x = x And sys._y = y Then coordsOk = FALSE		' overlapping coordinates
 				Next
 			Until coordsOk
-			mult:Int = TUni.StarChance_Multiples[TUni.RndSeed_1 & TUni.StarChance_Multiples.Length - 1]
-			typ:Int = TUni.StarChance_Type[(TUni.RndSeed_1 shr 16) & TUni.StarChance_Multiples.Length - 1]
-			Local system:TSystem = TSystem.Create(x,y,"noname",typ,mult)
+			mult:Int = TUni.StarChance_Multiples[Rand(0,TUni.StarChance_Multiples.Length - 1)]
+			typ:Int = TUni.StarChance_Type[Rand(0,TUni.StarChance_Multiples.Length - 1)]
+			Local system:TSystem = TSystem.Create(_x,_y,x,y,"noname",typ,mult)
 			_L_systems.AddLast(system)
 		Next
 		_isPopulated = True
@@ -179,8 +197,7 @@ Type TSector
         eax = TUni.SystemDensity[ebx]
         ecx = ecx * eax
         ecx = ecx shr 16
-		' ----
-		
+		' ----		
 		
 	    c = ecx
 	    c = c Shr 10
@@ -190,12 +207,17 @@ Type TSector
 	Method GetSystemList:TList()
 		Return _L_Systems
 	End Method
-	
+
+	Function GetSectorSize:Int()
+		Return _g_sectorSize
+	End Function
+		
 	Function Create:TSector(x:Int,y:Int)
 		If not _g_L_ActiveSectors Then _g_L_ActiveSectors = CreateList()
 		' if the sector matching the coordinates has already been created, return it
 		For Local sect:TSector = EachIn _g_L_ActiveSectors
 			if sect._x = x AND sect._y = y Then 
+				Debuglog "Sector at [" + x + "][" + y +"] already created"
 				Return sect
 			EndIf
 		Next

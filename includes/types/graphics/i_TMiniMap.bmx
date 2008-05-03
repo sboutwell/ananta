@@ -32,7 +32,7 @@ Type TMiniMap
 	Field _midY:Float	' middle Y coordinate
 	Field _alpha:Float = 0.8 ' alpha of the map. Affects everything: blips, lines and text.
 	
-	Field _defaultZoom:Float = 0.2
+	Field _defaultZoom:Float = 1
 	Field _zoomFactor:Float
 	Field _zoomAmount:Float 			' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
@@ -44,7 +44,8 @@ Type TMiniMap
 	
 	Field _hasScaleIndicator:Int = TRUE
 	' base value for scale gauge step
-	Field _lineStep:Int = 100
+	Field _lineStep:Float = 100
+	Field _unit:String = "" 	' unit visible on the scale gauge (LY, AU, km, etc)
 
 	Field _title:String = "Map"
 	Field _titleXOffset:Float = 0
@@ -53,11 +54,14 @@ Type TMiniMap
 	Method AddBlip:TMapBlip(x:Double, y:Double, size:Int) 
 		Local midX:Int = _width / 2
 		Local midY:Int = _height / 2
-		x = x * _zoomFactor * _scale + midX + _startX
-		y = y * _zoomFactor * _scale + midY + _startY
+		'x = x * _zoomFactor * _scale + midX + _startX
+		'y = y * _zoomFactor * _scale + midY + _startY
+		x = x * _zoomFactor + midX + _startX
+		y = y * _zoomFactor + midY + _startY
 		
-		size = size * _zoomFactor * _scale
-		If size < 2 Then size = 2	' ensure blip sizes are larger than 1
+		'size = size * _zoomFactor * _scale
+		size = size * _zoomFactor
+		If size < 1 Then size = 1	' ensure blip sizes are larger than 1
 		Local blip:TMapBlip = TMapBlip.Create(x, y, size) 
 		
 		If Not _L_blips Then _L_blips = New TList
@@ -65,16 +69,6 @@ Type TMiniMap
 		return blip
 	End Method
 	
-rem		 - move this to extended starmap type! -
-	Method Update()
-		Local cSect:TSector = TSector.Create(_centeredSectorX,_centeredSectorY)
-		cSect.Populate()
-		For Local sys:TSystem = EachIn cSect.GetSystemList()
-			AddBlip(sys)
-		Next
-	End Method
-endrem
-		
 	Method draw() 
 		SetViewport(_startX, _startY, _width, _height) 
 		SetBlend(ALPHABLEND) 
@@ -181,7 +175,7 @@ endrem
 		SetBlend(ALPHABLEND) 
 		SetAlpha(0.6) 
 		SetColor(128, 128, 128) 
-		DrawText(Int(val) + prefix, _startX + 5, _startY + _height - 20) 
+		DrawText(Int(val) + prefix + " " + _unit, _startX + 5, _startY + _height - 20) 
 	End Method
 	
 	Method DrawBackground()
@@ -282,7 +276,11 @@ Type TMapBlip
 		Else
 			SetColor(255,255,255)
 		EndIf
-		DrawOval (_x, _y, _size, _size) 
+		If _size < 2 Then
+			Plot (_x,_y)
+		Else
+			DrawOval (_x, _y, _size, _size) 
+		End If
 	End Method
 	
 	Function Create:TMapBlip(x:Int, y:Int, size:Int) 
