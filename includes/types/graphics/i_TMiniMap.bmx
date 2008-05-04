@@ -37,6 +37,9 @@ Type TMiniMap
 	Field _zoomAmount:Float 			' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
 	Field _zoomStep:Float = 0.5			' the amount added to the _zoomAmount per each second of zooming
+	Field _isZooming:Int = FALSE
+	Field _minZoom:Float	' zoom limits
+	Field _maxZoom:Float
 	
 	Field _scale:Float = 1	' how many map pixels does a real world distance unit represent
 	
@@ -198,21 +201,35 @@ Type TMiniMap
 	End Method
 
 	Method ResetZoomFactor() 
-		_zoomfactor = _defaultZoom
+		SetZoomFactor(_defaultZoom)
+		_isZooming = False
 	End Method
 	
 	Method ZoomIn() 
+		_isPersistent = FALSE
+		_isZooming = True
 		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
 		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(false) 
+		If _maxZoom AND _zoomFactor > _maxZoom Then 
+			_zoomFactor = _maxZoom
+			StopZoom()
+		EndIf
 	End Method
 	
 	Method ZoomOut() 
+		_isPersistent = FALSE
+		_isZooming = True
 		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
 		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(false) 
+		If _minZoom AND _zoomFactor < _minZoom Then 
+			_zoomFactor = _minZoom
+			StopZoom()
+		EndIf
 	End Method
 	
 	Method StopZoom() 
 		_zoomAmount = _zoomAmountReset
+		_isZooming = False
 	End Method
 	
 	Method Init()
