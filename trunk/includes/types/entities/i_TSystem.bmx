@@ -20,12 +20,11 @@ endrem
 
 ' TSystem represents a star system
 Type TSystem Final
-	Global g_L_Systems:TList					' a list to hold all Systems
 	Global _g_ActiveSystem:TSystem				' the System the player is in
 	Field _name:String							' Name of the System
 	Field _sectorX:Int, _sectorY:Int			' coordinates of the sector this system is in (0 - 7192)
-	Field _x:Int,_y:Int							' System's x-y-coordinates in the sector map (0 - 256)
-	Field _size:Float = 5						' size of the central star (for starmap blip size)
+	Field _x:Int,_y:Int							' System's x-y-coordinates in the galaxy (0 - ~1.8 million)
+	Field _size:Float = 1						' size of the central star (for starmap blip size)
 	Field _type:Int								' type of the central star
 	Field _multiple:Int							' multiple star status for the system
 	Field _mainStar:TStar
@@ -73,6 +72,14 @@ Type TSystem Final
 		Return _y
 	End Method
 	
+	Method GetSectorX:Int()
+		Return _sectorX
+	End Method
+	
+	Method GetSectorY:Int()
+		Return _sectorY		
+	End Method
+	
 	Method GetSize:Int()
 		Return _size
 	End Method
@@ -95,8 +102,6 @@ Type TSystem Final
 		se._x = x	; se._y = y	
 		se._type = typ
 		se._multiple = mult
-		If Not g_L_Systems Then g_L_Systems = CreateList()	' create a list to hold the Systems (if not already created)
-		g_L_Systems.AddLast se							' add the newly created System to the end of the list
 		Return se										' return the pointer to this specific object instance
 	EndFunction
 EndType

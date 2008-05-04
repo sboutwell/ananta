@@ -139,10 +139,10 @@ Type TSector
 	Method Populate()
 		If _isPopulated Then Return		' do not populate this sector if it's already populated
 	    
-		SeedRnd((_x shl 16)+_y)
+		SeedRnd((_x shl 16)+_y)	' seed the Mersenne Twister
 		
 		If not _L_systems Then _L_systems = CreateList()
-	    for Local i:Int = 0 To getNrSystems() - 1
+	    for Local i:Int = 0 To _getNrSystems() - 1
 	        Local coordsOk:Int = True
 			Local y:Int, x:Int, mult:Int, typ:Int
 			Repeat
@@ -163,21 +163,22 @@ Type TSector
 		_isPopulated = True
 	End Method
 	
-	Method getNrSystems:Int() 
+	Method _getNrSystems:Int() 
 	    Local c:Long, nc:Long, nr:Long, nrc:Long
 	    Local eax:Long, ebx:Long, ecx:Long, edx:Long, esi:Long, edi:Long
 	    Local pixelval:Int
 	    If (_x > $1fff Or _y > $1fff) Then Return 0
+	    If (_x < 0 Or _y < 0) Then Return 0
 		
 	    pixelval = (_x / 8) + 128 * (_y & $1FF8) 
 		c = TUni.TheMilkyWay[pixelval]           		' Current center
 	    nc = TUni.TheMilkyWay[pixelval + 1]    			' Next column
 	    nr = TUni.TheMilkyWay[pixelval + 1024] 			' Next Row
-	    nrc = TUni.TheMilkyWay[pixelval + 1025]  			' Next row, next column
+	    nrc = TUni.TheMilkyWay[pixelval + 1025]  		' Next row, next column
 	    
 		Local tempx:Int = (_x * 4096) & $7e00
 	    Local tempy:Int = (_y * 4096) & $7e00
-	    ebx = (nc - c) * _x + (nr - c) * tempy
+	    ebx = (nc - c) * tempx + (nr - c) * tempy
 	    esi = (tempx * tempy) Shr 15
 	    edi = nrc - nr - nc + c
 	    esi:*edi
@@ -199,8 +200,12 @@ Type TSector
         ecx = ecx shr 16
 		' ----		
 		
-	    c = ecx
+		c = ecx
 	    c = c Shr 10
+		
+		' add +- 1 variance
+		'SeedRnd((_y shl 16)+_x)
+		c = c + Rnd(-2,1)
 	    Return Int(c) 
 	End Method
 
@@ -214,18 +219,19 @@ Type TSector
 		
 	Function Create:TSector(x:Int,y:Int)
 		If not _g_L_ActiveSectors Then _g_L_ActiveSectors = CreateList()
+		rem
 		' if the sector matching the coordinates has already been created, return it
 		For Local sect:TSector = EachIn _g_L_ActiveSectors
 			if sect._x = x AND sect._y = y Then 
-				Debuglog "Sector at [" + x + "][" + y +"] already created"
+				'Debuglog "Sector at [" + x + "][" + y +"] already created"
 				Return sect
 			EndIf
 		Next
-		
+		endrem
 		Local s:TSector = New TSector
 		s._x = x
 		s._y = y
-		_g_L_ActiveSectors.AddLast(s)
+		'_g_L_ActiveSectors.AddLast(s)
 		Return s
 	End Function
 End Type

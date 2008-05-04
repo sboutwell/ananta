@@ -108,6 +108,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	G_debugWindow.AddText("FPS: " + G_delta.GetFPS()) 
 	G_debugWindow.AddText("Asteroids: " + TAsteroid.g_nrAsteroids) 
 	G_debugWindow.AddText("Ships: " + TShip.g_nrShips) 
+	'G_debugWindow.AddText(T
 	
 	If G_Player.GetControlledShip() Then
 		G_debugWindow.AddText("Velocity: " + G_Player.GetControlledShip().GetVel()) 
@@ -199,14 +200,24 @@ Function GenerateTestSystem:TStar(sSize:Long)
 End Function
 
 Function SetupTestEnvironment()
-	Local sect:TSector = TSector.Create(7000,7000)
-	sect.Populate()
+	'Local sectX:Int = 16
+	'Local sectY:Int = 16
+	Local sectX:Int = 1000
+	Local sectY:Int = 7000
 	
+	Local sect:TSector
+	Repeat
+		sectY:+1
+		sect = TSector.Create(sectX,sectY)
+		sect.Populate()
+	Until sect._L_systems.Count() > 0
+	
+	DebugLog(sect._L_systems.Count() + " systems")
 	
 	For Local syst:TSystem = EachIn sect._L_systems
 		syst.SetAsActive()
-		Print(syst.GetX() + " " + syst.GetY())
 	Next
+	' now the last system of the generated sector should be "active"
 	
 	'Local sSize:Long = 148000000:Long	' real solar system size
 	Local sSize:Long = 300000000:Long
@@ -214,10 +225,10 @@ Function SetupTestEnvironment()
 	
 	' ----------- STARMAP ----------
 	Local sMap:TStarMap = viewport.GetStarMap()
-	sMap.SetCenteredSector(7000,7000)
-	sMap.Center()	' move the starmap "camera" to the middle of the centered sector
+	sMap.SetCenteredSector(sectX,sectY)
+	sMap.Center()	' move the starmap "camera" to the middle of the active system
 	sMap.Update()
-	sMap._isPersistent = TRUE
+	'sMap._isPersistent = TRUE
 	' -----------------------------
 	
 	' generate the player and player's ship
@@ -228,7 +239,6 @@ Function SetupTestEnvironment()
 	s1._rotation = 90
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
-	
 	
 	
 	' find the farthest planet to the center and make the player ship orbit it
