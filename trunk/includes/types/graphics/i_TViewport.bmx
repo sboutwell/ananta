@@ -90,7 +90,7 @@ Type TViewport
 		' create minimaps
 		_systemMap = TSystemMap.Create(g_ResolutionX - 195, 0, 195, 195) 
 		'_starMap = TStarMap.Create(g_ResolutionX - 195, 200,195,195)
-		_starMap = TStarMap.Create(10, 10,600,600)
+		_starMap = TStarMap.Create(_startX, _startY,_height,_width)
 
 	EndMethod
 
@@ -153,18 +153,18 @@ Type TViewport
 	EndMethod
 		
 	Method DrawMisc() 
-		TMessageWindow.DrawAll()  	' draw message windows
-		G_debugWindow.DrawAllLines() 
 		_systemMap.Draw() 
-		If NOT _starMap._isPersistent Then _starMap.Update()
+		If NOT _starMap._isPersistent OR _starMap._isScrolling Then _starMap.Update()
 		_starMap.Draw()
-
+		
 		SetViewport(0, 0, viewport.GetResX(), viewport.GetResY()) 
 		SetScale(1, 1) 
-		SetRotation(0) 
 		SetBlend(ALPHABLEND) 
+		SetRotation(0) 
 		SetAlpha(1)
 		SetColor(255, 255, 255) 
+		TMessageWindow.DrawAll()  	' draw message windows
+		G_debugWindow.DrawAllLines() 
 		
 		' draw some miscellaneous information
 		DrawText "Hold F1 for controls", viewport.GetResX() - 190, GetResY()-25
@@ -265,8 +265,12 @@ Type TViewport
 		G_debugWindow.AddText("j                    - jump drive") 
 		G_debugWindow.AddText("z/x                  - zoom in/out") 
 		G_debugWindow.AddText("alt+z                - reset zoom") 
-		G_DebugWindow.AddText("shift+z / shift+x    - map zoom in/out")
-		G_debugWindow.AddText("alt+x                - reset map zoom") 
+		G_DebugWindow.AddText("shift+z / shift+x    - system map zoom in/out")
+		G_debugWindow.AddText("alt+x                - reset system map zoom") 
+		G_DebugWindow.AddText("c/v                  - starmap zoom in/out")
+		G_DebugWindow.AddText("(shift+)wasd         - scroll starmap")		
+		G_DebugWindow.AddText("shift+c              - center starmap")
+		G_DebugWindow.AddText("g                    - toggle starmap on/off")
 		G_debugWindow.AddText("alt+enter            - toggle fullscreen") 
 		G_DebugWindow.AddText("ESC                  - exit")
 	End Method

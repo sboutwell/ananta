@@ -97,6 +97,8 @@ Type TSystemMap Extends TMiniMap
 		map._height = h
 		map._width = w
 		
+		map.isVisible = TRUE
+		
 		map._defaultZoom = 0.1
 		map._title = "System map"
 		

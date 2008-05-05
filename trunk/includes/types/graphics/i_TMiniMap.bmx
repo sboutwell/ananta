@@ -31,6 +31,10 @@ Type TMiniMap
 	Field _midX:Float	' middle X coordinate
 	Field _midY:Float	' middle Y coordinate
 	Field _alpha:Float = 0.8 ' alpha of the map. Affects everything: blips, lines and text.
+	Field _cameraX:Double		' absolute camera coordinates
+	Field _cameraY:Double
+	Field _isScrolling:Int = FALSE
+	Field _scrollSpeed:Float = 500
 	
 	Field _defaultZoom:Float = 1
 	Field _zoomFactor:Float
@@ -44,6 +48,7 @@ Type TMiniMap
 	Field _scale:Float = 1	' how many map pixels does a real world distance unit represent
 	
 	Field _isPersistent:Int = False  ' no auto clearing the map blips after drawing them? Useful for maps with stationary blips.
+	Field isVisible:Int = FALSE
 	
 	Field _hasScaleIndicator:Int = TRUE
 	' base value for scale gauge step
@@ -72,12 +77,39 @@ Type TMiniMap
 		return blip
 	End Method
 	
+	Method scrollX(dir:Int = 1)
+		Local speedMultiplier:Double = (_scrollspeed / _zoomFactor)
+		If speedMultiplier < 10 Then speedMultiplier = 10:Double
+		_cameraX = _cameraX + (speedMultiplier * dir) * G_Delta.GetDelta()
+	End Method
+	
+	Method scrollY(dir:Int = 1)
+		Local speedMultiplier:Double = (_scrollspeed / _zoomFactor)
+		If speedMultiplier < 10 Then speedMultiplier = 10:Double
+		_cameraY = _cameraY + (speedMultiplier * dir) * G_Delta.GetDelta() 
+	End Method
+	
+	Method GetBlipCount:Int()
+		If _L_Blips Then Return _L_Blips.Count()
+		Return 0
+	End Method
+
+	Method SetCamera(x:Double,y:Double)
+		_cameraX = x
+		_cameraY = y
+	End Method
+		
 	Method draw() 
+		if NOT isVisible Then Return
 		SetViewport(_startX, _startY, _width, _height) 
+
 		SetBlend(ALPHABLEND) 
 		SetAlpha(_alpha) 
 		SetMaskColor(255, 255, 255) 
 		SetScale(1, 1) 
+		
+		DrawBackGround() ' draw the background tint
+		
 		If _L_Blips Then
 			For Local blip:TMapBlip = EachIn _L_Blips
 				' If no part of the blip would be visible on the viewport, don't bother to draw it
@@ -88,25 +120,24 @@ Type TMiniMap
 				EndIf
 			Next
 			
+			G_DebugWindow.AddText(_title + " blips: " + _L_Blips.Count())
 			' after drawing all blips, clear the list
 			If Not _isPersistent Then ClearMinimap()
 		EndIf
 		
+
 		SetHandle(0, 0) 
 		' draw miscellaneous map details
 		DrawDetails() 
 	End Method
 
 	Method ClearMinimap()
- 		_L_Blips.Clear() 		
+ 		If _L_Blips Then _L_Blips.Clear() 		
 	End Method
 	
 	Method DrawDetails() 
 		If _hasScaleIndicator Then DrawScale() 
 	 
-		' draw the background tint
-		DrawBackGround()
-		
 		' draw the minimap title
 		SetAlpha(1)
 		SetColor(255,255,255)
@@ -183,8 +214,9 @@ Type TMiniMap
 	
 	Method DrawBackground()
 		SetScale(1, 1) 
-		SetAlpha(0.15)
-		SetColor(64,64,255)
+		SetAlpha(0.55)
+		SetColor(0,0,50)
+		SetRotation(0)
 		DrawRect(_startX,_startY,_width,_height)
 	End Method
 	
@@ -206,6 +238,7 @@ Type TMiniMap
 	End Method
 	
 	Method ZoomIn() 
+		if NOT isVisible Then Return
 		_isPersistent = FALSE
 		_isZooming = True
 		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
@@ -217,6 +250,7 @@ Type TMiniMap
 	End Method
 	
 	Method ZoomOut() 
+		if NOT isVisible Then Return
 		_isPersistent = FALSE
 		_isZooming = True
 		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
