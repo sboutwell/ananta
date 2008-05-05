@@ -25,26 +25,43 @@ EndRem
 Type TStarMap Extends TMiniMap
 	Field _centeredSectorX:Int	' centered sector is the sector (0..8192) that the map "camera" is currently in
 	Field _centeredSectorY:Int	
-	Field _cameraX:Float		' absolute camera coordinates
-	Field _cameraY:Float
 	Field _visibleLines:Int[]	' two arrays containing the sectors visible in the minimap
 	Field _visibleColumns:Int[] ' at the current camera position and zoom level
-	Field _isScrolling:Int = FALSE
+	Field _starColor:TColor
 
-	Method SetCenteredSector(x:Int,y:Int)
-		_centeredSectorX = x
-		_centeredSectorY = y
+	Method SetCamera(x:Double,y:Double)
 		_isScrolling = TRUE
+		'ClearMiniMap()
+		super.SetCamera(x,y)
 		Update()
 		_isScrolling = FALSE
 	End Method
 	
-	Method SetCamera(x:Float,y:Float)
+	Method scrollX(dir:Int = 1)
 		_isScrolling = TRUE
-		_cameraX = x
-		_cameraY = y
-		Update()
-		_isScrolling = FALSE
+		ClearMiniMap()
+		super.scrollX(dir)
+		UpdateCenteredSector()
+	End Method
+	
+	Method scrollY(dir:Int = 1)
+		_isScrolling = TRUE
+		ClearMiniMap()
+		super.scrollY(dir)
+		UpdateCenteredSector()
+	End Method
+
+	Method UpdateCenteredSector()
+		_centeredSectorX = _cameraX / TSector.GetSectorSize()
+		_centeredSectorY = _cameraY / TSector.GetSectorSize()
+	End Method
+		
+	Method ToggleVisibility()
+		ToggleBoolean(isVisible)	' toggle starmap visibility status
+		If isVisible Then 
+			UpdateVisibility()	 ' update the visible sectors for the starmap
+			If GetBlipCount() = 0 Then Update() ' do an update if map not already populated
+		EndIf
 	End Method
 	
 	Method ResetZoomFactor() 
@@ -74,19 +91,26 @@ Type TStarMap Extends TMiniMap
 		_isScrolling = TRUE
 		_cameraX = sys.GetX()
 		_cameraY = sys.GetY()
+		ClearMiniMap()
 		Update()
-		_isScrolling = FALSE
+		UpdateCenteredSector()
+		'_isScrolling = FALSE
 	End Method
 	
 	Method AddStarMapBlip(s:TSystem)
 		Local blip:TMapBlip = AddBlip(s.GetX() - _cameraX,s.GetY() - _cameraY,s.GetSize())
+		blip.SetBColor(_starColor)
 	End Method
 
 	' update calculates which sectors should be visible in the map at the current
 	' camera position and zoom level, and then populates the starmap
 	Method Update()
-		If not _centeredSectorX Or Not _centeredSectorY Return
-		If _isScrolling Then UpdateVisibility()	' don't update the visibility arrays if the map's not moving
+		If not isVisible Then Return
+		'If not _centeredSectorX Or Not _centeredSectorY Return
+		If _isScrolling Then 	' don't update the visibility arrays if the map's not moving
+			UpdateVisibility()
+			_isScrolling = FALSE
+		EndIf
 		
 		For Local line:Int = EachIn _visibleLines
 			For Local column:Int = EachIn _visibleColumns
@@ -102,6 +126,7 @@ Type TStarMap Extends TMiniMap
 	
 	' updates arrays holding the galaxy sector X and Y-coordinates that should be visible in the starmap
 	Method UpdateVisibility()
+		If not isVisible Then Return
 		' scaled map dimensions are in galaxy coordinate units, 
 		' not light years. To get in light years, divide by _scale
 		Local scaledMapHeight:Float = _height / _zoomFactor
@@ -141,7 +166,7 @@ Type TStarMap Extends TMiniMap
 		
 	Method DrawSectorNumber()
 		SetAlpha(1)
-		SetColor(120,128,120)
+		SetColor(255,255,255)
 		SetScale(1,1)
 		SetRotation(0)
 		DrawText(_centeredSectorX + ":" + _centeredSectorY, _startX + _width - 80, _StartY + _height - 30)
@@ -173,6 +198,7 @@ Type TStarMap Extends TMiniMap
 		map._minZoom = 0.01
 		map._title = "Galaxy map"
 		map._unit = "ly"
+		map._starColor = TColor.FindColor("yellow")
 		
 		map.Init() ' calculate the rest of the minimap values
 		Return map

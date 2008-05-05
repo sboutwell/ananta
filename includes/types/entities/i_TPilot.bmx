@@ -70,11 +70,12 @@ Type TPlayer Extends TPilot
 			End If
 		EndIf
 		
-		
 		' misc controls
 		If KeyDown(KEY_F1) Then
 			viewport.ShowInstructions()
 		End If
+		
+		If KeyHit(KEY_G) Then viewport.GetStarMap().ToggleVisibility()
 		
 		If Not KeyDown(KEY_LSHIFT) And ..
 			Not KeyDown(KEY_RSHIFT) And ..
@@ -88,9 +89,23 @@ Type TPlayer Extends TPilot
 			If KeyDown(KEY_Z) Then viewport.GetSystemMap().ZoomIn() 
 			If KeyDown(KEY_X) Then viewport.GetSystemMap().ZoomOut() 
 			
+		EndIf
+		
+		' starmap scrolling
+		If viewport.GetStarMap().isVisible Then
+			Local multiplier:Int = 1
+			If KeyDown(KEY_LSHIFT) Or KeyDown(KEY_RSHIFT) Then 
+				multiplier = 10
+				If KeyDown(KEY_C) Then viewport.GetStarMap().Center()
+			EndIf
+			If KeyDown(KEY_A) Then viewport.GetStarMap().scrollX(-1*multiplier)
+			If KeyDown(KEY_D) Then viewport.GetStarMap().scrollX(1*multiplier)
+			If KeyDown(KEY_S) Then viewport.GetStarMap().scrollY(1*multiplier)
+			If KeyDown(KEY_W) Then viewport.GetStarMap().scrollY(-1*multiplier)
+			
 			If KeyDown(KEY_C) Then viewport.GetStarMap()._isPersistent = FALSE; viewport.GetStarMap().ZoomIn()
 			If KeyDown(KEY_V) Then viewport.GetStarMap()._isPersistent = FALSE; viewport.GetStarMap().ZoomOut()
-		EndIf
+		End If
 		
 		If KeyDown(KEY_LALT) Or KeyDown(KEY_RALT) Then
 			If KeyDown(KEY_Z) Then viewport.ResetZoomFactor() 

@@ -68,8 +68,6 @@ TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
-SeedRnd(1337)	' seed the SFMT pseudo-random generator
-
 TUni.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the galaxy image for universe creation
 
 SetupTestEnvironment()		' create the player, and a test system with some planets, asteroids and AI ships
@@ -129,6 +127,12 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	Cls
 Wend
 
+
+
+' ==================================================================
+' ============= temporary helper functions for development =========
+' =========== to be moved or integrated somewhere else later =======
+' ==================================================================
 Function GenerateVectorTextures() 
 	TImg.StoreImg(TStar.GenerateStarTexture(1600) , "star_generated") 
 End Function
@@ -203,7 +207,7 @@ Function SetupTestEnvironment()
 	'Local sectX:Int = 16
 	'Local sectY:Int = 16
 	Local sectX:Int = 1000
-	Local sectY:Int = 7000
+	Local sectY:Int = 7007
 	
 	Local sect:TSector
 	Repeat
@@ -225,8 +229,8 @@ Function SetupTestEnvironment()
 	
 	' ----------- STARMAP ----------
 	Local sMap:TStarMap = viewport.GetStarMap()
-	sMap.SetCenteredSector(sectX,sectY)
 	sMap.Center()	' move the starmap "camera" to the middle of the active system
+	sMap.UpdateCenteredSector()
 	sMap.Update()
 	'sMap._isPersistent = TRUE
 	' -----------------------------
