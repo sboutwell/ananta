@@ -41,6 +41,7 @@ Type TShippart Extends TCommodity
 
 	End Function
 	
+	' load and parse all ship part characteristics from supplied XML node
 	Function LoadAll(RootNode:TxmlNode) 
 		Local searchnode:TxmlNode = xmlGetNode(rootnode, "hulls") 	' find and return the "hulls" node
 		If searchnode <> Null Then THullPrototype.LoadAll(searchnode) 		' pass the node as a parameter to the LoadAll function
@@ -63,21 +64,24 @@ Type THull Extends TShippart
 	Field _L_Slots:TList					' all equipment slots for the hull (see TSlot)
 	
 	Field _image:TImage						' visual representation of the hull
-	Field _scale:Float
+	Field _scale:Float						' visual scale
 	Field _size:Float						' size affects rotational physics and radar blip size
 
 	Field _thrusterPos:Float				' rotational thruster position (distance from the centre of mass). More distance gives more "leverage"
 	Field _maxSpd:Float						' maximum speed for fly-by-wire velocity limiter (read from xml)
 	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per second) (calculated by a routine)
 
+	' adds a ship component to a specified slot of the ship hull (see TComponent and TSlot)
 	Method AddComponent(comp:TComponent, slot:TSlot) 
 		Local result:Int = slot.AddComponent(comp) 
 	End Method
 
+	' removes a ship component from a hull slot
 	Method RemoveComponent(comp:TComponent, slot:TSlot) 
 		Local result:Int = slot.RemoveComponent(comp) 
 	End Method
 	
+	' finds and returns a hull slot matching the supplied slot id
 	Method FindSlot:TSlot(slotID:String) 
 		For Local slot:TSlot = EachIn _L_Slots
 			If slot.getID() = slotID Then Return slot
@@ -85,11 +89,13 @@ Type THull Extends TShippart
 		Return Null
 	End Method
 	
+	' adds a slot to a hull
 	Method AddSlot(slot:TSlot) 
 		If not _L_Slots Then _L_Slots = CreateList() 
 		_L_Slots.AddLast slot
 	End Method
 
+	' returns all slots in the hull in a TList
 	Method GetSlotList:TList() 
 			If _L_Slots Then Return _L_Slots
 			Return Null
@@ -186,9 +192,10 @@ Type THull Extends TShippart
 	End Function
 EndType
 
+' A special hull instance, a "blue print" that is never used, only copied from
 Type THullPrototype Extends THull
 	Global g_L_HullPrototypes:TList		' a list to hold all ship hull prototypes
-	Field _L_SlotList:TList
+	Field _L_SlotList:TList				' equipment slots in this hull
 	
 	Method GetSlotList:TList() 
 		If _L_SlotList Then Return _L_SlotList
@@ -196,7 +203,7 @@ Type THullPrototype Extends THull
 	End Method
 	
 	Method AddSlot(slot:TSlot) 
-		If not _L_SlotList Then _L_SlotList = New TList
+		If Not _L_SlotList Then _L_SlotList = New TList
 		_L_SlotList.AddLast(slot) 
 	End Method
 	
@@ -250,8 +257,9 @@ Type THullPrototype Extends THull
 		Print "FindHullPrototypes: no hull matching the ID '" + idString + " found"
 		Return Null
 	End Function
+	
 	' -------------------------------------------------------
-	' Load all hull types from xml doc
+	' Load all hull types from xml node
 	' -------------------------------------------------------
 	Function LoadAll(hullnode:TxmlNode)
 		If G_Debug Print "    Loading hull protypes..."

@@ -36,11 +36,14 @@ Type TDelta
 		Return _currentFPS
 	End Method
 	
+	' If compression = False, the returned delta is not affected by time compression.
+	' Useful for GUI related timing (zooming, scrolling etc)
 	Method GetDelta:Double(compression:Int = True) 
 		If compression = True Then Return _currentDelta * _timeCompression
 		Return _currentDelta
 	EndMethod
 	
+	' calculates the new delta value based on the timestamp recorded on the previous frame
 	Method Calc() 
 		Local newTime:Double = MilliSecs() 
 		If newTime - _time > _maxdt Then _time = _maxdt

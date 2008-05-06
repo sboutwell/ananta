@@ -95,25 +95,23 @@ Type TPlayer Extends TPilot
 		If viewport.GetStarMap().isVisible Then
 			Local multiplier:Int = 1
 			If KeyDown(KEY_LSHIFT) Or KeyDown(KEY_RSHIFT) Then 
-				multiplier = 10
-				If KeyDown(KEY_C) Then viewport.GetStarMap().Center()
+				multiplier = 10		' with shift multiply the scroll speed by 10
+				If KeyDown(KEY_C) Then viewport.GetStarMap().Center() 	' center the starmap with shift-c
 			EndIf
-			If KeyDown(KEY_A) Then viewport.GetStarMap().scrollX(-1*multiplier)
-			If KeyDown(KEY_D) Then viewport.GetStarMap().scrollX(1*multiplier)
-			If KeyDown(KEY_S) Then viewport.GetStarMap().scrollY(1*multiplier)
-			If KeyDown(KEY_W) Then viewport.GetStarMap().scrollY(-1*multiplier)
+			If KeyDown(KEY_A) Then viewport.GetStarMap().scrollX(- 1 * multiplier)  	' scroll left
+			If KeyDown(KEY_D) Then viewport.GetStarMap().scrollX(1 * multiplier)  		' scroll right
+			If KeyDown(KEY_S) Then viewport.GetStarMap().scrollY(1 * multiplier) 		' scroll down
+			If KeyDown(KEY_W) Then viewport.GetStarMap().scrollY(- 1 * multiplier) 		' scroll up
 			
-			If KeyDown(KEY_C) Then viewport.GetStarMap()._isPersistent = FALSE; viewport.GetStarMap().ZoomIn()
-			If KeyDown(KEY_V) Then viewport.GetStarMap()._isPersistent = FALSE; viewport.GetStarMap().ZoomOut()
+			If KeyDown(KEY_C) Then viewport.GetStarMap()._isPersistent = False; viewport.GetStarMap().ZoomIn() 	' zoom in starmap
+			If KeyDown(KEY_V) Then viewport.GetStarMap()._isPersistent = False; viewport.GetStarMap().ZoomOut() 	' zoom out starmap
 		End If
 		
+		' alt modifiers
 		If KeyDown(KEY_LALT) Or KeyDown(KEY_RALT) Then
+			If KeyDown(KEY_ENTER) Then TViewport.ToggleFullScreen() 
 			If KeyDown(KEY_Z) Then viewport.ResetZoomFactor() 
 			If KeyDown(KEY_X) Then viewport.GetSystemMap().ResetZoomFactor() 
-		End If
-		
-		If KeyDown(KEY_LALT) Or KeyDown(KEY_RALT) Then
-			If KeyDown(KEY_ENTER) Then TViewport.ToggleFullScreen()
 		End If
 		
 		If Not KeyDown(KEY_Z) And Not KeyDown(KEY_X) Then

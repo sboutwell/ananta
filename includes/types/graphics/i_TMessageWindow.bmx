@@ -18,7 +18,7 @@ This file is part of Ananta.
 Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
-' TMessageWindow is a transparent text area on the screen that shows various messages to the player
+' TMessageWindow is a transparent scrolling text area on the screen that shows various messages to the player
 Type TMessageWindow
 	Global g_L_MessageWindows:TList 	' a list to hold all message windows
 	Field _fontScale:Float = 1			' font size used in the message window
@@ -118,6 +118,7 @@ Type TMessageLine
 	Field _alpha:Float = 1		' alpha blending factor of the line
 	Field _age:Float				' age of the line in seconds (updated only if the line is the first line in the window)
 	
+	' does the actual message drawing with correct alpha and color
 	Method Draw(x#,y#)
 		SetBlend(AlphaBlend)
 		SetAlpha(_alpha)

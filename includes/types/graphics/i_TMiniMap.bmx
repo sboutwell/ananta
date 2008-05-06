@@ -33,43 +33,40 @@ Type TMiniMap
 	Field _alpha:Float = 0.8 ' alpha of the map. Affects everything: blips, lines and text.
 	Field _cameraX:Double		' absolute camera coordinates
 	Field _cameraY:Double
-	Field _isScrolling:Int = FALSE
-	Field _scrollSpeed:Float = 500
+	Field _isScrolling:Int = False	' flag to show if the map is currently scrolling
+	Field _scrollSpeed:Float = 500	' the base scroll speed in units per second
 	
 	Field _defaultZoom:Float = 1
 	Field _zoomFactor:Float
 	Field _zoomAmount:Float 			' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
 	Field _zoomStep:Float = 0.5			' the amount added to the _zoomAmount per each second of zooming
-	Field _isZooming:Int = FALSE
+	Field _isZooming:Int = False		' flag to show if the map is currently zooming
 	Field _minZoom:Float	' zoom limits
 	Field _maxZoom:Float
 	
 	Field _scale:Float = 1	' how many map pixels does a real world distance unit represent
 	
 	Field _isPersistent:Int = False  ' no auto clearing the map blips after drawing them? Useful for maps with stationary blips.
-	Field isVisible:Int = FALSE
+	Field isVisible:Int = False		' toggling maps on/off toggles this boolean
 	
-	Field _hasScaleIndicator:Int = TRUE
-	' base value for scale gauge step
-	Field _lineStep:Float = 100
-	Field _unit:String = "" 	' unit visible on the scale gauge (LY, AU, km, etc)
+	Field _hasScaleIndicator:Int = True	' scale indicator is a horizontal dynamic scale (with vertical scale lines) on the minimap
+	Field _lineStep:Float = 100	' base value for scale indicator step. Step is the space between scale lines.
+	Field _unit:String = "" 	' unit visible on the scale gauge (LY, AU, m, etc)
 
 	Field _title:String = "Map"
-	Field _titleXOffset:Float = 0
+	Field _titleXOffset:Float = 0 ' position of the title on the map
 	Field _titleYOffset:Float = 0
 		
+	' adds a blip to the minimap to the given coordinates
 	Method AddBlip:TMapBlip(x:Double, y:Double, size:Int) 
 		Local midX:Int = _width / 2
 		Local midY:Int = _height / 2
-		'x = x * _zoomFactor * _scale + midX + _startX
-		'y = y * _zoomFactor * _scale + midY + _startY
 		x = x * _zoomFactor + midX + _startX
 		y = y * _zoomFactor + midY + _startY
 		
-		'size = size * _zoomFactor * _scale
 		size = size * _zoomFactor
-		If size < 1 Then size = 1	' ensure blip sizes are larger than 1
+		If size < 1 Then size = 1	' ensure blip sizes are 1 or larger
 		Local blip:TMapBlip = TMapBlip.Create(x, y, size) 
 		
 		If Not _L_blips Then _L_blips = New TList
@@ -77,16 +74,18 @@ Type TMiniMap
 		return blip
 	End Method
 	
-	Method scrollX(dir:Int = 1)
+	' scrolls the minimap along x-axis
+	Method scrollX(speed:Int = 1) 
 		Local speedMultiplier:Double = (_scrollspeed / _zoomFactor)
 		If speedMultiplier < 10 Then speedMultiplier = 10:Double
-		_cameraX = _cameraX + (speedMultiplier * dir) * G_Delta.GetDelta()
+		_cameraX = _cameraX + (speedMultiplier * speed) * G_delta.GetDelta(False) 	' delta not affected by time compression 
 	End Method
 	
-	Method scrollY(dir:Int = 1)
+	' scrolls the minimap along y-axis
+	Method scrollY(speed:Int = 1) 
 		Local speedMultiplier:Double = (_scrollspeed / _zoomFactor)
 		If speedMultiplier < 10 Then speedMultiplier = 10:Double
-		_cameraY = _cameraY + (speedMultiplier * dir) * G_Delta.GetDelta() 
+		_cameraY = _cameraY + (speedMultiplier * speed) * G_delta.GetDelta(False)  	' delta not affected by time compression 
 	End Method
 	
 	Method GetBlipCount:Int()
@@ -99,9 +98,10 @@ Type TMiniMap
 		_cameraY = y
 	End Method
 		
+	' draws the actual minimap
 	Method draw() 
-		if NOT isVisible Then Return
-		SetViewport(_startX, _startY, _width, _height) 
+		If Not isVisible Then Return		' return without drawing if hidden
+		SetViewport(_startX, _startY, _width, _height)  ' set drawing area
 
 		SetBlend(ALPHABLEND) 
 		SetAlpha(_alpha) 
@@ -116,18 +116,16 @@ Type TMiniMap
 				If blip.isOverBoundaries(_startX, _startY, _width, _height) Then
 					Continue
 				Else
-					blip.Draw() 				
+					blip.Draw() 
 				EndIf
 			Next
 			
 			G_DebugWindow.AddText(_title + " blips: " + _L_Blips.Count())
-			' after drawing all blips, clear the list
+			' After drawing all blips, clear the list if the map is not set as "persistent"
+			' It is useful to set maps with rarely-moving blips as persistent for performance.
 			If Not _isPersistent Then ClearMinimap()
 		EndIf
 		
-
-		SetHandle(0, 0) 
-		' draw miscellaneous map details
 		DrawDetails() 
 	End Method
 
@@ -135,7 +133,9 @@ Type TMiniMap
  		If _L_Blips Then _L_Blips.Clear() 		
 	End Method
 	
+	' draw miscellaneous map details	
 	Method DrawDetails() 
+		SetHandle(0, 0) 
 		If _hasScaleIndicator Then DrawScale() 
 	 
 		' draw the minimap title
@@ -145,19 +145,21 @@ Type TMiniMap
 		SetRotation(0)
 		DrawText(_title, Self._midX + _titleXoffset, Self._StartY + _titleYoffset) 
 	End Method	
-		
+
+	' calculates and draws the scale indicator		
 	Method DrawScale() 
 		Local lineStepScaled:Double = _lineStep * _zoomFactor * _scale
 		
+		' this routine calculates how many vertical lines is needed on the current zoom level and linestep
 		Local k:Int = 0
 		Repeat
 			k:+1
 			lineStepScaled:Double = _lineStep * 10 ^ k * _zoomFactor * _scale
-		Until lineStepScaled > 7
+		Until lineStepScaled > 7 	' 8 is the maximum amount of vertical lines shown before the scale bumps "upward"
 
-		Local lines:Int = _width / lineStepScaled
+		Local lines:Int = _width / lineStepScaled	' number of lines on the scale indicator
 		
-		Local yPos:Int = _startY + _height - 5
+		Local yPos:Int = _startY + _height - 5		' horizontal position of the scale indicator
 		
 		SetScale(1, 1) 
 		SetRotation(0) 
@@ -174,7 +176,7 @@ Type TMiniMap
 		
 		' lines to the left of the center object
 		For Local i:Int = 1 To lines / 2
-			If i Mod 5 = 0 Then
+			If i Mod 5 = 0 Then		' every fifth line is drawn on a different color
 				SetColor(255, 255, 255) 
 			Else
 				SetColor(128, 128, 128) 
@@ -194,15 +196,15 @@ Type TMiniMap
 					_midX + i * lineStepScaled, yPos - 2) 
 		Next
 		
-		DisplayLineStep(k) 
+		DisplayLineStep(k)  ' draw the textual presentation of the current line step
 	End Method
 	
 	' draws the scale text indicator on top of the scale line
 	Method DisplayLineStep(k:Int) 
-		Local prefix:String
-		Local val:Long = 10.0 ^ k * _lineStep
+		Local prefix:String		' prefix is kilo, mega, giga, tera, etc
+		Local val:Long = 10.0 ^ k * _lineStep	' value is the actual line step value without a prefix. Often a huge number with lots of zeroes.
 		
-		GetPrefix(prefix,val)
+		getPrefix(prefix, val) 	' GetPrefix adjusts prefix and value according to the amount of digits in the value
 		
 		SetScale(1, 1) 
 		SetRotation(0) 
@@ -212,6 +214,7 @@ Type TMiniMap
 		DrawText(Int(val) + prefix + " " + _unit, _startX + 5, _startY + _height - 20) 
 	End Method
 	
+	' draws the background tint of the minimap
 	Method DrawBackground()
 		SetScale(1, 1) 
 		SetAlpha(0.55)
@@ -238,12 +241,15 @@ Type TMiniMap
 	End Method
 	
 	Method ZoomIn() 
-		if NOT isVisible Then Return
-		_isPersistent = FALSE
+		If Not isVisible Then Return	' don't bother to zoom non-visible maps
+		' When we're zooming, we have to switch off persistency so that the map gets updated
+		' Just remember to switch it back on when zooming is stopped if the map is meant to be persistent.
+		' Todo: create another field for "default persistency" so TMinimap handles switching persistency on/off itself.
+		_isPersistent = False
 		_isZooming = True
-		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(false) 
-		If _maxZoom AND _zoomFactor > _maxZoom Then 
+		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(False)  	' false in delta means zoom speed will not be affected by time compression
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False)  ' add to the zoom rate acceleration
+		If _maxZoom And _zoomFactor > _maxZoom Then 	' zoom limit reached
 			_zoomFactor = _maxZoom
 			StopZoom()
 		EndIf
@@ -253,9 +259,9 @@ Type TMiniMap
 		if NOT isVisible Then Return
 		_isPersistent = FALSE
 		_isZooming = True
-		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(false) 
-		If _minZoom AND _zoomFactor < _minZoom Then 
+		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(False)  ' false in delta means zoom speed will not be affected by time compression
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False)  ' add to the zoom rate acceleration
+		If _minZoom And _zoomFactor < _minZoom Then 	' zoom limit reached
 			_zoomFactor = _minZoom
 			StopZoom()
 		EndIf
@@ -266,11 +272,13 @@ Type TMiniMap
 		_isZooming = False
 	End Method
 	
+	' initialize some minimap variables
 	Method Init()
 		_midX = _startX + _width / 2.0
 		_midY = _startY + _height / 2.0
 		_zoomFactor = _defaultZoom
-		_titleXOffset = -4 * _title.Length	' center the title text
+		_titleXOffset = -4 * _title.Length	' center the title text:
+											'-4 is the width of the default font so it does not work with custom fonts
 	End method
 	
 	Function Create:TMiniMap(x:Int, y:Int, h:Int, w:Int) 
@@ -311,7 +319,7 @@ Type TMapBlip
 		_color = col
 	End Method
 
-	' isOverBoundaries checks if the blip would show on the minimap
+	' isOverBoundaries checks if the blip would show on the minimap. Returns "true" if not.
 	Method isOverBoundaries:Int(startX:Int, startY:Int, width:Int, height:Int) 
 		Return _x + _size / 2 < startX Or ..
 			_y + _size / 2 < startY Or ..
@@ -320,16 +328,16 @@ Type TMapBlip
 	End Method
 	
 	Method Draw() 
-		If _size = 0 Then Return		' don't draw 0-sized blips
-		SetHandle(_size / 2, _size / 2)     ' oval handle to the middle of the oval
+		If _size = 0 Then Return		' don't draw 0-sized blips (shouldn't happen as the size check is already done elsewhere)
 		If _color Then 
-			TColor.SetTColor(_color)
+			TColor.SetTColor(_color) 
 		Else
-			SetColor(255,255,255)
+			SetColor(255, 255, 255) 	' default color white if not set
 		EndIf
-		If _size < 2 Then
+		If _size < 2 Then	' if the size is smaller than 2 pixels, plot a pixel instead of drawing an oval
 			Plot (_x,_y)
 		Else
+			SetHandle(_size / 2, _size / 2)       ' oval handle to the middle of the oval
 			DrawOval (_x, _y, _size, _size) 
 		End If
 	End Method

@@ -18,7 +18,8 @@ This file is part of Ananta.
 Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
-' TMessageWindow is a transparent text area on the screen that shows various messages to the player
+' TDebugWindow is a text area on the screen that is used to show debug messages
+' Should it be integrated (or extended from) with TMessageWindow?
 Type TDebugWindow
 	Field _fontScale:Float = 1			' font size used in the message window
 	Field _nrLines:Int					' current number of lines
@@ -67,6 +68,7 @@ Type TDebugWindow
 	
 End Type
 
+' line of text in the debug window
 Type TDebugLine
 	Field _lineString:String		' string containing the actual text data
 	Field _color:TColor			' color of the line

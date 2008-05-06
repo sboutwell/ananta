@@ -21,7 +21,7 @@ endrem
 rem
 	Attachments are visual add-ons attached to a space object's hull: weapons, engines, etc.
 	Note that TAttachment is used for "visual-only" attachments. All spaceobjects can be attached
-	to another spaceobject as such.
+	to another spaceobject as such without being declared as actual attachments.
 endrem
 
 Type TAttachment Extends TSpaceObject

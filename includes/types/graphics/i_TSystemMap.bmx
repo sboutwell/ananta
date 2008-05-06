@@ -23,33 +23,33 @@ Rem
 EndRem
 
 Type TSystemMap Extends TMiniMap
-	Field _starColor:TColor
-	Field _planetColor:TColor
-	Field _shipColor:TColor
-	Field _selfColor:TColor
-	Field _velColor:TColor
-	Field _miscColor:TColor
-	Field _projColor:TColor
+	Field _starColor:TColor ' star color
+	Field _planetColor:TColor ' planet color
+	Field _shipColor:TColor ' ship color
+	Field _selfColor:TColor	' centered object color
+	Field _velColor:TColor	' velocity vector color
+	Field _miscColor:TColor	' default color
+	Field _projColor:TColor ' projectile color
 	
-	Field _attitudeIndicator:TImage
+	Field _attitudeIndicator:TImage ' attitude indicator image
 	
 	Method AddSystemMapBlip(o:TSpaceObject)
 		Local blip:TMapBlip = AddBlip(viewport.GetCameraPosition_X() - o.GetX(),viewport.GetCameraPosition_Y() - o.GetY(),o.GetSize())
 		
-		' use casting to find out the type of the object
+		' use casting to find out the type of the object and set the color accordingly
 		If TStar(o) Then 
 			blip.SetBColor(_starColor) 
 		Else If TPlanet(o) Then blip.SetBColor(_planetColor) 
 		Else If TShip(o) Then blip.SetBColor(_ShipColor) 
 		Else If TProjectile(o) Then blip.SetBColor(_ProjColor) 
 		Else 
-			blip.SetBColor(_miscColor) 
+			blip.SetBColor(_miscColor)  ' none of the above, use default
 		EndIf
  	
 		' special behaviour for the centered blip
 		If o = viewport._centeredObject Then
 			blip.SetBColor(_selfColor) 
-			If TShip(o) And blip.GetSize() < 3 Then blip.SetSize(0.0) 
+			If TShip(o) And blip.GetSize() < 3 Then blip.SetSize(0.0)   ' do not draw the blip (set size to 0) when zoomed out "enough". The attitude indicator should do the job.
 		EndIf	
 	End Method
 

@@ -32,12 +32,12 @@ Type TViewport
 	Global g_media_spacedust:TImage		' image global for the "space dust" particle mask
 	Global g_media_spaceBG:TImage		' image global for the space background
 
-	Field _startX:Int
-	Field _startY:Int
-	Field _width:Int
-	Field _height:Int
-	Field _midX:Int
-	Field _midY:Int
+	Field _startX:Int	' screen coordinates and dimensions of the viewport
+	Field _startY:Int	'
+	Field _width:Int	'
+	Field _height:Int	'
+	Field _midX:Int		' center position
+	Field _midY:Int		' center position
 	Field _cameraPosition_X:Double
 	Field _cameraPosition_Y:Double
 	Field _centeredObject:TSpaceObject	' the object the camera is centered on
@@ -76,6 +76,7 @@ Type TViewport
 
 		xmlfile.free()	' free up memory
 
+		' calculate the dimensions
 		_startX = _marginalLeft
 		_startY = _marginalTop
 
@@ -94,9 +95,13 @@ Type TViewport
 
 	EndMethod
 
-	Method DrawLevel()
-		_CameraPosition_X:Double = _centeredObject.GetX() 
-		_CameraPosition_Y:Double = _centeredObject.GetY()
+	' draws the viewport borders and background images
+	Method DrawLevel() 
+		 ' set the camera position if an object to follow is defined
+		If _centeredObject Then
+			_CameraPosition_X:Double = _centeredObject.GetX() 
+			_CameraPosition_Y:Double = _centeredObject.GetY() 
+		EndIf
 
 		SetViewport(_startX ,_startY, _width, _height)  ' limit the drawing area to viewport margins
 	
@@ -147,11 +152,13 @@ Type TViewport
 		DrawOblong( _startX-w, _startY-w, _startX + _width, _startY+_height)
 	EndMethod
 
+	' add a message to the message window
 	Method CreateMsg(str:String,colString:String="")
 		_msgWindow.CreateMsg(str,colString)
 		TMessageWindow.DrawAll()	' update message windows
 	EndMethod
-		
+	
+	' draw miscellanous viewport stuff such as minimaps, hud and messages
 	Method DrawMisc() 
 		_systemMap.Draw() 
 		If NOT _starMap._isPersistent OR _starMap._isScrolling Then _starMap.Update()
@@ -254,7 +261,7 @@ Type TViewport
 	End Method
 	
 	Method ShowInstructions() 
-		' externalize to a text file
+		' todo: externalize to a text file
 		G_DebugWindow.AddText("")
 		G_DebugWindow.AddText("============== Controls ==============")
 		G_DebugWindow.AddText("left                 - rotate left")
@@ -275,10 +282,11 @@ Type TViewport
 		G_DebugWindow.AddText("ESC                  - exit")
 	End Method
 	
+	' initializes the graphics mode to use the renderer we've specified (directx or openGL)
 	Function InitGraphicsMode()
-		Local isWin:Int = False
+		Local isWin:Int = False ' are we running Windows?
 		?win32
-		isWin = True
+		isWin = True		' yeah we are
 		?
 		
 		If g_Renderer = "directx" And isWin Then
@@ -301,6 +309,7 @@ Type TViewport
 		InitGraphicsMode() 
 	End Function
 	
+	' fetch some viewport properties from an xml file
 	Function InitViewportGlobals(xmlfile:TxmlDoc) 
 		g_Renderer = XMLFindFirstMatch(xmlfile, "settings/graphics/renderer").ToString() 
 		g_ResolutionX		= XMLFindFirstMatch(xmlfile,"settings/graphics/resolution/x").ToInt()

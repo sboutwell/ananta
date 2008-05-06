@@ -18,7 +18,7 @@ This file is part of Ananta.
 Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
-' TSystem represents a star system
+' TSystem represents a solar system
 Type TSystem Final
 	Global _g_ActiveSystem:TSystem				' the System the player is in
 	Field _name:String							' Name of the System
@@ -31,6 +31,7 @@ Type TSystem Final
 	
 	Field _L_SpaceObjects:TList					' a list to hold all TSpaceObjects in this System
 
+	' draw every space object in this system
 	Method DrawAllInSystem(vp:TViewport)
 		If Not _L_SpaceObjects Return							' Exit if a body list doesn't exist
 		For Local obj:TSpaceObject = EachIn _L_SpaceObjects	' Iterate through each drawable object in the System
@@ -42,6 +43,7 @@ Type TSystem Final
 		Next
 	EndMethod
 
+	' add a space object to this system
 	Method AddSpaceObject(obj:TSpaceObject)
 		If Not _L_SpaceObjects Then _L_SpaceObjects = CreateList()	' create a list if necessary
 		'obj.SetSystem(self)  ' crash with abstract objects!
@@ -49,6 +51,7 @@ Type TSystem Final
 		_L_SpaceObjects.AddLast obj
 	EndMethod
 
+	' remove a space object from this system
 	Method RemoveSpaceObject(obj:TSpaceObject) 
 		If Not _L_SpaceObjects Then Return
 		obj._system = null
@@ -60,6 +63,7 @@ Type TSystem Final
 		
 	End Method
 	
+	' set this system as the "active" system (the one the camera is in)
 	Method SetAsActive()
 		_g_ActiveSystem = self
 	End Method

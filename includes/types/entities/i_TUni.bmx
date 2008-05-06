@@ -136,46 +136,59 @@ Type TSector
 		_g_L_ActiveSectors.Remove(self)
 	End Method
 
+	' populate a star sector with procedurally generated stars
 	Method Populate()
 		If _isPopulated Then Return		' do not populate this sector if it's already populated
 	    
-		SeedRnd((_x shl 16)+_y)	' seed the Mersenne Twister
+		SeedRnd((_x Shl 16) + _y) 	' seed the Mersenne Twister with the sector coordinates
 		
+		' create the stars
 		If not _L_systems Then _L_systems = CreateList()
 	    for Local i:Int = 0 To _getNrSystems() - 1
-	        Local coordsOk:Int = True
+	        Local coordsOk:Int = True	' flag to indicate if this star overlaps with another star
 			Local y:Int, x:Int, mult:Int, typ:Int
 			Repeat
+				' (semi-)randomize the star's in-sector coordinates
 				coordsOk = TRUE
 				y = _y * _g_sectorSize
 				x = _x * _g_sectorSize
 				y = y + Rand(0,_g_sectorSize)
 				x = x + Rand(0,_g_sectorSize)
-				For Local sys:TSystem = EachIn _L_systems
+				For Local sys:TSystem = EachIn _L_systems	' iterate through the star list to see if this star overlaps with others
 					If sys._x = x And sys._y = y Then coordsOk = FALSE		' overlapping coordinates
 				Next
-			Until coordsOk
+			Until coordsOk	' rinse and repeat until the coordinates do not overlap
+			
+			' (semi-)randomize the rest of the star properties
 			mult:Int = TUni.StarChance_Multiples[Rand(0,TUni.StarChance_Multiples.Length - 1)]
 			typ:Int = TUni.StarChance_Type[Rand(0,TUni.StarChance_Multiples.Length - 1)]
-			Local system:TSystem = TSystem.Create(_x,_y,x,y,"noname",typ,mult)
-			_L_systems.AddLast(system)
+			Local system:TSystem = TSystem.Create(_x, _y, x, y, "noname", typ, mult) 
+			_L_systems.AddLast(system) 
 		Next
-		_isPopulated = True
+		_isPopulated = True	' switch the flag on to indicate this system is populated
 	End Method
 	
+	' getNrSystems finds out the amount of stars this sector is supposed to generate.
+	' It parses through the galaxy bitmap: the brighter the pixel, the more stars in the sector.
+	' The pixel values are interpolated so that sector transition between two
+	' different colour pixels will be smoothed out. So, there will be no abrupt changes
+	' in star counts between a totally black and a totally white pixel.
+	' The actual inner workings of this brilliant function is a bit obscure, as it is 
+	' reverse-engineered from Elite 2 Frontier by Jongware. Most of it is way over my head.
 	Method _getNrSystems:Int() 
 	    Local c:Long, nc:Long, nr:Long, nrc:Long
-	    Local eax:Long, ebx:Long, ecx:Long, edx:Long, esi:Long, edi:Long
+	    Local eax:Long, ebx:Long, ecx:Long, esi:Long, edi:Long
 	    Local pixelval:Int
-	    If (_x > $1fff Or _y > $1fff) Then Return 0
+	    If (_x > $1fff Or _y > $1fff) Then Return 0	' if we're over the "edges", return zero
 	    If (_x < 0 Or _y < 0) Then Return 0
 		
-	    pixelval = (_x / 8) + 128 * (_y & $1FF8) 
+	    pixelval = (_x / 8) + 128 * (_y & $1FF8)  		' calculate the array position calculated from the coordinates
 		c = TUni.TheMilkyWay[pixelval]           		' Current center
 	    nc = TUni.TheMilkyWay[pixelval + 1]    			' Next column
 	    nr = TUni.TheMilkyWay[pixelval + 1024] 			' Next Row
 	    nrc = TUni.TheMilkyWay[pixelval + 1025]  		' Next row, next column
 	    
+		' do the pixel value interpolation with neighbouring pixels
 		Local tempx:Int = (_x * 4096) & $7e00
 	    Local tempy:Int = (_y * 4096) & $7e00
 	    ebx = (nc - c) * tempx + (nr - c) * tempy
@@ -187,8 +200,9 @@ Type TSector
 	    c = c Shl 16
 	    ebx:+c
 	    ecx = ebx Shr 8
-        
-		' galaxyscale if
+        ' Capiche? ;) I don't. It's some kind of an averaging algorithm but the inner workings beat me.
+		
+		' comment this block to increase the overall number of stars
 		ebx = tempx + ecx
         eax = tempx * tempy
         eax = eax shr 15
@@ -203,9 +217,8 @@ Type TSector
 		c = ecx
 	    c = c Shr 10
 		
-		' add +- 1 variance
-		'SeedRnd((_y shl 16)+_x)
-		c = c + Rnd(-2,1)
+		' add +- 1 variance to the star count. Redo this with something faster than Rnd
+		c = c + Rnd(- 2, 1) 
 	    Return Int(c) 
 	End Method
 
