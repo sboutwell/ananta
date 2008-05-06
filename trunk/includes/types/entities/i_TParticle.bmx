@@ -72,7 +72,7 @@ Type TParticleGenerator Extends TMovingObject
 	Field _meanVel:Float 		' base velocity of an emitted particle
 	Field _randomDir:Float = 0	' amount of randomness to the direction of the particle
 	Field _randomVel:Float = 0	' amount of randomness to the velocity of the particle
-	Field _particleImg:TImage
+	Field _particleImg:TImage	' the image that is drawn in place of this particle
 	Field _interval:Int			' particles emitting interval in ms
 	Field _lastEmit:Int			' last emit in MilliSecs()
 	
@@ -104,7 +104,7 @@ Type TParticleGenerator Extends TMovingObject
 		pg._particleImg = TImg.LoadImg(img) 
 		pg._x = x
 		pg._y = y
-		pg._System = System
+		pg._System = System		' the solar system this generator is in
 		pg._meanVel = vel
 		pg._life = life
 		pg._alpha = alpha
@@ -117,7 +117,7 @@ Type TParticleGenerator Extends TMovingObject
 	End Function
 EndType
 
-Type TProjectile Extends TParticle
+Type TProjectile Extends TParticle	' projectile is a special type of particle
 	Field _damage:Float = 500	' damage this particle will do on impact
 	Field _shotBy:TShip = Null	' the ship that shot this projectile
 	

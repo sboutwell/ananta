@@ -21,7 +21,7 @@ endrem
 ' TComponent is an actual created ship part. It has additional fields for upgrades and damage.
 Type TComponent
 	Field _ShipPart:TShippart 	' the ship part prototype this Component is based on
-	Field _L_Upgrades:TList		' a list holding possible upgrades
+	Field _L_Upgrades:TList		' a list holding possible upgrades (no used yet)
 	Field _damage:Float			' damage sustained by this component
 	Field _slot:TSlot			' the slot the component is installed in (if any)
 

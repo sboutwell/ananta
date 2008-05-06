@@ -18,6 +18,9 @@ This file is part of Ananta.
 Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
+' Ship model is a pre-made ship configuration consisting of hull and ship parts
+' Models are defined in an xml file
+
 Type TShipModel
 	Global g_L_ShipModels:TList 	' global list holding all ship models
 	Field _id:String
@@ -76,6 +79,7 @@ Type TShipModel
 		Return ship
 	End Function
 	
+	' finds and returns a ship model using the ID as a search string
 	Function FindShipModel:TShipModel(smID:String) 
 		If Not g_L_ShipModels Then Return Null
 		For Local model:TShipModel = EachIn g_L_ShipModels
@@ -85,6 +89,7 @@ Type TShipModel
 		Return Null
 	End Function
 	
+	' add a ship part to the model
 	Method AddPart:Int(slotID:String, partID:String) 
 		If Not _L_parts Then Return Null
 		Local smp:TShipModelPart = TShipModelPart.Create(slotID, partID) 
@@ -92,6 +97,7 @@ Type TShipModel
 		Return True		' success
 	End Method
 	
+	' load pre-defined ship models from the xml file
 	Function LoadAll() 
 		Local root:TxmlNode = loadXMLFile(c_shipModelsFile)  	' load the root node of shipmodels.xml
 
@@ -133,6 +139,7 @@ Type TShipModel
 	End Function
 End Type
 
+' TShipModelParts are used to map ship components to their hull slots
 Type TShipModelPart
 	Field _slotID:String		' the slot ID this part goes to
 	Field _partID:String		' the part ID of the part

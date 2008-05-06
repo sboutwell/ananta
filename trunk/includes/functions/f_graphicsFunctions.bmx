@@ -19,6 +19,8 @@ Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
 ' TileImage2 courtesy of Joe Lesko, modified by Jussi Pakkanen
+' Similar to standard TileImage, but uses Double precision and is affected by
+' scale and rotation
 Function TileImage2 (image:TImage, x:Double=0:Double, y:Double=0:Double, frame:Int=0)
     Local scale_x#, scale_y#
     Local viewport_x%, viewport_y%, viewport_w%, viewport_h%
@@ -80,7 +82,8 @@ Function TileImage2 (image:TImage, x:Double=0:Double, y:Double=0:Double, frame:I
 
 End Function
 
-' function to draw a non-filled rectangle
+' Function to draw a non-filled rectangle. 
+' Might be faster to draw 4 rectangles instead of lines. Benchmark.
 Function DrawOblong( x#, y#, w#, h# )
 	DrawLine( x , y , x + w , y)
 	DrawLine( x+w , y , x + w , y+h)

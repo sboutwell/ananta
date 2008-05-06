@@ -43,6 +43,7 @@ Type TColor Final
 	End Function
 	
 	' SetTColor() is a SetColor replacement that uses named colors instead of RGB values
+	' Is a fast enough function to be used in the main loop
 	Function SetTColor(color:TColor) 
 		SetColor(color.GetRed(), color.GetGreen(), color.GetBlue()) 
 		Return

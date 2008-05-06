@@ -27,7 +27,7 @@ Type TStarMap Extends TMiniMap
 	Field _centeredSectorY:Int	
 	Field _visibleLines:Int[]	' two arrays containing the sectors visible in the minimap
 	Field _visibleColumns:Int[] ' at the current camera position and zoom level
-	Field _starColor:TColor
+	Field _starColor:TColor		' default color of the star blip
 
 	Method SetCamera(x:Double,y:Double)
 		_isScrolling = TRUE
@@ -37,20 +37,23 @@ Type TStarMap Extends TMiniMap
 		_isScrolling = FALSE
 	End Method
 	
+	' scroll map along x axis
 	Method scrollX(dir:Int = 1)
-		_isScrolling = TRUE
+		_isScrolling = True
 		ClearMiniMap()
 		super.scrollX(dir)
 		UpdateCenteredSector()
 	End Method
-	
-	Method scrollY(dir:Int = 1)
+
+	' scroll map along y axis	
+	Method scrollY(dir:Int = 1) 
 		_isScrolling = TRUE
 		ClearMiniMap()
 		super.scrollY(dir)
 		UpdateCenteredSector()
 	End Method
 
+	' calculate which sector the map is centered on
 	Method UpdateCenteredSector()
 		_centeredSectorX = _cameraX / TSector.GetSectorSize()
 		_centeredSectorY = _cameraY / TSector.GetSectorSize()
@@ -139,11 +142,13 @@ Type TStarMap Extends TMiniMap
 		Local leftSectorX:Int = (_cameraX + scaledMapWidth/2) / TSector.GetSectorSize()
 		Local rightSectorX:Int = (_cameraX - scaledMapWidth/2) / TSector.GetSectorSize()
 		
+		' calculate how many star sectors fit on the map horizontally
 		_visibleLines = New Int[topSectorY - bottomsectorY + 1]	' dim the Y array
 		For Local i:Int = 0 To _visibleLines.Length - 1
 			_visibleLines[i] = bottomSectorY + i
 		Next
 		
+		' calculate how many star sectors fit on the map vertically
 		_visibleColumns = New Int[leftSectorX - rightSectorX + 1]	' dim the X array
 		For Local i:Int = 0 To _visibleColumns.Length - 1
 			_visibleColumns[i] = rightSectorX + i
@@ -174,6 +179,7 @@ Type TStarMap Extends TMiniMap
 		' regardless of the resolution and map size
 	End Method
 	
+	' unfinished
 	Method DrawSectorGrid()
 		Local verticalSectors:Int[] = GetVisibleLines()
 		Local horizontalSectors:Int[] = GetVisibleColumns()

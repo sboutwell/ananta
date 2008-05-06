@@ -25,14 +25,13 @@ Global G_debug:Int = XMLGetSingleValue(c_SettingsFile,"settings/debug").ToInt()
 ' Make it global so that viewport:TViewport is accessible everywhere
 Global viewport:TViewport = TViewport.Create()
 
+' The upper left debug info display
 Global G_debugWindow:TDebugWindow = TDebugWindow.Create(10, 25) 
 
+' global player instance
 Global G_player:TPlayer
 
-'Global G_delta:TDelta = TDelta.Create(XMLGetSingleValue(c_SettingsFile,  ..
-'	"settings/graphics/framerate").ToInt(),  ..
-'	XMLGetSingleValue(c_settingsFile, "settings/graphics/limitframerate").ToInt(),  ..
-'	XMLGetSingleValue(c_settingsFile, "settings/graphics/maxdelta").ToInt()) 
+' Global delta timer instance
 Global G_delta:TDelta = TDelta.Create(XMLGetSingleValue(c_SettingsFile,  ..
 	"settings/graphics/framerate").ToInt(),  ..
 	XMLGetSingleValue(c_settingsFile, "settings/graphics/limitframerate").ToInt(),  ..

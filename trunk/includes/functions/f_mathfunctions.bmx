@@ -80,6 +80,8 @@ Function ReturnClosestOfTwo:Int(src_x:Double, src_y:Double, dst0_x:Double, dst0_
 	Return (src_x - dst0_x) ^ 2 + (src_y - dst0_y) ^ 2 > (src_x - dst1_x) ^ 2 + (src_y - dst1_y) ^ 2
 EndFunction
 
+' Returns the image size in pixels. 
+' If useDiamager = True, returns corner-to-corner size. Otherwise returns the longest side length.
 Function CalcImageSize:Int(img:TImage, useDiameter:Int = True) 
 	If useDiameter Then Return Sqr((ImageWidth(img) ^ 2 + ImageHeight(img) ^ 2)) 	
 	If ImageWidth(img) > ImageHeight(img) Then Return ImageWidth(img) 
@@ -114,6 +116,7 @@ Function getPrefix(pref:String var, val:Long var)
 	
 End Function
 
+' Returns an integer representation of RGBA pixel values
 Function MakeCol:Int(a:Byte, r:Byte, g:Byte, b:Byte) 
 	Local n:Int
 	Local m:Byte ptr = VarPtr n
@@ -124,7 +127,8 @@ Function MakeCol:Int(a:Byte, r:Byte, g:Byte, b:Byte)
 	Return n
 EndFunction
 
-Function GetCol(px:Int,a:Byte var, r:Byte var, g:Byte var, b:Byte var)
+' The opposite of MakeCol: parses an integer representation of a pixel into RGBA values
+Function GetCol(px:Int, a:Byte Var, r:Byte Var, g:Byte Var, b:Byte Var) 
 	a = px Shr 24
 	b = px Shr 16
 	g = px Shr 8

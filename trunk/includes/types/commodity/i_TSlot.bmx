@@ -18,7 +18,7 @@ This file is part of Ananta.
 Copyright 2007, 2008 'Jussi Pakkanen'
 endrem
 
-' TSlot is a special "container" in a ship hull that holds other ship parts. 
+' TSlot is a special "container" in a ship hull that holds other ship parts (TComponents). 
 ' Slots are created when a new ship (hull) is created.
 ' See i_TCommodity_TShippart.bmx
 Type TSlot
@@ -119,7 +119,7 @@ Type TSlot
 		EndIf
 		
 		_L_components.remove(comp) 
-		comp.AssignSlot(Null)  	' tell the component it's no longer installed
+		comp.AssignSlot(Null)   	' tell the component it's no longer installed anywhere
 		Return True ' success
 	End Method
 	
@@ -136,17 +136,14 @@ Type TSlot
 			Return Null
 		EndIf
 		
-		' Check if this slot is of correct type...
+		' Check if this slot is of correct type... "engines" can fit to several types of slots
 		Local compType:String = comp.getType() 
 		If compType = "engine" and ..
 			(_slotType = "engine" or _slotType = "rotthruster" or _slotType = "thruster") Then
 			_L_components.AddLast(comp)  ' add the component to the slot
 			comp.assignSlot(Self)  		 ' tell the component that it's installed in this slot
 			Return True
-		EndIf
-		
-		If compType = "weapon" And ..
-			(_slotType = "weapon") Then
+		Else If compType = _slotType Then
 			_L_components.AddLast(comp)   ' add the component to the slot
 			comp.assignSlot(Self)  		 ' tell the component that it's installed in this slot
 			Return True			

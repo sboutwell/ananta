@@ -63,7 +63,7 @@ Type TCommodity
 		_mass = val
 	End Method
 	
-	Method FindCommodity(id:String) 
+	Method FindCommodity:TCommodity(id:String) 
 		
 	End Method
 
@@ -87,6 +87,7 @@ Type TCommodity
 
 	EndFunction
 	
+	' loads and parses all commodities from the xml file
 	Function LoadAll(rootnode:TxmlNode)
 		If G_Debug Print "    Loading standard commodities..."
 		
@@ -104,6 +105,7 @@ Type TCommodity
 		Return
 	EndFunction
 
+	' loads commodity properties from xml nodes
 	Function LoadValues(nodelist:TList,c:TCommodity)
 		For Local value:TxmlNode = EachIn nodelist	' iterate through node values
 			If value.GetName() = "name"		Then c._name		= value.GetText()	
@@ -144,6 +146,7 @@ Type TFuel Extends TCommodity
 		Return Null
 	End Function
 	
+	' loads all fuel specific commodity properties from xml node
 	Function LoadAll(rootnode:TxmlNode)
 		If G_Debug Print "    Loading fuels..."
 		

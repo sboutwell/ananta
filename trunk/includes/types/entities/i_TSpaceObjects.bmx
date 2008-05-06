@@ -48,13 +48,13 @@ Type TSpaceObject Abstract
 	Field _size:Int						' The visual diameter of the object, to display the object in correct scale in the minimap
 	Field _scaleX:Float = 1				' The scale of the drawn image (1 being full resolution, 2 = double size, 0.5 = half size)
 	Field _scaleY:Float = 1				
-	Field _name:String = "Nameless"	' The name of the object
+	Field _name:String = "Nameless"		' The name of the object
 	Field _isShownOnMap:Int = False		' flag to indicate minimap visibility
 	Field _hasGravity:Int	= False			' a true-false flag to indicate gravitational pull
 	Field _xVel:Double						' velocity vector x-component
 	Field _yVel:Double						' velocity vector y-component
 	Field _rotationSpd:Float				' rotation speed in degrees per second
-	Field _affectedByGravity:Int = True
+	Field _affectedByGravity:Int = True		' does gravity affect the object?
 	Field _canCollide:Int = False			' flag to indicate if this object can collide with other objects with the same flag set
 	Field _updated:Int = False			' a flag to indicate if this object has been updated during the frame
 	Field _integrity:Float = -1			' the amount of damage the object can handle, -1 for indestructible
@@ -70,10 +70,11 @@ Type TSpaceObject Abstract
 	
 	Method Destroy() Abstract
 	
+	' make the object take some damage
 	Method SustainDamage(dam:Float) 
-		If _integrity = -1 Then Return	' indestructible	
-		_integrity = _integrity - dam
-		If _integrity <= 0 Then Explode() 
+		If _integrity = -1 Then Return		' indestructible	
+		_integrity = _integrity - dam		' She can't take much more o' this, cap'n!
+		If _integrity <= 0 Then Explode()   ' My god, cap'n, she's gonna blow!
 	End Method
 	
 	Method Explode() 
@@ -89,9 +90,9 @@ Type TSpaceObject Abstract
 		Destroy() 
 	End Method
 		
+	' draws the body of the spaceobject
 	Method DrawBody(vp:TViewport, drawAsAttachment:Int = False)
-		
-		If Not _image Then Return
+		If Not _image Then Return	' don't draw if no image is defined
 		
 		' don't draw the object if it's an attachment 
 		' to another object but the method was NOT called with the drawAsAttachment flag on
@@ -114,6 +115,8 @@ Type TSpaceObject Abstract
 		Local x:Double = (vp.GetCameraPosition_X() - _x) * viewport.GetZoomFactor() + midX + startX
 		Local y:Double = (vp.GetCameraPosition_Y() - _y) * viewport.GetZoomFactor() + midY + startY
 		
+		' This commented code block is trying to define if the object will be visible on the screen to avoid
+		' drawing non-visible objects. Not working. So, in the meantime we'll suffer from a performance hit.
 		'If x + _size * _scaleX * viewport._zoomfactor / 2 < startX Then Return
 		'If x - _size * _scaleX * viewport._zoomFactor / 2 > startX + vp.GetWidth() Then Return
 				
@@ -136,6 +139,7 @@ Type TSpaceObject Abstract
 		EndIf
 	EndMethod
 	
+	' this update method is currently mainly for attachment positioning purposes...
 	Method Update() 
 		If _parentObject Then	' is attached to another object...
 			Local pRot:Float = _parentObject.GetRot() 
@@ -264,6 +268,7 @@ Type TSpaceObject Abstract
 	
 EndType
 
+' Not used
 Type TJumpPoint Extends TSpaceObject
 	Global g_L_JumpPoints:TList		' a list to hold all JumpPoints
 	Field _destinationJp:TJumpPoint	' the connected JumpPoint
@@ -371,6 +376,7 @@ Type TPlanet Extends TStellarObject
 	EndFunction
 EndType
 
+' not used
 Type TSpaceStation Extends TStellarObject
 	Method Destroy() 
 		
@@ -537,9 +543,10 @@ Type TMovingObject Extends TSpaceObject Abstract
 		'endrem
 	End Method
 
+	' special weapons collision test and damage
 	Method CheckProjectileCollision(obj:TSpaceObject) 
 		Local proj:TProjectile = TProjectile(Self) 
-		If proj Then
+		If proj Then	' if this object is a projectile...
 			Self.SetXVel(obj.GetXVel()) 
 			Self.SetYVel(obj.GetYVel()) 
 			
@@ -554,7 +561,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 			
 		End If
 		
-		If TProjectile(obj) Then
+		If TProjectile(obj) Then	' if the object we're colliding with is a projectile...
 			Local proj:TProjectile = TProjectile(obj) 
 			proj.SetXVel(GetXVel()) 
 			proj.SetYVel(GetYVel()) 
@@ -568,7 +575,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		End If
 	EndMethod
 		
-	' CalcOrbitalVelocity calculates the velocity required to maintain a stable orbit around body
+	' CalcOrbitalVelocity calculates the radial velocity required to maintain a stable orbit around body
 	Method CalcOrbitalVelocity:Double(body:TSpaceObject) 
 		Return Sqr(c_GravConstant * body.GetMass() / Distance(_x, _y, body.GetX(), body.GetY())) 
 	End Method
@@ -586,6 +593,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		_xVel = Cos(dir) * vel				 
 	End Method
 	
+	' Update the position of the moving object. jumpvalue is for jump engine "warp"
 	Method UpdatePosition(jumpValue:Float = 1.0) 
 		_x = _x + _xVel * G_delta.GetDelta() * jumpValue
 		_y = _y + _yVel * G_delta.GetDelta() * jumpValue
@@ -650,17 +658,19 @@ Type TShip Extends TMovingObject
 	Field _L_Engines:TList					' all ship's engines as TComponent
 	
 	Field _L_Weapons:TList					' list holding all weapons as TComponent
-	Field _selectedWeaponSlot:TSlot
-	Field _selectedWeapon:TWeapon
+	Field _selectedWeaponSlot:TSlot			' the weapon slot currently selected as the active slot
+	Field _selectedWeapon:TWeapon			' ... and the weapon itself in the active slot
 	
-	Field _lastShot:Int						' ms since last shot
+	Field _lastShot:Int						' milliseconds since last shot
 	Field _triggerDown:Int = False			' is weapon trigger down
+	' todo: integrate weapon-related fields to TWeapon
 	
 	Field _isJumpDriveOn:Int = False
+	Field _pilot:TPilot						' The pilot controlling this ship
 	
+	' not used... yet
 	Field _fuel:Float						' on-board fuel for main engines (calculated by a routine)
 	Field _oxygen:Float						' on-board oxygen
-	Field _pilot:TPilot						' The pilot controlling this ship
 	
 	Method Update() 
 		' apply forward and reverse thrusts
@@ -710,8 +720,7 @@ Type TShip Extends TMovingObject
 	
 	
 	Method FireWeapon() 
-		If Not _selectedWeaponSlot Then Return
-		If Not _selectedWeapon Then Return
+		If Not _selectedWeaponSlot Or Not _selectedWeapon Then Return
 		
 		If MilliSecs() - _lastShot < _selectedWeapon._ROF Then Return
 		Local vel:Int = _selectedWeapon.GetVelocity() 
@@ -734,7 +743,8 @@ Type TShip Extends TMovingObject
 		
 		_lastShot = MilliSecs() 
 	End Method
-		
+
+	' set the jump drive status		
 	Method JumpDrive(isOn:Int)
 		_isJumpDriveOn = isOn
 		
@@ -758,6 +768,7 @@ Type TShip Extends TMovingObject
 		_controllerPosition = cnt
 	End Method
 	
+	' apply acceleration to x and y velocity vectors
 	Method ApplyImpulse(accel:Float) 
 		Local Ximpulse:Float = accel * (Cos(_rotation)) 
 		Local Yimpulse:Float = accel * (Sin(_rotation)) 
@@ -785,6 +796,7 @@ Type TShip Extends TMovingObject
 		EndIf
 	EndMethod
 	
+	' rotkill is a "rotation damper" that fires when the controller is centered
 	Method ApplyRotKill() 
 		If _rotationSpd = 0.0 Then Return
 		If _rotationSpd < 0 Then _rotationSpd:+(_rotKillPercentage * _rotAcceleration * G_delta.GetDelta()) 
