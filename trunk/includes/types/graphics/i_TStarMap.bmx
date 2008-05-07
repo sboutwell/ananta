@@ -101,6 +101,7 @@ Type TStarMap Extends TMiniMap
 	End Method
 	
 	Method AddStarMapBlip(s:TSystem)
+		'Local blip:TMapBlip = AddBlip(s.GetX() - _cameraX,s.GetY() - _cameraY,s.GetSize())
 		Local blip:TMapBlip = AddBlip(s.GetX() - _cameraX,s.GetY() - _cameraY,s.GetSize())
 		blip.SetBColor(_starColor)
 	End Method
@@ -179,16 +180,34 @@ Type TStarMap Extends TMiniMap
 		' regardless of the resolution and map size
 	End Method
 	
-	' unfinished
 	Method DrawSectorGrid()
-		Local verticalSectors:Int[] = GetVisibleLines()
-		Local horizontalSectors:Int[] = GetVisibleColumns()
+		Local verticalSectors:Int[] = GetVisibleColumns()
+		Local horizontalSectors:Int[] = GetVisibleLines()
 		
-		'For Local line:Int = EachIn horizontalSectors
-		'	For Local column:Int = EachIn verticalSectors
-				'G_DebugWindow.AddText(column + ":" +line)
-		'	Next
-		'Next
+		'If verticalSectors.Length > 100 Or horizontalSectors.Length > 100 Then Return	' don't draw grid if zoomed out enough
+		
+		SetColor(30,240,30)
+		SetBlend(AlphaBlend)
+		SetALpha(0.2)
+		If _zoomFactor < 0.25 Then SetAlpha (GetAlpha() / 0.25 * _zoomFactor) 
+
+		For Local lin:Int = EachIn horizontalSectors
+			Local xs:Double = _startX
+			Local xe:Double = _startX + _width
+			Local ys:Double = _midY + (lin*TSector.GetSectorSize()-_cameraY) * _zoomFactor
+			Local ye:Double = ys
+			DrawLine(xs,ys,xe,ye)
+		Next
+		
+		For Local col:Int = EachIn verticalSectors
+			Local ys:Double = _startY
+			Local ye:Double = _startY + _height
+			Local xs:Double = _midX + (col*TSector.GetSectorSize()-_cameraX) * _zoomFactor
+			Local xe:Double = xs
+			DrawLine(xs,ys,xe,ye)				
+		Next
+		G_DebugWindow.AddText(_cameraX + ":" + _cameraY)
+		G_DebugWindow.AddText("zoom: " + _zoomFactor)
 	End Method
 		
 	Function Create:TStarMap(x:Int, y:Int, h:Int, w:Int) 
@@ -201,7 +220,8 @@ Type TStarMap Extends TMiniMap
 		map._defaultZoom = 0.3
 		map._zoomFactor = 0.5
 		map._scale = 10
-		map._minZoom = 0.01
+		map._minZoom = 0.08
+		map._scrollSpeed = 200
 		map._title = "Galaxy map"
 		map._unit = "ly"
 		map._starColor = TColor.FindColor("yellow")
