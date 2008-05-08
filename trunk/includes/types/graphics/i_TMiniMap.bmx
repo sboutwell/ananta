@@ -163,11 +163,11 @@ Type TMiniMap
 		
 		SetScale(1, 1) 
 		SetRotation(0) 
-		SetAlpha(0.5) 
+		SetAlpha(0.8) 
 		SetLineWidth(1) 
 		
 		' center vertical line
-		SetColor(255, 255, 255) 
+		SetColor(255, 255, 0) 
 		DrawLine(_midX, yPos + 6, _midX, yPos - 6, False) 
 		
 		' horizontal line
@@ -176,24 +176,28 @@ Type TMiniMap
 		
 		' lines to the left of the center object
 		For Local i:Int = 1 To lines / 2
+			Local lineLength:Int = 2
 			If i Mod 5 = 0 Then		' every fifth line is drawn on a different color
-				SetColor(255, 255, 255) 
+				SetColor(255, 255, 255)
+				lineLength = 4 
 			Else
 				SetColor(128, 128, 128) 
 			EndIf
-			DrawLine(_midX - i * lineStepScaled, yPos + 2,  ..
-					_midX - i * lineStepScaled, yPos - 2) 
+			DrawLine(_midX - i * lineStepScaled, yPos + lineLength,  ..
+					_midX - i * lineStepScaled, yPos - lineLength) 
 		Next
 		
 		' lines to the right of the center object
 		For Local i:Int = 1 To lines / 2
+			Local lineLength:Int = 2
 			If i Mod 5 = 0 Then
 				SetColor(255, 255, 255) 
+				lineLength = 4 
 			Else
 				SetColor(128, 128, 128) 
 			EndIf
-			DrawLine(_midX + i * lineStepScaled, yPos + 2,  ..
-					_midX + i * lineStepScaled, yPos - 2) 
+			DrawLine(_midX + i * lineStepScaled, yPos + lineLength,  ..
+					_midX + i * lineStepScaled, yPos - lineLength) 
 		Next
 		
 		DisplayLineStep(k)  ' draw the textual presentation of the current line step
