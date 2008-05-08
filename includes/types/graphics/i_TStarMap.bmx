@@ -206,10 +206,46 @@ Type TStarMap Extends TMiniMap
 			Local xe:Double = xs
 			DrawLine(xs,ys,xe,ye)				
 		Next
-		G_DebugWindow.AddText(_cameraX + ":" + _cameraY)
-		G_DebugWindow.AddText("zoom: " + _zoomFactor)
-	End Method
 		
+		' Finally draw a different-color square around the centered sector
+		HighlightActiveSector()
+		
+		G_DebugWindow.AddText("Starmap coords: " + _cameraX + ":" + _cameraY)
+		G_DebugWindow.AddText("Starmap zoom: " + _zoomFactor)
+	End Method
+
+	Method HighlightActiveSector()
+		SetAlpha(0.5)
+		SetColor(80,255,80)
+		Local sectSize:Int = TSector.GetSectorSize()
+		
+		' top
+		Local xs:Double = _midX + (_centeredSectorX * sectSize - _cameraX) * _zoomFactor
+		Local xe:Double = xs + sectSize * _zoomFactor
+		Local ys:Double = _midY + (_centeredSectorY * sectSize -_cameraY) * _zoomFactor
+		Local ye:Double = ys
+		DrawLine(xs,ys,xe,ye)
+		' bottom
+		xs:Double = _midX + (_centeredSectorX * sectSize - _cameraX) * _zoomFactor
+		xe:Double = xs + sectSize * _zoomFactor
+		ys:Double = _midY + ((_centeredSectorY + 1) * sectSize -_cameraY) * _zoomFactor
+		ye:Double = ys
+		DrawLine(xs,ys,xe,ye)
+		' left
+		xs:Double = _midX + (_centeredSectorX * sectSize - _cameraX) * _zoomFactor
+		xe:Double = xs
+		ys:Double = _midY + (_centeredSectorY * sectSize -_cameraY) * _zoomFactor
+		ye:Double = ys + sectSize * _zoomFactor
+		DrawLine(xs,ys,xe,ye)
+		' right
+		xs:Double = _midX + ((_centeredSectorX + 1)* sectSize - _cameraX) * _zoomFactor
+		xe:Double = xs
+		ys:Double = _midY + (_centeredSectorY * sectSize -_cameraY) * _zoomFactor
+		ye:Double = ys + sectSize * _zoomFactor
+		DrawLine(xs,ys,xe,ye)
+
+	End Method
+			
 	Function Create:TStarMap(x:Int, y:Int, h:Int, w:Int) 
 		Local map:TStarMap = New TStarMap
 		map._startX = x
@@ -222,7 +258,7 @@ Type TStarMap Extends TMiniMap
 		map._scale = 10
 		map._minZoom = 0.08
 		map._scrollSpeed = 200
-		map._title = "Galaxy map"
+		map._title = "Starmap"
 		map._unit = "ly"
 		map._starColor = TColor.FindColor("yellow")
 		

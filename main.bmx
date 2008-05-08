@@ -102,16 +102,16 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
 	
+	
 	' *********** DEBUG INFO ****************
 	G_debugWindow.AddText("FPS: " + G_delta.GetFPS()) 
-	G_debugWindow.AddText("Asteroids: " + TAsteroid.g_nrAsteroids) 
-	G_debugWindow.AddText("Ships: " + TShip.g_nrShips) 
-	'G_debugWindow.AddText(T
+	'G_debugWindow.AddText("Asteroids: " + TAsteroid.g_nrAsteroids) 
+	'G_debugWindow.AddText("Ships: " + TShip.g_nrShips) 
 	
-	If G_Player.GetControlledShip() Then
-		G_debugWindow.AddText("Velocity: " + G_Player.GetControlledShip().GetVel()) 
-		G_debugWindow.AddText("Shields: " + G_Player.GetControlledShip().GetIntegrity()) 
-	EndIf
+	'If G_Player.GetControlledShip() Then
+	'	G_debugWindow.AddText("Velocity: " + G_Player.GetControlledShip().GetVel()) 
+	'	G_debugWindow.AddText("Shields: " + G_Player.GetControlledShip().GetIntegrity()) 
+	'EndIf
 	' ***************************************
 	
 	

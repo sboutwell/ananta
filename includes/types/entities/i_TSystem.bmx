@@ -24,7 +24,7 @@ Type TSystem Final
 	Field _name:String							' Name of the System
 	Field _sectorX:Int, _sectorY:Int			' coordinates of the sector this system is in (0 - 7192)
 	Field _x:Int,_y:Int							' System's x-y-coordinates in the galaxy (0 - ~1.8 million)
-	Field _size:Float = 1						' size of the central star (for starmap blip size)
+	Field _size:Float = 3						' size of the central star (for starmap blip size)
 	Field _type:Int								' type of the central star
 	Field _multiple:Int							' multiple star status for the system
 	Field _mainStar:TStar
