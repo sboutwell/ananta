@@ -276,7 +276,7 @@ Type TViewport
 		G_debugWindow.AddText("alt+x                - reset system map zoom") 
 		G_DebugWindow.AddText("c/v                  - starmap zoom in/out")
 		G_DebugWindow.AddText("(shift+)wasd         - scroll starmap")		
-		G_DebugWindow.AddText("shift+c              - center starmap")
+		G_DebugWindow.AddText("alt+c                - center starmap")
 		G_DebugWindow.AddText("g                    - toggle starmap on/off")
 		G_debugWindow.AddText("alt+enter            - toggle fullscreen") 
 		G_DebugWindow.AddText("ESC                  - exit")

@@ -206,9 +206,10 @@ End Function
 Function SetupTestEnvironment()
 	'Local sectX:Int = 16
 	'Local sectY:Int = 16
-	Local sectX:Int = 1000
-	Local sectY:Int = 7007
+	Local sectX:Int = 3742
+	Local sectY:Int = 1852
 	
+	' make sure the starting sector has at least 1 star in it...
 	Local sect:TSector
 	Repeat
 		sectY:+1
