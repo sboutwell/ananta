@@ -44,6 +44,9 @@ endrem
 
 Type TUni
 	Global TheMilkyWay:Int[]  ' global array holding pixel values for the entire galaxy image
+	
+	
+	' some globals that are hardcoded for now... externalize to XML later
 	Global SystemDensity:Int[] = [ ..
     $BF78, $5B2F, $DF85, $3C14, $DADD, $38DF, $E08F, $88D7,  ..
     $B3AB, $EA86, $1200, $8DB3, $FF0D, $A593, $EC66, $1988,  ..
@@ -69,9 +72,16 @@ Type TUni
 	Global StarChance_Type:Int[] = ..
 	[0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8]
 	
+	'Local Grid[][] = [ [1,1,1,2],[7,7],[5,5,5] ]
+	
 	' chance array for multi-star systems (0 = single star, 1 = binary system, 2 = trinary system, etc)
 	Global StarChance_Multiples:Int[] = ..
 	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 4, 5]
+	
+	Global StarSize:Int[] =[300, 300, 350, 400,  ..
+    						700, 900, 800, 1100,  ..
+    						1400, 600]
+
 	
 	' two global base seeds
 	Global RndSeed_0:Long
@@ -147,6 +157,7 @@ Type TSector
 	    for Local i:Int = 0 To _getNrSystems() - 1
 	        Local coordsOk:Int = True	' flag to indicate if this star overlaps with another star
 			Local y:Int, x:Int, mult:Int, typ:Int
+			Local name:String
 			Repeat
 				' (semi-)randomize the star's in-sector coordinates
 				coordsOk = TRUE
@@ -161,8 +172,10 @@ Type TSector
 			
 			' (semi-)randomize the rest of the star properties
 			mult:Int = TUni.StarChance_Multiples[Rand(0,TUni.StarChance_Multiples.Length - 1)]
-			typ:Int = TUni.StarChance_Type[Rand(0,TUni.StarChance_Multiples.Length - 1)]
-			Local system:TSystem = TSystem.Create(_x, _y, x, y, "noname", typ, mult) 
+			typ:Int = TUni.StarChance_Type[Rand(0, TUni.StarChance_Type.Length - 1)]
+			'name:String = TUni
+			Local system:TSystem = TSystem.Create(_x, _y, x, y, "noname", typ, mult)
+			system._size = (TUni.StarSize[typ] + mult * 100) / 200.0
 			_L_systems.AddLast(system) 
 		Next
 		_isPopulated = True	' switch the flag on to indicate this system is populated
@@ -203,21 +216,21 @@ Type TSector
         ' Capiche? ;) I don't. It's some kind of an averaging algorithm but the inner workings beat me.
 		
 		' comment this block to increase the overall number of stars
-		ebx = tempx + ecx
-        eax = tempx * tempy
-        eax = eax shr 15
-        ebx = ebx^eax
-        ebx = ebx shr 5
-        ebx = ebx & $7f
-        eax = TUni.SystemDensity[ebx]
-        ecx = ecx * eax
-        ecx = ecx shr 16
+		'ebx = tempx + ecx
+        'eax = TUni.SystemDensity[ebx]
+        'eax = tempx * tempy
+        'eax = eax shr 15
+        'ebx = ebx^eax
+        'ebx = ebx shr 5
+        'ebx = ebx & $7f
+        'ecx = ecx * eax
+        'ecx = ecx Shr 16
 		' ----		
 		
 		c = ecx
 	    c = c Shr 10
 		
-		' add +- 1 variance to the star count. Redo this with something faster than Rnd
+		' add +- 1 variance to the star count. Redo this with something faster than Rnd (bitmasking?)
 		c = c + Rnd(- 2, 1) 
 	    Return Int(c) 
 	End Method

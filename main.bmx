@@ -29,6 +29,7 @@ Import brl.pngloader
 Import brl.linkedlist
 Import brl.Pixmap
 Import brl.math
+import brl.freetypefont
 
 ' Brucey's modules
 Import bah.Libxml		' XML parser library wrapper for BlitzMax by Bruce A. Henderson
