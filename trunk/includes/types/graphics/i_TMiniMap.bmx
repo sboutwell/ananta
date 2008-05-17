@@ -49,14 +49,15 @@ Type TMiniMap
 	
 	Field _isPersistent:Int = False  ' no auto clearing the map blips after drawing them? Useful for maps with stationary blips.
 	Field isVisible:Int = False		' toggling maps on/off toggles this boolean
+	Field _labelsShown:Int = False	' are blip labels visible
+	Field _labelTreshold:Float = 1.0	' zoom level at which labels are shown
 	
 	Field _hasScaleIndicator:Int = True	' scale indicator is a horizontal dynamic scale (with vertical scale lines) on the minimap
 	Field _lineStep:Float = 100	' base value for scale indicator step. Step is the space between scale lines.
 	Field _unit:String = "" 	' unit visible on the scale gauge (LY, AU, m, etc)
 
 	Field _title:String = "Map"
-	Field _titleXOffset:Float = 0 ' position of the title on the map
-	Field _titleYOffset:Float = 0
+	Field _titleYOffset:Float = 0 ' position of the title on the map
 		
 	' adds a blip to the minimap to the given coordinates
 	Method AddBlip:TMapBlip(x:Double, y:Double, size:Int) 
@@ -116,7 +117,8 @@ Type TMiniMap
 				If blip.isOverBoundaries(_startX, _startY, _width, _height) Then
 					Continue
 				Else
-					blip.Draw() 
+					blip.Draw()
+					If _labelsShown And _zoomFactor > _labelTreshold Then blip.DrawName()
 				EndIf
 			Next
 			
@@ -143,8 +145,8 @@ Type TMiniMap
 		SetColor(255,255,255)
 		SetScale(1,1)
 		SetRotation(0)
-		DrawText(_title, Self._midX + _titleXoffset, Self._StartY + _titleYoffset) 
-	End Method	
+		DrawText(_title, Self._midX - (TextWidth(_title) / 2), Self._StartY + _titleYoffset)
+	End Method
 
 	' calculates and draws the scale indicator		
 	Method DrawScale() 
@@ -281,9 +283,7 @@ Type TMiniMap
 		_midX = _startX + _width / 2.0
 		_midY = _startY + _height / 2.0
 		_zoomFactor = _defaultZoom
-		_titleXOffset = -4 * _title.Length	' center the title text:
-											'-4 is the width of the default font so it does not work with custom fonts
-	End method
+	End Method
 	
 	Function Create:TMiniMap(x:Int, y:Int, h:Int, w:Int) 
 		Local map:TMiniMap = New TMiniMap
@@ -302,6 +302,7 @@ Type TMapBlip
 	Field _x:Int, _y:Int
 	Field _size:Float
 	Field _color:TColor
+	Field _blipName:String = ""
 	
 	Method GetSize:Float() 
 		Return _size
@@ -313,6 +314,10 @@ Type TMapBlip
 	
 	Method GetY:Int() 
 		Return _y
+	End Method
+	
+	Method SetName(n:String)
+		_blipName = n
 	End Method
 	
 	Method SetSize(sz:Float) 
@@ -344,6 +349,12 @@ Type TMapBlip
 			SetHandle(_size / 2, _size / 2)       ' oval handle to the middle of the oval
 			DrawOval (_x, _y, _size, _size) 
 		End If
+	End Method
+	
+	Method DrawName()
+		SetColor(255, 255, 255)
+		SetHandle(TextWidth(_blipName) / 2, TextHeight(_blipName))
+		DrawText(_blipName, _x, _y)
 	End Method
 	
 	Function Create:TMapBlip(x:Int, y:Int, size:Int) 

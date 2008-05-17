@@ -23,11 +23,14 @@ Rem
 EndRem
 
 Type TStarMap Extends TMiniMap
+
+	Global G_starColor:TColor[]
+	
 	Field _centeredSectorX:Int	' centered sector is the sector (0..8192) that the map "camera" is currently in
 	Field _centeredSectorY:Int	
 	Field _visibleLines:Int[]	' two arrays containing the sectors visible in the minimap
 	Field _visibleColumns:Int[] ' at the current camera position and zoom level
-	Field _starColor:TColor		' default color of the star blip
+	'Field _starColor:TColor		' default color of the star blip
 
 	Method SetCamera(x:Double,y:Double)
 		_isScrolling = TRUE
@@ -103,7 +106,8 @@ Type TStarMap Extends TMiniMap
 	Method AddStarMapBlip(s:TSystem)
 		'Local blip:TMapBlip = AddBlip(s.GetX() - _cameraX,s.GetY() - _cameraY,s.GetSize())
 		Local blip:TMapBlip = AddBlip(s.GetX() - _cameraX,s.GetY() - _cameraY,s.GetSize())
-		blip.SetBColor(_starColor)
+		blip.SetBColor(G_starColor[s._type])
+		blip.SetName(s._name)
 	End Method
 
 	' update calculates which sectors should be visible in the map at the current
@@ -258,9 +262,25 @@ Type TStarMap Extends TMiniMap
 		map._scale = 10
 		map._minZoom = 0.08
 		map._scrollSpeed = 200
+		map._labelsShown = True
 		map._title = "Starmap"
 		map._unit = "ly"
-		map._starColor = TColor.FindColor("yellow")
+		
+		' hardcoded for now, externalize later
+		Local starColor:TColor[] =[ ..
+								TColor.FindColor("tomato"),  .. 		' Type 'M' flare star
+								TColor.FindColor("coral"),  ..		' Faint Type'M'red star
+								TColor.FindColor("red"),  ..		' Type'M'red star
+								TColor.FindColor("orange"),  ..		' Type'K'orange star
+								TColor.FindColor("yellow"),  ..		' Type'G'yellow star
+								TColor.FindColor("white"),  ..	' Type'F'white star
+								TColor.FindColor("silver"),  ..	' Type'A'hot white star
+								TColor.FindColor("slategray"),  ..	' White dwarf star
+								TColor.FindColor("crimson") ..			' Red giant star
+							]
+		G_starColor = starColor	' assign the array to the global g_starColor
+
+		'map._starColor = TColor.FindColor("yellow")
 		
 		map.Init() ' calculate the rest of the minimap values
 		Return map
