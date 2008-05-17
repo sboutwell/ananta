@@ -135,3 +135,30 @@ Function GetCol(px:Int, a:Byte Var, r:Byte Var, g:Byte Var, b:Byte Var)
 	r = px	
 End Function
 
+' bit rotating functions
+Function rotr:Int(num:Int, amount:Int)
+	Return rotateBits(num, 32, - amount)
+End Function
+
+Function rotl:Int(num:Int, amount:Int)
+	Return rotateBits(num, 32, amount)
+End Function
+
+Function rotateBits:Int(num:Int, bitLength:Int = 32, rotate:Int = 1)
+'bitLength can be anything up to 32
+'if rotate > 0 then rotates left, < 0 rotates right
+	Local mask1:Long = $00000000FFFFFFFF:Long Shr (32 - bitLength)
+	Local mask2:Long=mask1 Shl bitLength
+	
+	Local number:Long = Long(num) & mask1	'force number to a long to avoid probs with bit 32
+
+	If rotate > 0
+	   number:Shl rotate
+	Else
+	   number:Shl bitLength - Abs(rotate)
+	EndIf
+	
+	number = ((number & mask2) Shr bitLength) | (number & mask1)
+	
+	Return number
+End Function

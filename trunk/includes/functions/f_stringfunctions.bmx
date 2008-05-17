@@ -25,10 +25,10 @@ endrem
 Function StringSplitLength:TList(str:string,length:Int,delim:String=Chr(32))
 	Local L_strings:TList = CreateList()	' create a list to hold the splitted strings
 	
-	Local L_delimitedStrings:TList = StringSplit(str,delim)	' split the string into delimited substrings
+	Local L_delimitedStrings:String[] = SmartSplit(str, delim)	' split the string into delimited substrings
 	
-	Local delimCount:Int = L_delimitedStrings.Count()
-	If delimCount = 1 Then Return L_delimitedStrings
+	Local delimCount:Int = L_delimitedStrings.Length
+	'If delimCount = 1 Then Return L_delimitedStrings
 	
 	Local tempString:String = ""
 	
@@ -53,27 +53,50 @@ Function StringSplitLength:TList(str:string,length:Int,delim:String=Chr(32))
 EndFunction
 
 
-' Splits a string delimited by a given string
-' Returns a list of the splitted string
-Function StringSplit:TList(str:String,delim:String)
-	Local L_strings:TList = CreateList()	' list to hold the splitted strings
-	Local delimLength:Int = Len delim		
-		
+'###############################################################################
+' Split a string into substrings
+' From http://www.blitzbasic.com/codearcs/codearcs.php?code=1560
+' by CoderLaureate, bug fix by Chris Eykamp
+' This code has been declared by its author to be Public Domain code.
+Function SmartSplit:String[] (str:String, dels:String, text_qual:String = "~q") 
+	Local Parms:String[] = New String[1]
+	Local pPtr:Int = 0
+	Local chPtr:Int = 0
+	Local delPtr:Int = 0
+	Local qt:Int = False
+	Local str2:String = ""
+	
 	Repeat
-		Local pos:Int = str.Find(delim)
-		If pos <> -1 Then
-			Local splicedStr:String = str[..pos]	' extract a splice from the beginning of the string to the delimiter position
-			'str = Trim(str[pos+delimLength..])	' splice the extracted substring + the delimiter out of the main string
-			str = (str[Pos + delimLength..] ).Trim() 	' splice the extracted substring + the delimiter out of the main string
-			L_Strings.AddLast splicedStr	' add the substring to the list
-		Else	' no more delimiters found
-			L_Strings.AddLast str.Trim() 	' add the rest of the string to the list and exit the loop
-			Exit
-		EndIf
+		Local del:String = Chr(dels[delPtr])
+		Local ch:String = Chr(str[chPtr])
+		If ch = text_qual Then 
+			If qt = False Then
+				qt = True
+			Else
+				qt = False
+			End If
+		End If
+		If ch = del Then
+			If qt = True Then str2:+ ch
+		Else
+			str2:+ ch
+		End If
+		If ch = del Or chPtr = str.Length - 1 Then
+			If qt = False Then
+				Parms[pPtr] = str2.Trim()
+				str2 = ""
+				pPtr:+ 1
+				Parms = Parms[..pPtr + 1]
+				If dels.length > 1 And delPtr < dels.length Then delPtr:+ 1
+			End If
+		End If
+		chPtr:+ 1
+		If chPtr >= str.Length Then Exit
 	Forever
-
-	Return L_strings
-EndFunction
+	If Parms.Length > 1 Then Parms = Parms[..Parms.Length - 1]
+	Return Parms
+			
+End Function	
 
 ' "Rounds" a float into a fixed-point string for display
 Function FloatToFixedPoint:String(f:Float, decimals:Int=2)
@@ -89,5 +112,10 @@ Function FloatToFixedPoint:String(f:Float, decimals:Int=2)
 		return value[0..value.length-decimals] + "." + value[value.length-decimals..value.length]  
 	EndIf
 	
+End Function
+
+' capitalizes the FIRST letter of a string
+Function Capitalize:String(str:String)
+	Return Chr(str[0]).ToUpper() + str[1..]
 End Function
 
