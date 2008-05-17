@@ -31,6 +31,9 @@ Global G_debugWindow:TDebugWindow = TDebugWindow.Create(10, 25)
 ' global player instance
 Global G_player:TPlayer
 
+' universe is 'global'... huh? ;)
+Global G_Universe:TUni
+
 ' Global delta timer instance
 Global G_delta:TDelta = TDelta.Create(XMLGetSingleValue(c_SettingsFile,  ..
 	"settings/graphics/framerate").ToInt(),  ..

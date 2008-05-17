@@ -29,7 +29,7 @@ Import brl.pngloader
 Import brl.linkedlist
 Import brl.Pixmap
 Import brl.math
-import brl.freetypefont
+Import brl.freetypefont
 
 ' Brucey's modules
 Import bah.Libxml		' XML parser library wrapper for BlitzMax by Bruce A. Henderson
@@ -69,7 +69,8 @@ TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
-TUni.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the galaxy image for universe creation
+G_Universe = TUni.Create()
+G_Universe.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the galaxy image for universe creation
 
 SetupTestEnvironment()		' create the player, and a test system with some planets, asteroids and AI ships
 

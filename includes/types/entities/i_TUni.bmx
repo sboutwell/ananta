@@ -43,63 +43,36 @@ rem
 endrem
 
 Type TUni
-	Global TheMilkyWay:Int[]  ' global array holding pixel values for the entire galaxy image
-	
-	
-	' some globals that are hardcoded for now... externalize to XML later
-	Global SystemDensity:Int[] = [ ..
-    $BF78, $5B2F, $DF85, $3C14, $DADD, $38DF, $E08F, $88D7,  ..
-    $B3AB, $EA86, $1200, $8DB3, $FF0D, $A593, $EC66, $1988,  ..
-    $8500, $C1E7, $9281, $D7EB, $5F77, $D6A5, $310B, $2C98,  ..
-    $906E, $2CB6, $F137, $8ADC, $0FC7, $76B8, $B587, $2D1B,  ..
-    $AD4C, $1AEB, $B749, $C60D, $B914, $1B3A, $AA5E, $3764,  ..
-    $D7A0, $650E, $DB8D, $3E98, $1DDD, $D3BB, $54A4, $66BA,  ..
-    $164F, $F3B8, $7460, $BF9A, $7AA7, $459C, $61EC, $F706,  ..
-    $958C, $8B54, $86E8, $C653, $5D7C, $6AC9, $AD35, $8B1F,  ..
-    $30C6, $7EF7, $4E4F, $D1F3, $D042, $4AAC, $6F5A, $15C4,  ..
-    $4DC3, $923C, $04E2, $2C8B, $AB14, $9689, $5553, $92F7,  ..
-    $3BC6, $7C86, $5E8D, $FF7F, $8F5C, $0450, $0BD3, $B01F,  ..
-    $2744, $DF20, $E40E, $932C, $8B90, $CF40, $6E2B, $81BE,  ..
-    $200B, $A64F, $2BA4, $DCB8, $EA35, $ACC4, $1421, $9025,  ..
-    $9A98, $4993, $99EF, $B4FD, $0BCF, $7434, $7287, $C67F,  ..
-    $1967, $F486, $12AD, $DF33, $DF74, $2913, $2FF4, $D76B,  ..
-    $5A2A, $8B80, $CB01, $742B, $09B4, $C203, $56AF, $DAD6,  ..
-    $8000, $5555, $4000, $3333, $2AAA, $2492, $1FF0, $1C71,  ..
-    $1999, $1745, $1555, $13B1, $1249, $1111, $0FF0, $0F0F ..
-	] 
+	' two global base seeds
+	Global g_RndSeed_0:Long
+	Global g_RndSeed_1:Long
+
+	Field TheMilkyWay:Int[]  ' global array holding pixel values for the entire galaxy image
+		
+	' ----- some fields that are hardcoded for now... externalize to XML later -----
 
 	' chance array for different star types
-	Global StarChance_Type:Int[] = ..
+	Field StarChance_Type:Int[] = ..
 	[0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8]
 	
-	'Local Grid[][] = [ [1,1,1,2],[7,7],[5,5,5] ]
-	
 	' chance array for multi-star systems (0 = single star, 1 = binary system, 2 = trinary system, etc)
-	Global StarChance_Multiples:Int[] = ..
+	Field StarChance_Multiples:Int[] = ..
 	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 4, 5]
 	
-	Global StarSize:Int[] =[300, 300, 350, 400,  ..
+	Field StarSize:Int[] =[300, 300, 350, 400,  ..
     						700, 900, 800, 1100,  ..
     						1400, 600]
 
-	
-	' two global base seeds
-	Global RndSeed_0:Long
-	Global RndSeed_1:Long
-	
-	' function to semi-randomize base seeds using bit shifts
-	Function RotateRndSeeds() 
-	    Local Tmp1:Long, Tmp2:Long
-	
-		Tmp1 = (RndSeed_0 Shl 3) | (RndSeed_0 Shr 29) 
-		Tmp2 = RndSeed_0 + RndSeed_1
-		Tmp1:+Tmp2
-		RndSeed_0 = Abs(Tmp1) 
-		RndSeed_1 = Abs((Tmp2 Shl 5) | (Tmp2 Shr 27)) 
-	End Function	
-
+	' syllable stuff for star name generator
+	Field Syllable1:String[]	' arrays containing first, second and third syllables
+	Field Syllable2:String[]
+	Field Syllable3:String[]
+	Field syllable1Count:Int	' amount of syllables, should beat syllable1.Length in performace
+	Field syllable2Count:Int
+	Field syllable3Count:Int
+							
 	' load an image representing the galaxy to the global TheMilkyWay int array
-	Function LoadGalaxy(file:String)
+	Method LoadGalaxy(file:String)
 		Local pix:TPixmap = LoadPixMap(file)
 		
 		' add an extra row and column to the array for "edge interpolation"
@@ -115,11 +88,11 @@ Type TUni
 		For Local Pos:Int = 0 To TheMilkyWay.Length - 1
 			If y >= pix.height Or x >= pix.width Then
 				'if we're at the "extra" row or column, fill with zero
-				TUni.TheMilkyWay[Pos] = 0
+				TheMilkyWay[Pos] = 0
 			Else
 				Local px:Int = ReadPixel(pix,x,y)
 				GetCol(px,a,r,g,b)
-				TUni.TheMilkyWay[Pos] = b
+				TheMilkyWay[Pos] = b
 			EndIf
 			x:+1
 			If x = pix.width+1 Then
@@ -128,7 +101,94 @@ Type TUni
 			End If
 		Next
 		pix = Null
+	End Method
+
+	' loads syllables.xml and populates the three syllable arrays
+	Method LoadSyllables()
+		Local syll1:String = XMLGetSingleValue(c_syllablesFile, "syllables/first")
+		Local syll2:String = XMLGetSingleValue(c_syllablesFile, "syllables/second")
+		Local syll3:String = XMLGetSingleValue(c_syllablesFile, "syllables/third")
+		
+		syllable1 = ParseSyllables(syll1)
+		syllable2 = ParseSyllables(syll2)
+		syllable3 = ParseSyllables(syll3)
+		syllable1Count = syllable1.Length
+		syllable2Count = syllable2.Length
+		syllable3Count = syllable3.Length
+		
+		'DebugLog("Syllables: " + syllable1.Length)
+	End Method
+	
+	' cleans a syllable string and splits it into a string array
+	Method ParseSyllables:String[] (s:String)
+		s = s.Trim()	' trim leading and trailing non-printable chars
+		Local syllArray:String[] = SmartSplit(s, Chr(10)) ' split by LF
+		
+		' Finally strip single syllables off any unprintables
+		For Local i:Int = 0 To syllArray.Length - 1
+			syllArray[i] = syllArray[i].Trim()
+		Next
+		Return syllArray
+	End Method
+	
+rem
+	void GetSystemName(unsigned Int coordx, unsigned Int coordy, Int Sysnum, char * dest)
+{
+    coordx += Sysnum;
+    coordy += coordx;
+    coordx = _rotl (coordx, 3);
+    coordx += coordy;
+    coordy = _rotl (coordy, 5);
+    coordy += coordx;
+    coordy = _rotl (coordy, 4);
+    coordx = _rotl (coordx, Sysnum);
+    coordx += coordy;
+
+    strcpy (dest, namepart[(coordx>>2) & 31]);
+    coordx = _rotr (coordx, 5);
+    strcat (dest, namepart[(coordx>>2) & 31]);
+    coordx = _rotr (coordx, 5);
+    strcat (dest, namepart[(coordx>>2) & 31]);
+    dest[0] ^= 0x20;
+}
+endrem
+	Method GetSystemName:String(coordx:Int, coordy:Int, sysnum:Int)
+	    coordx:+Sysnum
+    	coordy:+coordx
+    	coordx = rotl (coordx, 3)
+    	coordx:+coordy
+    	coordy:+rotl (coordy, 5)
+    	coordy:+coordx
+    	coordy:+rotl (coordy, 4)
+    	coordx:+rotl (coordx, Sysnum)
+    	coordx:+coordy
+		
+		'DebugLog((coordx Shr 2) & (syllable1Count - 1))
+		Local s1:Int = (coordx Shr 2) & (syllable1Count - 1)
+		coordx = rotr (coordx, 5)
+		Local s2:Int = (coordx Shr 2) & (syllable2Count - 1)
+		coordx = rotr (coordx, 5)
+		Local s3:Int = (coordx Shr 2) & (syllable3Count - 1)
+		Return syllable1[s1] + syllable2[s2] + syllable3[s3]
+	End Method
+
+	' function to semi-randomize base seeds using bit shifts
+	Function RotateRndSeeds() 
+	    Local Tmp1:Long, Tmp2:Long
+	
+		Tmp1 = (g_RndSeed_0 Shl 3) | (g_RndSeed_0 Shr 29)
+		Tmp2 = g_RndSeed_0 + g_RndSeed_1
+		Tmp1:+Tmp2
+		g_RndSeed_0 = Abs(Tmp1)
+		g_RndSeed_1 = Abs((Tmp2 Shl 5) | (Tmp2 Shr 27))
 	End Function	
+
+	Function Create:TUni()
+		Local u:TUni = New TUni
+		u.LoadSyllables()
+		Return u
+	End Function
+	
 End Type
 
 ' TSector is a star sector in the galaxy, 
@@ -160,7 +220,7 @@ Type TSector
 			Local name:String
 			Repeat
 				' (semi-)randomize the star's in-sector coordinates
-				coordsOk = TRUE
+				coordsOk = True
 				y = _y * _g_sectorSize
 				x = _x * _g_sectorSize
 				y = y + Rand(0,_g_sectorSize)
@@ -171,11 +231,11 @@ Type TSector
 			Until coordsOk	' rinse and repeat until the coordinates do not overlap
 			
 			' (semi-)randomize the rest of the star properties
-			mult:Int = TUni.StarChance_Multiples[Rand(0,TUni.StarChance_Multiples.Length - 1)]
-			typ:Int = TUni.StarChance_Type[Rand(0, TUni.StarChance_Type.Length - 1)]
-			'name:String = TUni
-			Local system:TSystem = TSystem.Create(_x, _y, x, y, "noname", typ, mult)
-			system._size = (TUni.StarSize[typ] + mult * 100) / 200.0
+			mult:Int = G_Universe.StarChance_Multiples[Rand(0, G_Universe.StarChance_Multiples.Length - 1)]
+			typ:Int = G_Universe.StarChance_Type[Rand(0, G_Universe.StarChance_Type.Length - 1)]
+			name:String = G_Universe.GetSystemName(_x, _y, i)
+			Local system:TSystem = TSystem.Create(_x, _y, x, y, name, typ, mult)
+			system._size = (G_Universe.StarSize[typ] + mult * 100) / 200.0
 			_L_systems.AddLast(system) 
 		Next
 		_isPopulated = True	' switch the flag on to indicate this system is populated
@@ -196,10 +256,10 @@ Type TSector
 	    If (_x < 0 Or _y < 0) Then Return 0
 		
 	    pixelval = (_x / 8) + 128 * (_y & $1FF8)  		' calculate the array position calculated from the coordinates
-		c = TUni.TheMilkyWay[pixelval]           		' Current center
-	    nc = TUni.TheMilkyWay[pixelval + 1]    			' Next column
-	    nr = TUni.TheMilkyWay[pixelval + 1024] 			' Next Row
-	    nrc = TUni.TheMilkyWay[pixelval + 1025]  		' Next row, next column
+		c = G_Universe.TheMilkyWay[pixelval]           		' Current center
+	    nc = G_Universe.TheMilkyWay[pixelval + 1]    			' Next column
+	    nr = G_Universe.TheMilkyWay[pixelval + 1024] 			' Next Row
+	    nrc = G_Universe.TheMilkyWay[pixelval + 1025]  		' Next row, next column
 	    
 		' do the pixel value interpolation with neighbouring pixels
 		Local tempx:Int = (_x * 4096) & $7e00
@@ -215,23 +275,11 @@ Type TSector
 	    ecx = ebx Shr 8
         ' Capiche? ;) I don't. It's some kind of an averaging algorithm but the inner workings beat me.
 		
-		' comment this block to increase the overall number of stars
-		'ebx = tempx + ecx
-        'eax = TUni.SystemDensity[ebx]
-        'eax = tempx * tempy
-        'eax = eax shr 15
-        'ebx = ebx^eax
-        'ebx = ebx shr 5
-        'ebx = ebx & $7f
-        'ecx = ecx * eax
-        'ecx = ecx Shr 16
-		' ----		
-		
 		c = ecx
 	    c = c Shr 10
 		
-		' add +- 1 variance to the star count. Redo this with something faster than Rnd (bitmasking?)
-		c = c + Rnd(- 2, 1) 
+		' add some +- variance to the star count. Redo this with something faster than Rnd (bitmasking?)
+		c = c + Rnd(- 2, 1)
 	    Return Int(c) 
 	End Method
 
