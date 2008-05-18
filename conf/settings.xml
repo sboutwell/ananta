@@ -78,6 +78,13 @@ Copyright 2007, 2008 Jussi Pakkanen
       <y>10</y>
       <!-- window y coordinate (top left corner) -->
     </messagewindow>
+    <starmap>
+	<scrollspeed>200</scrollspeed>
+	<mapOverlayTreshold>0.1</mapOverlayTreshold>
+	<!-- The zoom level at which the galaxy image is shown -->
+	<labelTreshold>1.0</labelTreshold>
+	<!-- The zoom level at which the star names are shown -->
+    </starmap>
     <!-- The refresh rate for fullscreen mode. Zero for defaults.-->
     <refreshrate>60</refreshrate>
     <!-- Starting ship for the player -->

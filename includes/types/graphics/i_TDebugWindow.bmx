@@ -29,11 +29,9 @@ Type TDebugWindow
 	Field _defaultColor:TColor			' default font color
 	
 	' AddText() creates a new text line into the window
-	Method AddText(str:String, colString:String = Null) 
-		Local col:TColor = Null
-		If colSTring Then col = TColor.FindColor(colString)  ' find a color matching the search string
+	Method AddText(str:String, color:TColor = Null) 
 		
-		Local line:TDebugLine = TDebugLine.Create(str, col) 
+		Local line:TDebugLine = TDebugLine.Create(str, color) 
 		If Not _L_DebugLines Then _L_DebugLines = CreateList()    	' create a list if necessary
 		_L_DebugLines.AddLast line	' add the newly created object to the end of the list
 		_nrLines = _nrLines + 1
@@ -77,7 +75,7 @@ Type TDebugLine
 		SetBlend(AlphaBlend)
 		SetAlpha(1) 
 		If _color Then SetColor(_color.GetRed(), _color.GetGreen(), _color.GetBlue()) 
-		If Not _color Then SetColor (255, 255, 255) 
+		If Not _color Then SetColor(255, 255, 255) 
 		DrawText(_lineString, x, y) 
 	EndMethod
 	
