@@ -131,27 +131,6 @@ Type TUni
 		Return syllArray
 	End Method
 	
-rem
-	void GetSystemName(unsigned Int coordx, unsigned Int coordy, Int Sysnum, char * dest)
-{
-    coordx += Sysnum;
-    coordy += coordx;
-    coordx = _rotl (coordx, 3);
-    coordx += coordy;
-    coordy = _rotl (coordy, 5);
-    coordy += coordx;
-    coordy = _rotl (coordy, 4);
-    coordx = _rotl (coordx, Sysnum);
-    coordx += coordy;
-
-    strcpy (dest, namepart[(coordx>>2) & 31]);
-    coordx = _rotr (coordx, 5);
-    strcat (dest, namepart[(coordx>>2) & 31]);
-    coordx = _rotr (coordx, 5);
-    strcat (dest, namepart[(coordx>>2) & 31]);
-    dest[0] ^= 0x20;
-}
-endrem
 	Method GetSystemName:String(coordx:Int, coordy:Int, sysnum:Int)
 	    coordx:+Sysnum
     	coordy:+coordx
@@ -193,7 +172,6 @@ End Type
 
 ' TSector is a star sector in the galaxy, 
 Type TSector
-	Global _g_L_ActiveSectors:TList		' list holding all sectors that have been created
 	Global _g_sectorSize:Int = $0000FF	
 	Field _L_systems:TList	' systems in this sector
 	Field _x:Int			' sector's coordinates (0 - 8192)
@@ -203,7 +181,6 @@ Type TSector
 	Method Forget()
 		_L_systems.Clear()
 		_isPopulated = False
-		_g_L_ActiveSectors.Remove(self)
 	End Method
 
 	' populate a star sector with procedurally generated stars
@@ -238,7 +215,7 @@ Type TSector
 			system._size = (G_Universe.StarSize[typ] + mult * 100) / 200.0
 			_L_systems.AddLast(system) 
 		Next
-		_isPopulated = True	' switch the flag on to indicate this system is populated
+		_isPopulated = True	' switch the flag on to indicate this sector is populated
 	End Method
 	
 	' getNrSystems finds out the amount of stars this sector is supposed to generate.
@@ -292,20 +269,9 @@ Type TSector
 	End Function
 		
 	Function Create:TSector(x:Int,y:Int)
-		If not _g_L_ActiveSectors Then _g_L_ActiveSectors = CreateList()
-		rem
-		' if the sector matching the coordinates has already been created, return it
-		For Local sect:TSector = EachIn _g_L_ActiveSectors
-			if sect._x = x AND sect._y = y Then 
-				'Debuglog "Sector at [" + x + "][" + y +"] already created"
-				Return sect
-			EndIf
-		Next
-		endrem
 		Local s:TSector = New TSector
 		s._x = x
 		s._y = y
-		'_g_L_ActiveSectors.AddLast(s)
 		Return s
 	End Function
 End Type

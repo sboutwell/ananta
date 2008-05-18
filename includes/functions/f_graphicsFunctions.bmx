@@ -90,3 +90,8 @@ Function DrawOblong( x#, y#, w#, h# )
 	DrawLine( x+w , y+h , x , y+h)
 	DrawLine( x , y+h , x , y)
 End Function
+
+' converts an RGB pixel to grayscale using one common formula
+Function RGBtoGrayscale:Int(r:Int, g:Int, b:Int)
+	Return (0.3 * r + 0.59 * g + 0.11 * b)
+End Function

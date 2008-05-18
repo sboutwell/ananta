@@ -90,8 +90,8 @@ Type TViewport
 		
 		' create minimaps
 		_systemMap = TSystemMap.Create(g_ResolutionX - 195, 0, 195, 195) 
-		'_starMap = TStarMap.Create(g_ResolutionX - 195, 200,195,195)
-		_starMap = TStarMap.Create(_startX, _startY,_height,_width)
+		'_starMap = TStarMap.Create(g_ResolutionX - 195, 200, 195, 195)
+		_starMap = TStarMap.Create(_startX, _startY, _height, _width)
 
 	EndMethod
 

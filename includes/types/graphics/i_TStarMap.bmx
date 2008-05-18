@@ -30,9 +30,10 @@ Type TStarMap Extends TMiniMap
 	Field _centeredSectorY:Int	
 	Field _visibleLines:Int[]	' two arrays containing the sectors visible in the minimap
 	Field _visibleColumns:Int[] ' at the current camera position and zoom level
-	'Field _starColor:TColor		' default color of the star blip
+	Field _mapOverlayTreshold:Float	' zoom level at which star generation is replaced with overlay galaxy map
+	Field _galaxyImage:TImage
 
-	Method SetCamera(x:Double,y:Double)
+	Method SetCamera(x:Double, y:Double)
 		_isScrolling = TRUE
 		'ClearMiniMap()
 		super.SetCamera(x,y)
@@ -104,7 +105,6 @@ Type TStarMap Extends TMiniMap
 	End Method
 	
 	Method AddStarMapBlip(s:TSystem)
-		'Local blip:TMapBlip = AddBlip(s.GetX() - _cameraX,s.GetY() - _cameraY,s.GetSize())
 		Local blip:TMapBlip = AddBlip(s.GetX() - _cameraX,s.GetY() - _cameraY,s.GetSize())
 		blip.SetBColor(G_starColor[s._type])
 		blip.SetName(s._name)
@@ -113,8 +113,9 @@ Type TStarMap Extends TMiniMap
 	' update calculates which sectors should be visible in the map at the current
 	' camera position and zoom level, and then populates the starmap
 	Method Update()
-		If not isVisible Then Return
-		'If not _centeredSectorX Or Not _centeredSectorY Return
+		If Not isVisible Then Return
+		If _zoomFactor < _mapOverlayTreshold Then Return
+
 		If _isScrolling Then 	' don't update the visibility arrays if the map's not moving
 			UpdateVisibility()
 			_isScrolling = FALSE
@@ -134,7 +135,9 @@ Type TStarMap Extends TMiniMap
 	
 	' updates arrays holding the galaxy sector X and Y-coordinates that should be visible in the starmap
 	Method UpdateVisibility()
-		If not isVisible Then Return
+		If Not isVisible Then Return
+		If _zoomFactor < _mapOverlayTreshold Then Return
+
 		' scaled map dimensions are in galaxy coordinate units, 
 		' not light years. To get in light years, divide by _scale
 		Local scaledMapHeight:Float = _height / _zoomFactor
@@ -168,11 +171,41 @@ Type TStarMap Extends TMiniMap
 		Return _visibleColumns
 	End Method
 		
-	Method DrawDetails() 
+	Method DrawDetails()
 		super.DrawDetails()
+		If _zoomFactor < _mapOverlayTreshold Then DrawMapOverlay()
 		DrawSectorGrid()
 		DrawSectorNumber()
-	End Method	
+		G_debugWindow.AddText("Starmap blips: " + _L_Blips.Count())
+
+	End Method
+	
+	' draws the galaxy image overlay
+	Method DrawMapOverlay()
+		SetHandle(0, 0)
+		SetRotation(0)
+		SetBlend(ALPHABLEND)
+		SetAlpha(0.6)
+		SetColor(255, 255, 255)
+		
+		' calculate the dimensions of the galaxy image if the scale was 1.0
+		Local mapWidth:Double = 8.0 * TSector.GetSectorSize()
+		Local mapHeight:Double = 8.0 * TSector.GetSectorSize()
+		' scale the dimensions to the current zoom factor...
+		Local scX:Double = mapWidth * _zoomFactor
+		Local scY:Double = mapHeight * _zoomFactor
+		SetScale(scX, scY)
+		
+		' adjust the image position according to the camera and scale
+		Local x:Double, y:Double
+		x = (_cameraX + 12 * TSector.GetSectorSize()) * _zoomFactor
+		y = (_cameraY + 12 * TSector.GetSectorSize()) * _zoomFactor
+		' NOTE: there seems to be an offset of 1.5 pixels in the image position,
+		'		hence the additional (12 * Sectorsize) offset
+		
+		' draw the galaxy image on top of the minimap
+		DrawImage(_galaxyImage, - x + (_midX), - y + (_midY))
+	End Method
 		
 	Method DrawSectorNumber()
 		SetAlpha(1)
@@ -192,7 +225,8 @@ Type TStarMap Extends TMiniMap
 		
 		SetColor(30,240,30)
 		SetBlend(AlphaBlend)
-		SetALpha(0.2)
+		SetAlpha(0.2)
+		SetScale(1, 1)
 		If _zoomFactor < 0.25 Then SetAlpha (GetAlpha() / 0.25 * _zoomFactor) 
 
 		For Local lin:Int = EachIn horizontalSectors
@@ -257,14 +291,17 @@ Type TStarMap Extends TMiniMap
 		map._height = h
 		map._width = w
 		map._lineStep = 0.1
-		map._defaultZoom = 0.3
-		map._zoomFactor = 0.5
+		map._defaultZoom = 1.5
+		map._zoomFactor = 1.5
 		map._scale = 10
-		map._minZoom = 0.08
+		'map._minZoom = 0.08
+		map._minZoom = 0.0003
 		map._scrollSpeed = 200
 		map._labelsShown = True
 		map._title = "Starmap"
 		map._unit = "ly"
+		map._galaxyImage = TImg.LoadImg("galaxy.png", False)
+		map._mapOverlayTreshold = 0.1
 		
 		' hardcoded for now, externalize later
 		Local starColor:TColor[] =[ ..
@@ -280,7 +317,6 @@ Type TStarMap Extends TMiniMap
 							]
 		G_starColor = starColor	' assign the array to the global g_starColor
 
-		'map._starColor = TColor.FindColor("yellow")
 		
 		map.Init() ' calculate the rest of the minimap values
 		Return map
