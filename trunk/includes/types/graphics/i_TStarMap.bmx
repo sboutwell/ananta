@@ -296,12 +296,13 @@ Type TStarMap Extends TMiniMap
 		map._scale = 10
 		'map._minZoom = 0.08
 		map._minZoom = 0.0003
-		map._scrollSpeed = 200
+		map._scrollSpeed = XMLGetSingleValue("conf/settings.xml","settings/graphics/starmap/scrollspeed").ToFloat()
 		map._labelsShown = True
+		map._labelTreshold = XMLGetSingleValue("conf/settings.xml","settings/graphics/starmap/labelTreshold").ToFloat()
 		map._title = "Starmap"
 		map._unit = "ly"
 		map._galaxyImage = TImg.LoadImg("galaxy.png", False)
-		map._mapOverlayTreshold = 0.1
+		map._mapOverlayTreshold = XMLGetSingleValue("conf/settings.xml","settings/graphics/starmap/mapOverlayTreshold").ToFloat() 
 		
 		' hardcoded for now, externalize later
 		Local starColor:TColor[] =[ ..

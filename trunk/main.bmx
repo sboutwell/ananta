@@ -110,10 +110,13 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	'G_debugWindow.AddText("Asteroids: " + TAsteroid.g_nrAsteroids) 
 	'G_debugWindow.AddText("Ships: " + TShip.g_nrShips) 
 	
-	'If G_Player.GetControlledShip() Then
-	'	G_debugWindow.AddText("Velocity: " + G_Player.GetControlledShip().GetVel()) 
-	'	G_debugWindow.AddText("Shields: " + G_Player.GetControlledShip().GetIntegrity()) 
-	'EndIf
+	If G_Player.GetControlledShip() Then
+		G_debugWindow.AddText("Velocity: " + G_Player.GetControlledShip().GetVel()) 
+		If G_Player.GetControlledShip()._isJumpDriveOn Then
+			G_debugWindow.AddText("(jumprive on)") 
+		End If
+		G_debugWindow.AddText("Shields: " + G_Player.GetControlledShip().GetIntegrity()) 
+	EndIf
 	' ***************************************
 	
 	
@@ -224,7 +227,8 @@ Function SetupTestEnvironment()
 	' now the last system of the generated sector should be "active"
 	
 	'Local sSize:Long = 148000000:Long	' real solar system size
-	Local sSize:Long = 300000000:Long
+	'Local sSize:Long = 300000000:Long
+	Local sSize:Long = 500000:Long
 	Local centralStar:TStar = GenerateTestSystem(sSize) 
 	
 	' ----------- STARMAP ----------
