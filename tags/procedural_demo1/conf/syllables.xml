@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file is part of Ananta.
+
+    Ananta is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Ananta is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Ananta.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Copyright 2007, 2008 Jussi Pakkanen
+-->
+<!-- Star name syllables. Names are comprised of three syllables: first + second + third -->
+<!-- You can add any number of syllables/syllable parts -->
+<syllables>
+	<first>
+		da
+		das
+		de
+		di
+		dir
+		dot
+		dru
+		du
+		eps
+		er
+		et
+		eto
+		fa
+		fan
+		far
+		fas
+		ga
+		gas
+		gel
+		gi
+		gil
+		gin
+		go
+		gru
+		ir
+		ira
+		iva
+		ja
+		je
+		jim
+		jo
+		jor
+		lu
+		ly
+		ma
+		mar
+		me
+		mi
+		mit
+		mo
+		or
+		os
+		osa
+		ot
+		pak
+		pe
+		pes
+		pin
+		ro
+		rom
+		ru
+		rus
+		ry
+		sa
+		sat
+		se
+		tu
+		ty
+		ud
+		ula
+		ult
+		um
+		up
+		upa
+	</first>
+	<second>
+		bu
+		cer
+		ci
+		cim
+		co
+		col
+		cre
+		cu
+		fe
+		fi
+		fim
+		fis
+		fo
+		fu
+		fy
+		fyr
+		hor
+		hu
+		hy
+		iba
+		if
+		ig
+		im
+		in
+		lam
+		le
+		lea
+		lef
+		li
+		lit
+		lo
+		los
+		mor
+		mu
+		mus
+		my
+		na
+		nar
+		ne
+		neb
+		po
+		pol
+		ra
+		raf
+		re
+		rem
+		ri
+		rib
+		si
+		sim
+		sit
+		so
+		sok
+		su
+		sy
+		ta
+		vu
+		vus
+		yk
+		yl
+		ym
+		ze
+		zi
+		zu
+	</second>
+	<third>
+		ak
+		ar
+		ba
+		be
+		ben
+		bol
+		bre
+		bri
+		ebi
+		ed
+		ek
+		el
+		elm
+		em
+		en
+		ep
+		gu
+		gy
+		ha
+		he
+		hi
+		hik
+		his
+		ho
+		ju
+		ka
+		kem
+		ki
+		ko
+		kor
+		ku
+		la
+		ni
+		nim
+		no
+		not
+		nus
+		ny
+		nyp
+		ob
+		obi
+		od
+		ok
+		oke
+		ol
+		om
+		on
+		op
+		te
+		ti
+		tif
+		tim
+		to
+		tra
+		tri
+		tru
+		us
+		va
+		val
+		ve
+		ver
+		vi
+		vo
+		vok
+	</third>
+</syllables>
+

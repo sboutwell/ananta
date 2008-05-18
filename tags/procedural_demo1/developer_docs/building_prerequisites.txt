@@ -1,0 +1,17 @@
+Ananta requires the following Blitz modules to compile:
+
+
+bah.libxml		
+	libxml XML library wrapper by Bruce A. Henderson
+	
+bah.cairo		
+	Cairo vector graphics library wrapper by Bruce A. Henderson
+	
+bah.fontconfig
+	Font customization library wrapper made by Bruce A. Henderson
+
+bah.random
+	SFMT (SIMD-oriented Fast Mersenne Twister) wrapper by Bruce A. Henderson for pseudo-random numbers
+
+Brucey's modules are available here: http://brucey.net/programming/blitz/
+
