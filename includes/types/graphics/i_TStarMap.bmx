@@ -172,8 +172,8 @@ Type TStarMap Extends TMiniMap
 	End Method
 		
 	Method DrawDetails()
-		super.DrawDetails()
 		If _zoomFactor < _mapOverlayTreshold Then DrawMapOverlay()
+		super.DrawDetails()
 		DrawSectorGrid()
 		DrawSectorNumber()
 		G_debugWindow.AddText("Starmap blips: " + _L_Blips.Count())
@@ -303,6 +303,7 @@ Type TStarMap Extends TMiniMap
 		map._unit = "ly"
 		map._galaxyImage = TImg.LoadImg("galaxy.png", False)
 		map._mapOverlayTreshold = XMLGetSingleValue("conf/settings.xml","settings/graphics/starmap/mapOverlayTreshold").ToFloat() 
+		map.isVisible = TRUE
 		
 		' hardcoded for now, externalize later
 		Local starColor:TColor[] =[ ..
@@ -318,7 +319,6 @@ Type TStarMap Extends TMiniMap
 							]
 		G_starColor = starColor	' assign the array to the global g_starColor
 
-		
 		map.Init() ' calculate the rest of the minimap values
 		Return map
 	End Function

@@ -89,7 +89,7 @@ Type TViewport
 		_zoomFactor = _defaultZoom
 		
 		' create minimaps
-		_systemMap = TSystemMap.Create(g_ResolutionX - 195, 0, 195, 195) 
+		'_systemMap = TSystemMap.Create(g_ResolutionX - 195, 0, 195, 195) 
 		'_starMap = TStarMap.Create(g_ResolutionX - 195, 200, 195, 195)
 		_starMap = TStarMap.Create(_startX, _startY, _height, _width)
 
@@ -160,7 +160,7 @@ Type TViewport
 	
 	' draw miscellanous viewport stuff such as minimaps, hud and messages
 	Method DrawMisc() 
-		_systemMap.Draw() 
+		If _systemMap Then _systemMap.Draw() 
 		If NOT _starMap._isPersistent OR _starMap._isScrolling Then _starMap.Update()
 		_starMap.Draw()
 		
@@ -264,20 +264,9 @@ Type TViewport
 		' todo: externalize to a text file
 		G_DebugWindow.AddText("")
 		G_DebugWindow.AddText("============== Controls ==============")
-		G_DebugWindow.AddText("left                 - rotate left")
-		G_DebugWindow.AddText("right                - rotate right")
-		G_DebugWindow.AddText("up                   - thrust")
-		G_debugWindow.AddText("down                 - reverse thrust") 
-		G_debugWindow.AddText("ctrl                 - fire") 
-		G_debugWindow.AddText("j                    - jump drive on/off") 
-		G_debugWindow.AddText("z/x                  - zoom in/out") 
-		G_debugWindow.AddText("alt+z                - reset zoom") 
-		G_DebugWindow.AddText("shift+z / shift+x    - system map zoom in/out")
-		G_debugWindow.AddText("alt+x                - reset system map zoom") 
-		G_DebugWindow.AddText("g                    - starmap on/off")
-		G_DebugWindow.AddText("(shift+)wasd         - scroll starmap")		
-		G_DebugWindow.AddText("c/v                  - starmap zoom in/out")
-		G_DebugWindow.AddText("alt+c                - center starmap")
+		G_DebugWindow.AddText("(shift+)arrows       - scroll starmap")		
+		G_DebugWindow.AddText("z/x                  - starmap zoom in/out")
+		G_DebugWindow.AddText("c                    - center starmap")
 		G_debugWindow.AddText("alt+enter            - toggle fullscreen") 
 		G_DebugWindow.AddText("ESC                  - exit")
 	End Method

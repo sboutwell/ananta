@@ -64,16 +64,15 @@ Include "includes/types/i_TDelta.bmx"					'Delta timer
 TColor.LoadAll()      				' load all color info from colors.xml (must be loaded before initializing the viewport)
 viewport.InitViewportVariables() 	' load various viewport-related settings from settings.xml and precalc some other values
 TViewport.InitGraphicsMode()		' lets go graphical using the values read from the xml file
-TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
-TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
+'TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
+'TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
 
-GenerateVectorTextures()    		' generate some vector textures as new image files
+'GenerateVectorTextures()    		' generate some vector textures as new image files
 
 G_Universe = TUni.Create()
 G_Universe.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the galaxy image for universe creation
 
 SetupTestEnvironment()		' create the player, and a test system with some planets, asteroids and AI ships
-
 
 ' Main loop
 While Not KeyHit(KEY_ESCAPE) And Not AppTerminate() 
@@ -84,22 +83,22 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	G_Player.GetInput()
 	
 	' Update every AI pilot and apply their control inputs to their controlled ships
-	TAIPlayer.UpdateAllAI() 
+	'TAIPlayer.UpdateAllAI() 
 
 	' update the positions of every moving object (except ships)
-	TMovingObject.UpdateAll() 
+	'TMovingObject.UpdateAll() 
 
 	' update the positions of every ship and calculate fuel and oxygen consumption
-	TShip.UpdateAll()
+	'TShip.UpdateAll()
 
 	' draw the level
-	viewport.DrawLevel()
+	'viewport.DrawLevel()
 	
 	' update and draw particles 
-	TParticle.UpdateAndDrawAll()
+	'TParticle.UpdateAndDrawAll()
 	 
 	' draw each object in the currently active System
-	TSystem.GetActiveSystem().DrawAllInSystem(viewport) 
+	'TSystem.GetActiveSystem().DrawAllInSystem(viewport) 
 
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	viewport.DrawMisc() 
@@ -110,6 +109,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	'G_debugWindow.AddText("Asteroids: " + TAsteroid.g_nrAsteroids) 
 	'G_debugWindow.AddText("Ships: " + TShip.g_nrShips) 
 	
+	rem
 	If G_Player.GetControlledShip() Then
 		G_debugWindow.AddText("Velocity: " + G_Player.GetControlledShip().GetVel()) 
 		If G_Player.GetControlledShip()._isJumpDriveOn Then
@@ -118,6 +118,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 		G_debugWindow.AddText("Shields: " + G_Player.GetControlledShip().GetIntegrity()) 
 	EndIf
 	' ***************************************
+	endrem
 	
 	
 	If G_delta._isFrameRateLimited Then
@@ -229,7 +230,7 @@ Function SetupTestEnvironment()
 	'Local sSize:Long = 148000000:Long	' real solar system size
 	'Local sSize:Long = 300000000:Long
 	Local sSize:Long = 500000:Long
-	Local centralStar:TStar = GenerateTestSystem(sSize) 
+	'Local centralStar:TStar = GenerateTestSystem(sSize) 
 	
 	' ----------- STARMAP ----------
 	Local sMap:TStarMap = viewport.GetStarMap()
@@ -241,14 +242,17 @@ Function SetupTestEnvironment()
 	
 	' generate the player and player's ship
 	G_Player = TPlayer.Create("Da Playah") 
+	
+	rem
 	Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
 	s1.SetName("Player ship") 
 	s1.SetSystem(TSystem.GetActiveSystem()) 
 	s1._rotation = 90
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
+	endrem
 	
-	
+	rem
 	' find the farthest planet to the center and make the player ship orbit it
 	Local orbitedPlanet:TStellarObject
 	Local maxDist:Double = 0
@@ -300,4 +304,5 @@ Function SetupTestEnvironment()
 	Next
 	
 	viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
+	endrem
 End Function
