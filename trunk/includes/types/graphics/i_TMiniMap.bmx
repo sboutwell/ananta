@@ -122,7 +122,6 @@ Type TMiniMap
 				EndIf
 			Next
 			
-			G_DebugWindow.AddText(_title + " blips: " + _L_Blips.Count())
 			' After drawing all blips, clear the list if the map is not set as "persistent"
 			' It is useful to set maps with rarely-moving blips as persistent for performance.
 			If Not _isPersistent Then ClearMinimap()
@@ -224,7 +223,7 @@ Type TMiniMap
 	Method DrawBackground()
 		SetScale(1, 1) 
 		SetAlpha(0.55)
-		SetColor(0,0,50)
+		SetColor(0, 0, 0)
 		SetRotation(0)
 		DrawRect(_startX,_startY,_width,_height)
 	End Method
@@ -352,7 +351,7 @@ Type TMapBlip
 	End Method
 	
 	Method DrawName()
-		SetColor(255, 255, 255)
+		SetColor(128, 128, 200)
 		SetHandle(TextWidth(_blipName) / 2, TextHeight(_blipName))
 		DrawText(Capitalize(_blipName), _x, _y)
 	End Method

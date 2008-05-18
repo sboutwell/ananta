@@ -208,22 +208,19 @@ End Function
 Function SetupTestEnvironment()
 	'Local sectX:Int = 16
 	'Local sectY:Int = 16
-	Local sectX:Int = 3742
-	Local sectY:Int = 1852
+	Local sectX:Int = 5793
+	Local sectY:Int = 5649
 	
 	' make sure the starting sector has at least 1 star in it...
 	Local sect:TSector
-	Repeat
-		sectY:+1
-		sect = TSector.Create(sectX,sectY)
-		sect.Populate()
-	Until sect._L_systems.Count() > 0
+	sect = TSector.Create(sectX, sectY)
+	sect.Populate()
 	
-	DebugLog(sect._L_systems.Count() + " systems")
+	'DebugLog(sect._L_systems.Count() + " systems")
 	
-	For Local syst:TSystem = EachIn sect._L_systems
-		syst.SetAsActive()
-	Next
+	Local system:TSystem = TSystem(sect._L_systems.ValueAtIndex(1))
+	system.SetAsActive()
+	
 	' now the last system of the generated sector should be "active"
 	
 	'Local sSize:Long = 148000000:Long	' real solar system size
