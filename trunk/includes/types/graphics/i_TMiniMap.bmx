@@ -30,7 +30,8 @@ Type TMiniMap
 	Field _width:Int	' width of the minimap in pixels
 	Field _midX:Float	' middle X coordinate
 	Field _midY:Float	' middle Y coordinate
-	Field _alpha:Float = 0.8 ' alpha of the map. Affects everything: blips, lines and text.
+	Field _alpha:Float = 0.8 ' alpha of the map
+	Field _blipAlpha:Float = 1 ' alpha of the blips (in addition to map _alpha)
 	Field _cameraX:Double		' absolute camera coordinates
 	Field _cameraY:Double
 	Field _isScrolling:Int = False	' flag to show if the map is currently scrolling
@@ -111,6 +112,8 @@ Type TMiniMap
 		
 		DrawBackGround() ' draw the background tint
 		
+		If _blipAlpha > 1 Then _blipAlpha = 1
+		SetAlpha(_blipAlpha * _alpha)
 		If _L_Blips Then
 			For Local blip:TMapBlip = EachIn _L_Blips
 				' If no part of the blip would be visible on the viewport, don't bother to draw it
@@ -351,7 +354,8 @@ Type TMapBlip
 	End Method
 	
 	Method DrawName()
-		SetColor(190, 190, 240)
+		'SetAlpha(_Blipalpha)
+		SetColor(255, 220, 255)
 		SetHandle(TextWidth(_blipName) / 2, TextHeight(_blipName))
 		DrawText(Capitalize(_blipName), _x, _y)
 	End Method
