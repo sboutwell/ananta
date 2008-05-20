@@ -132,7 +132,8 @@ Type TUni
 	End Method
 	
 	Method GetSystemName:String(coordx:Int, coordy:Int, sysnum:Int)
-	    coordx:+Sysnum
+	    rem
+		coordx:+Sysnum
     	coordy:+coordx
     	coordx = rotl (coordx, 3)
     	coordx:+coordy
@@ -143,11 +144,19 @@ Type TUni
     	coordx:+coordy
 		
 		'DebugLog((coordx Shr 2) & (syllable1Count - 1))
+		
 		Local s1:Int = (coordx Shr 2) & (syllable1Count - 1)
-		coordx = rotr (coordx, 5)
-		Local s2:Int = (coordx Shr 2) & (syllable2Count - 1)
-		coordx = rotr (coordx, 5)
+		coordy = rotr (coordy, 5)
+		Local s2:Int = (coordy Shr 2) & (syllable2Count - 1)
+		coordx = rotr (coordx, sysnum)
 		Local s3:Int = (coordx Shr 2) & (syllable3Count - 1)
+		endrem
+		'SeedRnd((coordx&coordy) * sysnum)
+		Local s1:Int = Rand(syllable1Count - 1)
+		Local s2:Int = Rand(syllable2Count - 1)
+		Local s3:Int = Rand(syllable3Count - 1)
+
+		
 		Return syllable1[s1] + syllable2[s2] + syllable3[s3]
 	End Method
 

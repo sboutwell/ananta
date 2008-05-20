@@ -114,12 +114,14 @@ Type TStarMap Extends TMiniMap
 	' camera position and zoom level, and then populates the starmap
 	Method Update()
 		If Not isVisible Then Return
-		If _zoomFactor < _mapOverlayTreshold Then Return
-
+		' set the blip alpha depending on the zoom level
+		_blipAlpha = 2 * _zoomFactor
 		If _isScrolling Then 	' don't update the visibility arrays if the map's not moving
 			UpdateVisibility()
 			_isScrolling = FALSE
 		EndIf
+		
+		If _zoomFactor < _mapOverlayTreshold Then Return	' don't populate stars if zoomed out enough
 		
 		For Local line:Int = EachIn _visibleLines
 			For Local column:Int = EachIn _visibleColumns
@@ -136,7 +138,7 @@ Type TStarMap Extends TMiniMap
 	' updates arrays holding the galaxy sector X and Y-coordinates that should be visible in the starmap
 	Method UpdateVisibility()
 		If Not isVisible Then Return
-		If _zoomFactor < _mapOverlayTreshold Then Return
+		If _zoomFactor < 0.01 Then Return
 
 		' scaled map dimensions are in galaxy coordinate units, 
 		' not light years. To get in light years, divide by _scale
@@ -173,7 +175,8 @@ Type TStarMap Extends TMiniMap
 		
 	Method DrawDetails()
 		super.DrawDetails()
-		If _zoomFactor < _mapOverlayTreshold Then DrawMapOverlay()
+		'If _zoomFactor < _mapOverlayTreshold Then DrawMapOverlay()
+		DrawMapOverlay()
 		DrawSectorGrid()
 		DrawSectorNumber()
 		G_debugWindow.AddText("Starmap blips: " + _L_Blips.Count())
@@ -182,10 +185,17 @@ Type TStarMap Extends TMiniMap
 	
 	' draws the galaxy image overlay
 	Method DrawMapOverlay()
+		Local MaxAlpha:Float = 0.6
+		Local MinAlpha:Float = 0.03
 		SetHandle(0, 0)
 		SetRotation(0)
 		SetBlend(ALPHABLEND)
-		SetAlpha(0.6)
+		'SetAlpha(0.6)
+		'zoom-dependent alpha
+		SetAlpha(0.05 / _zoomFactor)
+		If GetAlpha() > MaxAlpha Then SetAlpha(MaxAlpha)
+		If GetAlpha() < minAlpha Then Return
+		
 		SetColor(255, 255, 255)
 		
 		' calculate the dimensions of the galaxy image if the scale was 1.0
@@ -218,16 +228,22 @@ Type TStarMap Extends TMiniMap
 	End Method
 	
 	Method DrawSectorGrid()
+		G_debugWindow.AddText("Starmap coords: " + _cameraX + ":" + _cameraY)
+		G_debugWindow.AddText("Starmap zoom: " + _zoomFactor)
+		
+		' Draw a different-color square around the centered sector
+		HighlightActiveSector()
+		If _zoomFactor < 0.01 Then Return ' don't draw grid if zoomed out enough
+
 		Local verticalSectors:Int[] = GetVisibleColumns()
 		Local horizontalSectors:Int[] = GetVisibleLines()
+	
 		
-		'If verticalSectors.Length > 100 Or horizontalSectors.Length > 100 Then Return	' don't draw grid if zoomed out enough
-		
-		SetColor(30,240,30)
+		SetColor(30, 240, 30)
 		SetBlend(AlphaBlend)
 		SetAlpha(0.2)
 		SetScale(1, 1)
-		If _zoomFactor < 0.25 Then SetAlpha (GetAlpha() / 0.25 * _zoomFactor) 
+		If _zoomFactor < 0.25 Then SetAlpha (GetAlpha() / 0.25 * _zoomFactor)
 
 		For Local lin:Int = EachIn horizontalSectors
 			Local xs:Double = _startX
@@ -244,15 +260,12 @@ Type TStarMap Extends TMiniMap
 			Local xe:Double = xs
 			DrawLine(xs,ys,xe,ye)				
 		Next
-		
-		' Finally draw a different-color square around the centered sector
-		HighlightActiveSector()
-		
-		G_DebugWindow.AddText("Starmap coords: " + _cameraX + ":" + _cameraY)
-		G_DebugWindow.AddText("Starmap zoom: " + _zoomFactor)
 	End Method
 
 	Method HighlightActiveSector()
+		SetBlend(ALPHABLEND)
+		SetScale(1, 1)
+
 		SetAlpha(0.5)
 		SetColor(80,255,80)
 		Local sectSize:Int = TSector.GetSectorSize()
@@ -293,6 +306,7 @@ Type TStarMap Extends TMiniMap
 		map._lineStep = 0.1
 		map._defaultZoom = 1.5
 		map._zoomFactor = 1.5
+		map._blipAlpha = 1
 		map._scale = 10
 		'map._minZoom = 0.08
 		map._minZoom = 0.0003
