@@ -131,8 +131,10 @@ Type TUni
 		Return syllArray
 	End Method
 	
-	Method GetSystemName:String(coordx:Int, coordy:Int, sysnum:Int)
-	    coordx:+Sysnum
+	'Method GetSystemName:String(coordx:Int, coordy:Int, sysnum:Int)
+	Method GetSystemName:String()
+		rem
+		coordx:+Sysnum
     	coordy:+coordx
     	coordx = rotl (coordx, 3)
     	coordx:+coordy
@@ -144,10 +146,16 @@ Type TUni
 		
 		'DebugLog((coordx Shr 2) & (syllable1Count - 1))
 		Local s1:Int = (coordx Shr 2) & (syllable1Count - 1)
-		coordx = rotr (coordx, 5)
+		coordx = rotr (coordx, sysnum)
 		Local s2:Int = (coordx Shr 2) & (syllable2Count - 1)
 		coordx = rotr (coordx, 5)
 		Local s3:Int = (coordx Shr 2) & (syllable3Count - 1)
+		endrem
+		
+		Local s1:Int = Rand(0,syllable1Count -1)
+		Local s2:Int = Rand(0,syllable2Count -1)
+		Local s3:Int = Rand(0,syllable3Count -1)
+		
 		Return syllable1[s1] + syllable2[s2] + syllable3[s3]
 	End Method
 
@@ -210,7 +218,7 @@ Type TSector
 			' (semi-)randomize the rest of the star properties
 			mult:Int = G_Universe.StarChance_Multiples[Rand(0, G_Universe.StarChance_Multiples.Length - 1)]
 			typ:Int = G_Universe.StarChance_Type[Rand(0, G_Universe.StarChance_Type.Length - 1)]
-			name:String = G_Universe.GetSystemName(_x, _y, i)
+			name:String = G_Universe.GetSystemName() ' generate system name with the current SFMT seed
 			Local system:TSystem = TSystem.Create(_x, _y, x, y, name, typ, mult)
 			system._size = (G_Universe.StarSize[typ] + mult * 100) / 200.0
 			_L_systems.AddLast(system) 
