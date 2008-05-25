@@ -1,4 +1,4 @@
-#summary Ananta's life cycle
+#summary Project's life cycle
 
 
 Ananta will start small. It will have many intermediate releases that are something very different compared to its [vision projected future]. 
