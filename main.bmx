@@ -139,7 +139,7 @@ Wend
 ' =========== to be moved or integrated somewhere else later =======
 ' ==================================================================
 Function GenerateVectorTextures() 
-	TImg.StoreImg(TStar.GenerateStarTexture(1600) , "star_generated") 
+	TImg.StoreImg(TStar.GenerateStarTexture(1024) , "star_generated") 
 End Function
 
 Function GenerateTestSystem:TStar(sSize:Long) 
