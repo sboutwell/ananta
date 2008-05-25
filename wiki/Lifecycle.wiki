@@ -1,7 +1,7 @@
 #summary Project's life cycle
 
 
-Ananta will start small. It will have many intermediate releases that are something very different compared to its [vision projected future]. 
+Ananta will start small. It will have many intermediate releases that are something very different to its [vision projected future]. 
 
 I remember one arts class in grammar school. In the beginning of the semester we were each given a huge canvas and got an assignment to start drawing on it. It was to be a project lasting the whole year, and we were supposed to add more content to the drawing every week. The teacher told us to draw anything we wanted, but asked to start with the 'big picture', and progress towards smaller details.
 
