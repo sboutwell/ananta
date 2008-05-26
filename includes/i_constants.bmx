@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ Const c_commoditiesFile:String = "conf/commodities.xml"
 Const c_colorsFile:String = "conf/colors.xml"
 Const c_shipModelsFile:String = "conf/shipmodels.xml"
 Const c_syllablesFile:String = "conf/syllables.xml"
+Const c_celestialTypes:String = "conf/celestialtypes.xml"
 
 Const c_GravConstant:Float = 0.06	' gravitational constant
 'Const c_GravConstant:Float = 0.0001	' gravitational constant
