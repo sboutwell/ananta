@@ -49,6 +49,7 @@ Include "includes/types/entities/i_TPilot.bmx"			'Pilot entities and methods for
 Include "includes/types/entities/i_TSystem.bmx"			'A solar system
 Include "includes/types/entities/i_TUni.bmx"			'The galaxy and sectors
 Include "includes/types/entities/i_TSpaceObjects.bmx"	'All spaceborne objects and their drawing
+
 Include "includes/types/entities/i_TShipModel.bmx"		'Type describing ship models
 Include "includes/types/commodity/i_TCommodity.bmx"		'Tradeable/usable commodities (contents read from an xml file)
 Include "includes/types/graphics/i_TViewport.bmx"		'Draw-to-screen related stuff
@@ -128,7 +129,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	EndIf
 	
 	' clear the whole viewport backbuffer
-	SetViewPort(0,0,viewport.GetResX(),viewport.GetResY())
+	SetViewport(0,0,viewport.GetResX(),viewport.GetResY())
 	Cls
 Wend
 
@@ -171,12 +172,12 @@ Function GenerateTestSystem:TStar(sSize:Long)
 		Local again:Int = False
 		Repeat
 			If Distance(st1.GetX(), st1.GetY(), pl2.GetX(), pl2.GetY()) < st1.GetSize() * 2 Then
-				pl2.SetX(rand(-sSize,sSize))
-				pl2.SetY(rand(-sSize,sSize))
-				again = TRUE
+				pl2.SetX(Rand(-sSize,sSize))
+				pl2.SetY(Rand(-sSize,sSize))
+				again = True
 				DebugLog("Planet " + i + " too close to the sun, repositioning...")
 			Else
-				again = FALSE
+				again = False
 			EndIf
 		Until again = False
 		
@@ -274,7 +275,7 @@ Function SetupTestEnvironment()
 	ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
 	ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
 	ast.SetOrbitalVelocity(orbitedPlanet,True)
-	ast = null
+	ast = Null
 	
 	'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
 	'part1.SetRandomDir(2) 
