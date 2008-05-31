@@ -80,6 +80,11 @@ Type TSpaceObject Abstract
 	Field _yOffset:Float = 0			' y-position of the attachment compared to the y of the parent
 	Field _rotationOffset:Float 		' rotation compared to the parent rotation
 	
+	' these fields would probably be more appropriate in TMovingObject, but they're here for optimization purposes (to get rid of the need for type casting)
+	Field _strongestGravSource:TSpaceObject	' strongest gravity source is updated for warp drive purposes
+	Field _strongestGravity:Double = 0		' the gravitational acceleration exerted by the strongest gravsource
+
+	
 	Method Destroy() Abstract
 	
 	' make the object take some damage

@@ -29,7 +29,10 @@ Type TShip Extends TMovingObject
 	Field _triggerDown:Int = False			' is weapon trigger down
 	' todo: integrate weapon-related fields to TWeapon
 	
-	Field _isJumpDriveOn:Int = False
+	Field isWarpDriveOn:Int = False
+	Field _warpRatio:Double = 10:Double			' base warp ratio for warp travel 	
+	Field _maxWarpRatio:Double = 5000:Double	' max warp ratio for warp travel 	
+	
 	Field _pilot:TPilot						' The pilot controlling this ship
 	
 	' not used... yet
@@ -41,17 +44,17 @@ Type TShip Extends TMovingObject
 		If _throttlePosition > 0 Then
 			ApplyImpulse(_throttlePosition * _forwardAcceleration) 
 			' add the engine trail effect
-			If _L_Engines And Not _isJumpDriveOn Then EmitEngineTrail("tail")		
+			If _L_Engines And Not isWarpDriveOn Then EmitEngineTrail("tail")		
 		EndIf
 		
 		If _throttlePosition < 0 Then
 			ApplyImpulse(_throttlePosition * _reverseAcceleration) 
 			' add the engine trail effect
-			If _L_Engines And Not _isJumpDriveOn Then EmitEngineTrail("nose")		
+			If _L_Engines And Not isWarpDriveOn Then EmitEngineTrail("nose")		
 		EndIf
 		
 		' firing
-		If _triggerDown And Not _isJumpDriveOn Then FireWeapon() 
+		If _triggerDown And Not isWarpDriveOn Then FireWeapon() 
 		
 		' apply rotation thrusters
 		ApplyRotation(_controllerPosition * _rotAcceleration)
@@ -61,8 +64,17 @@ Type TShip Extends TMovingObject
 		' call update method of TMovingObject
 		Super.Update()
 		
-		If _isJumpDriveOn Then UpdatePosition(20)    
+		If isWarpDriveOn Then UpdatePosition(CalcWarpValue())  
+		If self._pilot = G_player Then G_DebugWindow.AddText("Max warp ratio: " + CalcWarpValue())
 	EndMethod
+	
+	Method CalcWarpValue:Double()
+		Local gravityCoeff:Double = _strongestGravity:Double^(1.0:Double/3.0:Double)
+		If gravityCoeff < 0.00000000000000001:Double Then Return _maxWarpRatio
+		Local ratio:Double = _warpRatio:Double / gravityCoeff:Double
+		If ratio > _maxWarpRatio Then Return _maxWarpRatio
+		Return ratio
+	End Method
 	
 	Method EmitEngineTrail(dir:String = "tail")
 		Local direct:Int = 1	
@@ -108,11 +120,11 @@ Type TShip Extends TMovingObject
 		_lastShot = MilliSecs() 
 	End Method
 
-	' set the jump drive status		
-	Method JumpDrive(isOn:Int)
-		_isJumpDriveOn = isOn
+	' set the warp drive status		
+	Method SetWarpDrive(isOn:Int)
+		isWarpDriveOn = isOn
 		
-		If _isJumpDriveOn Then
+		If isWarpDriveOn Then
 			SetThrottle(0)
 			SetController(0)
 			_triggerDown = False

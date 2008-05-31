@@ -48,6 +48,9 @@ Type TSystem Final
 				vp.GetSystemMap().AddSystemMapBlip(obj)
 			End If
 			obj._updated = False	' optimization to clear updated status during the drawing cycle
+			' reset strongest gravity source fields, they're no longer needed during this frame
+			obj._strongestGravSource = Null
+			obj._strongestGravity = 0
 		Next
 	EndMethod
 

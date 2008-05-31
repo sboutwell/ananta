@@ -45,6 +45,8 @@ Type TMiniMap
 	Field _minZoom:Float	' zoom limits
 	Field _maxZoom:Float
 	
+	Field _minMapBlipSize:Int = 1	' smaller blips than this will be drawn at this size
+	
 	Field _scale:Float = 1	' how many map pixels does a real world distance unit represent
 	
 	Field _isPersistent:Int = False  ' no auto clearing the map blips after drawing them? Useful for maps with stationary blips.
@@ -67,7 +69,7 @@ Type TMiniMap
 		y = y * _zoomFactor + midY + _startY
 		
 		size = size * _zoomFactor
-		If size < 1 Then size = 1	' ensure blip sizes are 1 or larger
+		If size < _minMapBlipSize Then size = _minMapBlipSize	' ensure blip sizes are larger than the minimum
 		Local blip:TMapBlip = TMapBlip.Create(x, y, size) 
 		
 		If Not _L_blips Then _L_blips = New TList
@@ -342,6 +344,7 @@ Type TMapBlip
 		Else
 			SetColor(255, 255, 255) 	' default color white if not set
 		EndIf
+		
 		If _size < 2 Then	' if the size is smaller than 2 pixels, plot a pixel instead of drawing an oval
 			Plot (_x,_y)
 		Else
