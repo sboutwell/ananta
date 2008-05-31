@@ -166,7 +166,7 @@ Function GenerateTestSystem:TStar(sSize:Long)
 	' create some planets
 	For Local i:Int = 1 To planets
 		'Function Create:TPlanet(x:Int,y:Int,System:TSystem,mass:Long,size:Int,name:String)
-		Local pl2:TPlanet = TPlanet.Create(Rand(- sSize, sSize), Rand(- sSize, sSize), System1, 100000, 10, "Jupiter " + i) 
+		Local pl2:TPlanet = TPlanet.Create(Rand(- sSize, sSize), Rand(- sSize, sSize), System1, 100000, 10, system1._name + " " + i) 
 		
 		' Re-randomize the coordinates if the planet is too close to the sun 
 		Local again:Int = False
@@ -181,7 +181,7 @@ Function GenerateTestSystem:TStar(sSize:Long)
 			EndIf
 		Until again = False
 		
-		pl2._image = TImg.LoadImg("jupiter.png") 
+		pl2._image = TImg.LoadImg("mars.png") 
 		pl2._rotation=-90
 		pl2._scaleX = Rnd(0.5, 2) 
 		pl2._scaleY = pl2._scaleX
