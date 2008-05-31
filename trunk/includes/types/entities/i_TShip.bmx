@@ -69,7 +69,7 @@ Type TShip Extends TMovingObject
 	EndMethod
 	
 	Method CalcWarpValue:Double()
-		Local gravityCoeff:Double = _strongestGravity:Double^(1.0:Double/3.0:Double)
+		Local gravityCoeff:Double = (_strongestGravity:Double^(1.0:Double/3.0:Double)^1.5:Double)
 		If gravityCoeff < 0.00000000000000001:Double Then Return _maxWarpRatio
 		Local ratio:Double = _warpRatio:Double / gravityCoeff:Double
 		If ratio > _maxWarpRatio Then Return _maxWarpRatio
