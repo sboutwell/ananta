@@ -102,6 +102,8 @@ Type TSystemMap Extends TMiniMap
 		
 		map._defaultZoom = 0.1
 		map._title = "System map"
+		map._alpha = 1
+		map._minMapBlipSize = 2
 		
 		map._starColor = TColor.FindColor("yellow") 
 		map._shipColor = TColor.FindColor("crimson") 

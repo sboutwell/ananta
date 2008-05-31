@@ -18,6 +18,13 @@ Type TMovingObject Extends TSpaceObject Abstract
 			
 			If a < 0 Then DebugLog Self._name + " affected by negative gravity! Gravsource: " + gs._name
 			
+			' update strongest gravity source fields
+			If not _strongestGravSource Or _strongestGravity < a Then 
+				_strongestGravSource = gs
+				_strongestGravity = a
+			EndIf
+			' ******* NOTE: at some point it might be worthwhile to apply gravity for the strongest gravity source only ******
+			
 			' get the direction to the gravity source
 			Local dirToGravSource:Double = DirectionTo(_x, _y, gsX, gsY) 
 			
@@ -188,10 +195,10 @@ Type TMovingObject Extends TSpaceObject Abstract
 		_xVel = Cos(dir) * vel				 
 	End Method
 	
-	' Update the position of the moving object. jumpvalue is for jump engine "warp"
-	Method UpdatePosition(jumpValue:Float = 1.0) 
-		_x = _x + _xVel * G_delta.GetDelta() * jumpValue
-		_y = _y + _yVel * G_delta.GetDelta() * jumpValue
+	' Update the position of the moving object. warpvalue is given when a ship's warp drive's on
+	Method UpdatePosition(warpValue:Float = 1.0) 
+		_x = _x + _xVel * G_delta.GetDelta() * warpValue
+		_y = _y + _yVel * G_delta.GetDelta() * warpValue
 	End Method
 	
 	Method Update() 

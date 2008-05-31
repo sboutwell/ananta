@@ -66,7 +66,7 @@ Type TPlayer Extends TPilot
 			If Not KeyDown(KEY_RIGHT) And Not KeyDown(KEY_LEFT) _controlledShip.SetController(0) 
 
 			If KeyHit(KEY_J) Then
-				ToggleBoolean(_controlledShip._isJumpDriveOn) 
+				ToggleBoolean(_controlledShip.isWarpDriveOn)
 			End If
 		EndIf
 		

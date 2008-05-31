@@ -113,8 +113,8 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	
 	If G_Player.GetControlledShip() Then
 		G_debugWindow.AddText("Velocity: " + G_Player.GetControlledShip().GetVel()) 
-		If G_Player.GetControlledShip()._isJumpDriveOn Then
-			G_debugWindow.AddText("(jumprive on)") 
+		If G_Player.GetControlledShip().isWarpDriveOn Then
+			G_debugWindow.AddText("(warpdrive on)") 
 		End If
 		G_debugWindow.AddText("Shields: " + G_Player.GetControlledShip().GetIntegrity()) 
 	EndIf
@@ -156,10 +156,10 @@ Function GenerateTestSystem:TStar(sSize:Long)
 	Local st1:TStar = TStar.Create(0, 0, System1, 1000000, 5, "Sol") 
 	st1._image = TImg.LoadImg("star_generated") 
 	st1._rotation = -90
-	st1._scaleX = 20
+	st1._scaleX = 40
 	st1._scaleY = st1._scaleX
 	st1._size = CalcImageSize(st1._image, False) * st1._scaleX
-	st1._mass = (st1._scaleX ^ 2) * 2000000000
+	st1._mass = (st1._scaleX ^ 2) * 200000000
 	
 	system1._mainStar = st1
 	
@@ -225,11 +225,11 @@ Function SetupTestEnvironment()
 	Local system:TSystem = TSystem(sect._L_systems.ValueAtIndex(1))
 	system.SetAsActive()
 	
-	' now the last system of the generated sector should be "active"
+	' now the first system of the generated sector should be "active"
 	
-	'Local sSize:Long = 148000000:Long	' real solar system size
+	Local sSize:Long = 148000000:Long	' real solar system size (compared to the star diameter)
 	'Local sSize:Long = 300000000:Long
-	Local sSize:Long = 500000:Long
+	'Local sSize:Long = 500000:Long
 	Local centralStar:TStar = GenerateTestSystem(sSize) 
 	
 	' ----------- STARMAP ----------
