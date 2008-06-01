@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -74,7 +74,7 @@ Type TMiniMap
 		
 		If Not _L_blips Then _L_blips = New TList
 		If blip.GetSize() > 0 Then _L_blips.AddLast(blip) 
-		return blip
+		Return blip
 	End Method
 	
 	' scrolls the minimap along x-axis
@@ -263,8 +263,8 @@ Type TMiniMap
 	End Method
 	
 	Method ZoomOut() 
-		if NOT isVisible Then Return
-		_isPersistent = FALSE
+		If Not isVisible Then Return
+		_isPersistent = False
 		_isZooming = True
 		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(False)  ' false in delta means zoom speed will not be affected by time compression
 		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False)  ' add to the zoom rate acceleration
@@ -304,6 +304,15 @@ Type TMapBlip
 	Field _size:Float
 	Field _color:TColor
 	Field _blipName:String = ""
+	Field _System:TSystem
+	
+	Method GetSystem:TSystem()
+		Return _System
+	End Method
+	
+	Method SetSystem:TSystem(s:TSystem)
+		_System=s
+	End Method	
 	
 	Method GetSize:Float() 
 		Return _size
@@ -316,6 +325,10 @@ Type TMapBlip
 	Method GetY:Int() 
 		Return _y
 	End Method
+	
+	Method GetName:String()
+		Return _blipName
+	End Method	
 	
 	Method SetName(n:String)
 		_blipName = n
@@ -366,4 +379,5 @@ Type TMapBlip
 		blip._size = size
 		Return blip
 	End Function
+	
 End Type

@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -161,7 +161,7 @@ Type TViewport
 	' draw miscellanous viewport stuff such as minimaps, hud and messages
 	Method DrawMisc() 
 		_systemMap.Draw() 
-		If NOT _starMap._isPersistent OR _starMap._isScrolling Then _starMap.Update()
+		If Not _starMap._isPersistent Or _starMap._isScrolling Then _starMap.Update()
 		_starMap.Draw()
 		
 		SetViewport(0, 0, viewport.GetResX(), viewport.GetResY()) 
@@ -244,14 +244,14 @@ Type TViewport
 	End Method
 	
 	Method ZoomIn() 
-		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(false) 
+		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(False) 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False) 
 		_isZooming = True
 	End Method
 	
 	Method ZoomOut() 
-		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(false) 
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(false) 
+		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(False) 
+		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False) 
 		_isZooming = True
 	End Method
 	
@@ -279,6 +279,7 @@ Type TViewport
 		G_DebugWindow.AddText("c/v                  - starmap zoom in/out")
 		G_DebugWindow.AddText("alt+c                - center starmap")
 		G_debugWindow.AddText("alt+enter            - toggle fullscreen") 
+		G_debugWindow.AddText("h		            - hyperspace to system under mouse")
 		G_DebugWindow.AddText("ESC                  - exit")
 	End Method
 	
