@@ -49,6 +49,7 @@ Include "includes/types/entities/i_TPilot.bmx"			'Pilot entities and methods for
 Include "includes/types/entities/i_TSystem.bmx"			'A solar system
 Include "includes/types/entities/i_TUni.bmx"			'The galaxy and sectors
 Include "includes/types/entities/i_TSpaceObjects.bmx"	'All spaceborne objects and their drawing
+Include "includes/types/entities/i_TProtoBody.bmx"		'TStar & TPlanet prototypes from XML files
 
 Include "includes/types/entities/i_TShipModel.bmx"		'Type describing ship models
 Include "includes/types/commodity/i_TCommodity.bmx"		'Tradeable/usable commodities (contents read from an xml file)
@@ -67,6 +68,7 @@ viewport.InitViewportVariables() 	' load various viewport-related settings from 
 TViewport.InitGraphicsMode()		' lets go graphical using the values read from the xml file
 TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
 TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
+TProtoBody.LoadAllProtoBodies()		' load all the sun/planet prototypes from the celestialtypes.xml
 
 GenerateVectorTextures()    		' generate some vector textures as new image files
 
@@ -144,15 +146,23 @@ Function GenerateVectorTextures()
 End Function
 
 Function GenerateTestSystem:TStar(sSize:Long) 
-	Local asteroids:Int = 30
-	Local planets:Int = 10
-	
-	' generate a system
+
 	Local system1:TSystem = TSystem.GetActiveSystem()
+
+		DebugLog "populating system "+system1.GetName()+"..."
+		
+		system1.populate()
+		
+	Return system1.getMainStar()
+
 
 	' ================ randomize System and planetary object for testing ===================
 	'SeedRnd(MilliSecs()) 
 	' create a star
+	Rem
+	
+	
+	
 	Local st1:TStar = TStar.Create(0, 0, System1, 1000000, 5, "Sol") 
 	st1._image = TImg.LoadImg("star_generated") 
 	st1._rotation = -90
@@ -207,6 +217,8 @@ Function GenerateTestSystem:TStar(sSize:Long)
 	Next
 	
 	Return st1
+	
+	EndRem
 End Function
 
 Function SetupTestEnvironment()
@@ -248,7 +260,16 @@ Function SetupTestEnvironment()
 	s1._rotation = 90
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
+
+	Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
+	part1.SetRandomDir(2) 
+	s1.AddAttachment(part1, - 28, 0, 0, False) 	
+	TAttachment.Create(s1, "attach.png", - 10, 10, 0, 0.1, 0.1, False) 	
+
+	s1.SetCoordinates(system.getMainStar().GetX() + system.getMainStar().GetSize() * 1.7, system.getMainStar().GetY()) 
+	s1.SetOrbitalVelocity(system.getMainStar(), True) 
 	
+	Rem
 	
 	' find the farthest planet to the center and make the player ship orbit it
 	Local orbitedPlanet:TStellarObject
@@ -260,8 +281,7 @@ Function SetupTestEnvironment()
 			maxDist = dist
 		EndIf
 	Next
-	s1.SetCoordinates(orbitedPlanet.GetX() + OrbitedPlanet.GetSize() * 0.7, orbitedPlanet.GetY()) 
-	s1.SetOrbitalVelocity(orbitedPlanet, True) 
+
 	
 	' Create one asteroid to orbit the same planet as the player
 	Local ascale:Float = orbitedPlanet.GetScaleX() 
@@ -277,11 +297,9 @@ Function SetupTestEnvironment()
 	ast.SetOrbitalVelocity(orbitedPlanet,True)
 	ast = Null
 	
-	'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
-	'part1.SetRandomDir(2) 
-	's1.AddAttachment(part1, - 28, 0, 0, False) 
+
 	
-	'TAttachment.Create(s1, "attach.png", - 10, 10, 0, 0.1, 0.1, False) 
+	EndRem
 	
 	viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
 	's1.SetCoordinates(100000,100000)
