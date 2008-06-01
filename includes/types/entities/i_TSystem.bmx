@@ -70,26 +70,45 @@ Type TSystem Final
 	EndMethod
 
 	' placeholder method for procedural planet generation
-	Method Populate()
+	' Matt - in progress...
 	
-		' Matt - in progress...
+	
+	Method Populate()	
+		
+	
+		Local ONE_AU:Long = 1000000
+	
+		Local seed:Long = ((Self._sectorX Shl 16) + Self._sectorY) + (Self._x + Self._y)	
+		SeedRnd(seed)
+		
+	
+		DebugLog "generating system "+Self.GetName()+" using seed: "+seed+"..."
+		
+		' create a star
+		' the createFromProto automatically looks at the current system's central star type
+		' and creates the star from that
+		' 
+		' if you want to specify a specific star you can use:
+		' 
+		' local mainStar = TStar.Create(x:Int=0,y:Int=0,System:TSystem,mass:Long,size:Int,name:String)
+		' 	TProtoBody.populateBodyFromName(mainStar, "sun0")
+		' 
+		
+		DebugLog "Creating main star of type "+Self.GetCentralStarType()
+		
+		Local mainStar:TStar = TStar.createFromProto(0, 0, Self, Self.GetName()+" I")
+		
+		
+		
+		
+		Self.SetMainStar(mainStar)		
+	
 	
 		Rem
 	
-		SeedRnd(((Self._sectorX Shl 16) + Self._sectorY) + (Self._x + Self._y))
-	
-		Local sSize:Long = 500000:Long ' for testing...
-	
-		' create a star
-		Local st1:TStar = TStar.Create(0, 0, Self, 1000000, 5, Name+" I") 
-		st1._image = TImg.LoadImg("star_generated") 
-		st1._rotation = -90
-		st1._scaleX = 20
-		st1._scaleY = st1._scaleX
-		st1._size = CalcImageSize(st1._image, False) * st1._scaleX
-		st1._mass = (st1._scaleX ^ 2) * 2000000000
 		
-		Self.SetMainStar(st1)
+		Local sSize:Long = 500000:Long ' for testing...
+
 		
 		' _Population 'gets set after....
 		' _DangerLevel ' so does this
@@ -202,6 +221,10 @@ Type TSystem Final
 
 	
 	' set this system as the "active" system (the one the camera is in)
+	Method GetName:String()
+		Return _Name
+	End Method
+	
 	Method SetAsActive()
 		_g_ActiveSystem = Self
 	End Method
@@ -226,13 +249,17 @@ Type TSystem Final
 		Return _size
 	End Method
 	
+	Method GetCentralStarType:Int()
+		Return _type
+	End Method
+	
 	' returns the main star of the system
 	Method GetMainStar:TStar()
-		Return Self._mainStar
+		Return _mainStar
 	End Method
 
 	Method SetMainStar(main:TStar)
-		Self._mainStar=main
+		_mainStar=main
 	End Method
 
 	' returns the system that is currently "active"

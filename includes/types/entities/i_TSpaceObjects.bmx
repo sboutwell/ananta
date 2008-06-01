@@ -68,6 +68,7 @@ Type TSpaceObject Abstract
 	Field _canCollide:Int = False			' flag to indicate if this object can collide with other objects with the same flag set
 	Field _updated:Int = False			' a flag to indicate if this object has been updated during the frame
 	Field _integrity:Float = -1			' the amount of damage the object can handle, -1 for indestructible
+	Field _description:String			' a description of the body (planet with high winds, asteroidal body, etc)
 	
 	' used for random effects
 	Field _minScale:Float,_maxScale:Float
@@ -311,5 +312,30 @@ Type TSpaceObject Abstract
 		_name = s
 	End Method
 	
+	Method SetMass(m:Long)
+		_mass = m
+	End Method
+	
+	Method setImage(file:String)
+		If FileSize(file)
+			_image = TImg.LoadImg(file)
+		Else
+			' could not find image, load default
+			If G_Debug Print "Could not find image "+file+" for stellar body "+GetName()			
+			'TImg.LoadImg("no_image_generated")
+		EndIf
+	End Method	
+	
+	Method setDescription(m:String)
+		_description = m
+	End Method	
+	
+	Method getName:String()
+		Return _name
+	End Method
+	
+	Method SetSize(s:Int)
+		_size=s
+	End Method	
 EndType
 

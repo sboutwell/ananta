@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 This file is part of Ananta.
 
@@ -22,27 +22,78 @@ Copyright 2007, 2008 Jussi Pakkanen
 <!--Stellar objects-->
 <celestialtypes>
 	<stars>
-		<sun1>	<!-- Stellar object ID -->
-			<image>sun1.png</image>	<!-- the pic representing this object -->
-			<description>A middle-aged yellow star.</description>
-			<minscale>1</minscale>		<!-- the min scale of the visual image -->
-			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
-			<mass>1000000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		<sun0>	<!-- Stellar object ID -->
+			<image>star_generated</image>				<!-- the pic representing this object / INFO: temp usage of star_generated for testing -->
+			<description>Type 'M' Flare Star</description>
+			<minscale>20</minscale>					<!-- the min scale of the visual image -->
+			<maxscale>30</maxscale>					<!-- the max scale of the visual image -->
+			<minmass>900000000</minmass>				<!-- min mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+			<maxmass>1000000000</maxmass>				<!-- max mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+		</sun0>	
+		<sun1>	
+			<image>star_generated</image>				
+			<description>Faint Type 'M' Flare Star</description>
+			<minscale>30</minscale>					
+			<maxscale>40</maxscale>					
+			<minmass>900000000</minmass>				
+			<maxmass>1000000000</maxmass>				
 		</sun1>		
-		<sun2>
-			<image>redgiant1.png</image>	<!-- the pic representing this object -->
-			<description>An ancient red giant star.</description>
-			<minscale>1.5</minscale>	<!-- the min scale of the visual image -->
-			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
-			<mass>10000000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->		
-		</sun2>
-		<sun3>
-			<image>whitedwarf1.png</image>	<!-- the pic representing this object -->
-			<description>A cold supernova remnant that used to be a sun.</description>
-			<minscale>0.5</minscale>	<!-- the min scale of the visual image -->
-			<maxscale>1</maxscale>	<!-- the max scale of the visual image -->
-			<mass>100000000</mass>	<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->		
-		</sun3>
+		<sun2>	
+			<image>star_generated</image>				
+			<description>Type 'M' Red Star</description>
+			<minscale>40</minscale>					
+			<maxscale>60</maxscale>					
+			<minmass>1000000000</minmass>				
+			<maxmass>1500000000</maxmass>				
+		</sun2>	
+		<sun3>	
+			<image>star_generated</image>				
+			<description>Type 'K' Orange Star</description>
+			<minscale>40</minscale>					
+			<maxscale>50</maxscale>					
+			<minmass>800000000</minmass>				
+			<maxmass>1200000000</maxmass>				
+		</sun3>		
+		<sun4>	
+			<image>star_generated</image>				
+			<description>Type 'G' Yellow Star</description>
+			<minscale>40</minscale>					
+			<maxscale>50</maxscale>					
+			<minmass>800000000</minmass>				
+			<maxmass>1200000000</maxmass>				
+		</sun4>		
+		<sun5>	
+			<image>star_generated</image>				
+			<description>Type 'F' White Star</description>
+			<minscale>15</minscale>					
+			<maxscale>20</maxscale>					
+			<minmass>16000000000</minmass>				
+			<maxmass>22000000000</maxmass>				
+		</sun5>	
+		<sun6>	
+			<image>star_generated</image>				
+			<description>Type 'A' Hot White Star</description>
+			<minscale>12</minscale>					
+			<maxscale>17</maxscale>					
+			<minmass>21000000000</minmass>				
+			<maxmass>27000000000</maxmass>				
+		</sun6>		
+		<sun7>	
+			<image>star_generated</image>				
+			<description>White Dwarf Star</description>
+			<minscale>6</minscale>					
+			<maxscale>9</maxscale>					
+			<minmass>9000000000</minmass>				
+			<maxmass>9600000000</maxmass>				
+		</sun7>
+		<sun8>	
+			<image>star_generated</image>				
+			<description>Red Giant Star</description>
+			<minscale>70</minscale>					
+			<maxscale>120</maxscale>					
+			<minmass>800000000</minmass>				
+			<maxmass>900000000</maxmass>				
+		</sun8>	
 	</stars>
 	
 	<planets>
@@ -51,28 +102,32 @@ Copyright 2007, 2008 Jussi Pakkanen
 			<description>A rocky planet with no atmosphere.</description>
 			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
 			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
-			<mass>50000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+			<minmass>40000000</minmass>	<!-- min mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+			<maxmass>50000000</maxmass>	<!-- max mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
 		</rocky1>
 		<gas1>	<!-- Stellar object ID -->
 			<image>gasplanet1.png</image>	<!-- the pic representing this object -->
 			<description>A gas giant with a solid core.</description>
 			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
 			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
-			<mass>150000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+			<minmass>100000000</minmass>	<!-- min mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+			<maxmass>150000000</maxmass>	<!-- max mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
 		</gas1>
 		<terra1>	<!-- Stellar object ID -->
 			<image>terra1.png</image>	<!-- the pic representing this object -->
 			<description>A cold planet with large polar caps and indigenous life near the equator.</description>
 			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
 			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
-			<mass>15000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+			<minmass>100000000</minmass>	<!-- min mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+			<maxmass>150000000</maxmass>	<!-- max mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
 		</terra1>
 		<terra2>	<!-- Stellar object ID -->
 			<image>terra2.png</image>	<!-- the pic representing this object -->
 			<description>A lush and wet jungle planet teeming with life.</description>
 			<minscale>0.3</minscale>	<!-- the min scale of the visual image -->
 			<maxscale>2.5</maxscale>	<!-- the max scale of the visual image -->
-			<mass>15000000</mass>		<!-- mean mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+			<minmass>100000000</minmass>	<!-- min mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
+			<maxmass>150000000</maxmass>	<!-- max mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
 		</terra2>
 	</planets>
 </celestialtypes>

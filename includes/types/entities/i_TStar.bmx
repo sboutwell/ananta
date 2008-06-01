@@ -29,7 +29,30 @@ Type TStar Extends TStellarObject
 	
 		Return image
 	End Function
+	
+	Function createFromProto:TStar(x:Int,y:Int, System:TSystem, name:String)
+		Local st:TStar = New Tstar				' create an instance
+		st._name = name							' give a name
+		st._x = x; st._y = y					' coordinates
+		st._System = System						' the System
 		
+		' now use the system's "_type" field to generate its main star
+		' there are 9 types of star, sun0, sun1, sun2, etc..
+		
+		TProtoBody.populateBodyFromName(st, "sun"+system.GetCentralStarType())
+				
+		st._hasGravity = True
+		st._canCollide = True
+		st._isShownOnMap = True
+
+		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
+		g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list
+
+		System.AddSpaceObject(st)		' add the body to System's space objects list		
+		Return st		
+	End Function
+	
+	' outdated.	
 	Function Create:TStar(x:Int=0,y:Int=0,System:TSystem,mass:Long,size:Int,name:String)
 		Local st:TStar = New Tstar				' create an instance
 		st._name = name								' give a name
