@@ -114,8 +114,86 @@ Copyright 2007, 2008 Jussi Pakkanen
 			<minmass>40000000</minmass>	<!-- min mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
 			<maxmass>50000000</maxmass>	<!-- max mass of the object (scale 1). Gets scaled up or down with the visual scaling -->
 			<comfortzone>0-120</comfortzone>	<!-- this planet can be generated between x - x AUs -->
-			<populationchance>0,0,0,0,0,0,0,0,1,0,0,2,0,0,3</populationchance> <!-- chance of population on this type of world -->
+			<populationchance>0,0,0,0,0,0,0,0,0,0,0,2,0,0,3</populationchance> <!-- chance of population on this type of world -->
 		</rocky1>
+
+		<rocky2>	
+			<image>europa.png</image>	
+			<description>An icy planet with little or no atmosphere.</description>
+			<minscale>0.3</minscale>	
+			<maxscale>1.2</maxscale>	
+			<minmass>40000000</minmass>	
+			<maxmass>70000000</maxmass>	
+			<comfortzone>0-3</comfortzone>	
+			<populationchance>0,0,0,0,0,0,0,0,0,0,0,1,0,0,1</populationchance> 
+		</rocky2>
+
+		<earthlike1>	
+			<image>earth.png</image>	
+			<description>A temperate planet with vegetation and animal life.</description>
+			<minscale>0.8</minscale>	
+			<maxscale>2.3</maxscale>	
+			<minmass>80000000</minmass>	
+			<maxmass>120000000</maxmass>	
+			<comfortzone>0.8-1.3</comfortzone>	
+			<populationchance>0,1,3,3,4,4,5,6,7,7,12</populationchance> 
+		</earthlike1>
+
+		<moonish1>	
+			<image>ganymede.png</image>	
+			<description>A barren planet with severe low temperatures</description>
+			<minscale>0.8</minscale>	
+			<maxscale>7.0</maxscale>	
+			<minmass>120000000</minmass>	
+			<maxmass>180000000</maxmass>	
+			<comfortzone>0.2-200</comfortzone>	
+			<populationchance>0,0,0,0,0,0,0,0,0,0,1</populationchance> 
+		</moonish1>
+
+		<volcanic>	
+			<image>io.png</image>	
+			<description>A molten rock, dangerous and alluring (haha)</description>
+			<minscale>0.2</minscale>	
+			<maxscale>5.0</maxscale>	
+			<minmass>90000000</minmass>	
+			<maxmass>180000000</maxmass>	
+			<comfortzone>20-200</comfortzone>	
+			<populationchance>0</populationchance> 
+		</volcanic>
+
+		<moonish2>	
+			<image>tethys.png</image>	
+			<description>An ice-planet, its terrain detailed with massive ice cracks</description>
+			<minscale>0.8</minscale>	
+			<maxscale>4.0</maxscale>	
+			<minmass>70000000</minmass>	
+			<maxmass>120000000</maxmass>	
+			<comfortzone>40-300</comfortzone>	
+			<populationchance>0,0,0,0,0,0,0,0,0,0,0,0,1</populationchance> 
+		</moonish2>
+
+		<marsish>	
+			<image>mars.png</image>	
+			<description>A planet with possible terraforming potential</description>
+			<minscale>0.6</minscale>	
+			<maxscale>3.0</maxscale>	
+			<minmass>80000000</minmass>	
+			<maxmass>180000000</maxmass>	
+			<comfortzone>0.3-4.5</comfortzone>	
+			<populationchance>0,0,1,1,1,2,0,0,5,0,0,0,8</populationchance> 
+		</marsish>
+
+
+		<gas1>	
+			<image>jupiter.png</image>	
+			<description>A super giant gas planet with massive gravity</description>
+			<minscale>25</minscale>	
+			<maxscale>120</maxscale>	
+			<minmass>230000000</minmass>	
+			<maxmass>630000000</maxmass>	
+			<comfortzone>20-200</comfortzone>	
+			<populationchance>0</populationchance> 
+		</gas1>
 
 	</planets>
 </celestialtypes>
