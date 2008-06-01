@@ -75,7 +75,15 @@ GenerateVectorTextures()    		' generate some vector textures as new image files
 G_Universe = TUni.Create()
 G_Universe.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the galaxy image for universe creation
 
-SetupTestEnvironment()		' create the player, and a test system with some planets, asteroids and AI ships
+
+
+' param, setup
+' use =0 to try envionment with planets and manual system creation
+' use =1 to try system.populate()
+
+SetupTestEnvironment(0)		' create the player, and a test system with some planets, asteroids and AI ships
+'SetupTestEnvironment(1)
+
 
 
 ' Main loop
@@ -145,38 +153,44 @@ Function GenerateVectorTextures()
 	TImg.StoreImg(TStar.GenerateStarTexture(1024) , "star_generated") 
 End Function
 
-Function GenerateTestSystem:TStar(sSize:Long) 
 
+
+' new generate system test
+Function GenerateTestSystem2:TStar(sSize:Long) 
 	Local system1:TSystem = TSystem.GetActiveSystem()
+	
+	DebugLog "populating system "+system1.GetName()+"..."		
+	system1.populate()		
+	
+	Return system1.getMainStar()	
+End Function
 
-		DebugLog "populating system "+system1.GetName()+"..."
-		
-		system1.populate()
-		
-	Return system1.getMainStar()
 
+
+Function GenerateTestSystem:TStar(sSize:Long) 
+	Local asteroids:Int = 30
+	Local planets:Int = 10
+	
+	' generate a system
+	Local system1:TSystem = TSystem.GetActiveSystem()
 
 	' ================ randomize System and planetary object for testing ===================
 	'SeedRnd(MilliSecs()) 
 	' create a star
-	Rem
-	
-	
-	
 	Local st1:TStar = TStar.Create(0, 0, System1, 1000000, 5, "Sol") 
 	st1._image = TImg.LoadImg("star_generated") 
 	st1._rotation = -90
-	st1._scaleX = 40
+	st1._scaleX = 20
 	st1._scaleY = st1._scaleX
 	st1._size = CalcImageSize(st1._image, False) * st1._scaleX
-	st1._mass = (st1._scaleX ^ 2) * 200000000
+	st1._mass = (st1._scaleX ^ 2) * 2000000000
 	
 	system1._mainStar = st1
 	
 	' create some planets
 	For Local i:Int = 1 To planets
 		'Function Create:TPlanet(x:Int,y:Int,System:TSystem,mass:Long,size:Int,name:String)
-		Local pl2:TPlanet = TPlanet.Create(Rand(- sSize, sSize), Rand(- sSize, sSize), System1, 100000, 10, system1._name + " " + i) 
+		Local pl2:TPlanet = TPlanet.Create(Rand(- sSize, sSize), Rand(- sSize, sSize), System1, 100000, 10, "Jupiter " + i) 
 		
 		' Re-randomize the coordinates if the planet is too close to the sun 
 		Local again:Int = False
@@ -191,7 +205,7 @@ Function GenerateTestSystem:TStar(sSize:Long)
 			EndIf
 		Until again = False
 		
-		pl2._image = TImg.LoadImg("mars.png") 
+		pl2._image = TImg.LoadImg("jupiter.png") 
 		pl2._rotation=-90
 		pl2._scaleX = Rnd(0.5, 2) 
 		pl2._scaleY = pl2._scaleX
@@ -217,11 +231,10 @@ Function GenerateTestSystem:TStar(sSize:Long)
 	Next
 	
 	Return st1
-	
-	EndRem
 End Function
 
-Function SetupTestEnvironment()
+
+Function SetupTestEnvironment(setup:Byte=0)
 	'Local sectX:Int = 16
 	'Local sectY:Int = 16
 	Local sectX:Int = 5793
@@ -242,7 +255,17 @@ Function SetupTestEnvironment()
 	Local sSize:Long = 148000000:Long	' real solar system size (compared to the star diameter)
 	'Local sSize:Long = 300000000:Long
 	'Local sSize:Long = 500000:Long
-	Local centralStar:TStar = GenerateTestSystem(sSize) 
+	
+	' **************************************************************
+	' to see system.populate progress, use GenerateTestSystem2
+	' **************************************************************
+	Local centralStar:TStar
+	If setup =0
+		centralStar:TStar = GenerateTestSystem(sSize)
+	Else		
+		centralStar:TStar = GenerateTestSystem2(sSize) 
+	EndIf
+		
 	
 	' ----------- STARMAP ----------
 	Local sMap:TStarMap = viewport.GetStarMap()
@@ -266,40 +289,45 @@ Function SetupTestEnvironment()
 	s1.AddAttachment(part1, - 28, 0, 0, False) 	
 	TAttachment.Create(s1, "attach.png", - 10, 10, 0, 0.1, 0.1, False) 	
 
-	s1.SetCoordinates(system.getMainStar().GetX() + system.getMainStar().GetSize() * 1.7, system.getMainStar().GetY()) 
-	s1.SetOrbitalVelocity(system.getMainStar(), True) 
-	
-	Rem
-	
-	' find the farthest planet to the center and make the player ship orbit it
-	Local orbitedPlanet:TStellarObject
-	Local maxDist:Double = 0
-	For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
-		Local dist:Double = Distance(0, 0,obj.GetX(),obj.GetY())
-		If TPlanet(obj) And dist > maxDist Then
-			orbitedPlanet = obj
-			maxDist = dist
-		EndIf
-	Next
 
 	
-	' Create one asteroid to orbit the same planet as the player
-	Local ascale:Float = orbitedPlanet.GetScaleX() 
-	Local asize:Int = CalcImageSize(TImg.LoadImg("asteroid.png"), False) * ascale
-	Local amass:Long = (ascale ^ 2) * Rand(3000, 10000) 
-	Local ast:TAsteroid = TAsteroid.Create("asteroid.png", TSystem.GetActiveSystem(), Rand(- sSize, sSize), Rand(- sSize, sSize), amass) 
-	ast._scaleX = ascale
-	ast._scaleY = ascale
-	ast._size = asize
-	ast.SetRotationSpd(Rand(- 50, 50)) 
-	ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
-	ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
-	ast.SetOrbitalVelocity(orbitedPlanet,True)
-	ast = Null
+	If setup=0
 	
-
+		' find the farthest planet to the center and make the player ship orbit it
+		Local orbitedPlanet:TStellarObject
+		Local maxDist:Double = 0
+		For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
+			Local dist:Double = Distance(0, 0,obj.GetX(),obj.GetY())
+			If TPlanet(obj) And dist > maxDist Then
+				orbitedPlanet = obj
+				maxDist = dist
+			EndIf
+		Next
 	
-	EndRem
+		
+		' Create one asteroid to orbit the same planet as the player
+		Local ascale:Float = orbitedPlanet.GetScaleX() 
+		Local asize:Int = CalcImageSize(TImg.LoadImg("asteroid.png"), False) * ascale
+		Local amass:Long = (ascale ^ 2) * Rand(3000, 10000) 
+		Local ast:TAsteroid = TAsteroid.Create("asteroid.png", TSystem.GetActiveSystem(), Rand(- sSize, sSize), Rand(- sSize, sSize), amass) 
+		ast._scaleX = ascale
+		ast._scaleY = ascale
+		ast._size = asize
+		ast.SetRotationSpd(Rand(- 50, 50)) 
+		ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
+		ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
+		ast.SetOrbitalVelocity(orbitedPlanet,True)
+		ast = Null
+	
+		s1.SetCoordinates(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * 0.7, orbitedPlanet.GetY()) 
+		s1.SetOrbitalVelocity(orbitedPlanet, True) 	
+	
+	Else
+		
+		s1.SetCoordinates(system.getMainStar().GetX() + system.getMainStar().GetSize() * 1.7, system.getMainStar().GetY()) 
+		s1.SetOrbitalVelocity(system.getMainStar(), True) 
+	
+	EndIf
 	
 	viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
 	's1.SetCoordinates(100000,100000)
