@@ -336,7 +336,7 @@ Type TShip Extends TMovingObject
 		Self.SetSystem(s) ' assign the ship's current system
 						
 		' position us by the star				
-		Self.SetCoordinates(s.getMainStar().GetX() + s.getMainStar().GetSize() * 1.0, s.getMainStar().GetY()) 
+		Self.SetCoordinates(s.getMainStar().GetX() + s.getMainStar().GetSize() * 1.5, s.getMainStar().GetY()) 
 		Self.SetOrbitalVelocity(s.getMainStar(), True) 		
 		
 		' centre the viewport

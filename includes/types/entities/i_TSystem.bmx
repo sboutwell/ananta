@@ -88,7 +88,7 @@ Type TSystem Final
 		SeedRnd(seed)
 		
 	
-		DebugLog "generating system "+Self.GetName()+" using seed: "+seed+"..."
+		DebugLog "	> Generating system "+Self.GetName()+" (seed: "+seed+")"
 		
 		' create a star
 		' the createFromProto automatically looks at the current system's central star type
@@ -100,7 +100,7 @@ Type TSystem Final
 		' 	TProtoBody.populateBodyFromName(mainStar, "sun0")
 		' 
 		
-		DebugLog "Creating main star of type "+Self.GetCentralStarType()
+		DebugLog "	> Main star of type "+Self.GetCentralStarType()
 		
 		' if it's a lone star, just name it the system name, otherwise, number them.
 		Local name:String = ""
@@ -120,8 +120,6 @@ Type TSystem Final
 		' this will get the sun's.planetChance and convert it into an array of ints
 		Local planetChance:Int[] = StringToIntArray(sunPrototypeBody.getPlanetChance(),",")
 		
-		Print "This system has a planet chance of "+sunPrototypeBody.getPlanetChance()
-		
 		PlanetDistance = 0.000005 * 700000 ' = 1.4ish
 		
 		Self.setNumberOfPlanets(PlanetChance[Rand(0,PlanetChance.length-1)])
@@ -129,7 +127,7 @@ Type TSystem Final
 		' freak occurance, start the planets way out.
 		If Rand(1,15)=1 PlanetDistance = Rnd(1.6,5.5) ' AUs	
 		
-		DebugLog "System "+Self.getName()+" has "+Self.getNumberOfPlanets()+" planets"
+		DebugLog "	> System "+Self.getName()+" has "+Self.getNumberOfPlanets()+" planets"
 		
 		' create the planets. Main planets first, moons nested.
 		For Local i:Int = 0 To Self.getNumberOfPlanets()-1
@@ -159,25 +157,37 @@ Type TSystem Final
 				newPlanet:TPlanet = TPlanet.createFromProto(px,py,Self,planetName,planetType)
 				
 				Local populationChance:Int[] = StringToIntArray(pProtoType.getPopulationChance(),",")
-							
-				planetPopulation = populationChance[Rand(0,populationChance.length-1)]
-				planetPopulation:*Rnd(0.5,1.5) ' make it a bit more floaty...
+				
+				' !!
+				' population should be affected by the distance from core systems
+				' !!
+				
+				Local planetChoice:Int = Rand(0,populationChance.length-1)			
+				planetPopulation = Float(populationChance[planetChoice])				
+				planetPopulation:*Rnd(0.7,1.2) ' make it a bit more random...
 				
 				newPlanet.setPopulation(planetPopulation)
 				
 				' increase the system's population
 				SystemPopulation:+newPlanet.getPopulation()	
 				
-				DebugLog "Created planet "+newPlanet.getName()+". population: "+newPlanet.getPopulation()+" B @ "+planetDistance+" AUs from "+Self.getName()	
-							
+				DebugLog "		> New planet:"	
+				DebugLog "			> Name: "+newPlanet.getName()
+				DebugLog "			> Population: "+newPlanet.getPopulation()+" Billion"			
+				DebugLog "			> Distance: "+planetDistance+" from main star"
+				DebugLog "			> Mass: "+newPlanet.getMass()+" Kg"
+				DebugLog "			> Size: "+newPlanet.getSize()
+				DebugLog "			> ScaleX/Y: "+newPlanet.getScaleX()
+				DebugLog "			> Using proto: "+pProtoType.getName()
+				DebugLog ""
 			Else
 				' either too far or too close to make a planet
 			EndIf
 					
-			Select Rand(1,12)
-				Case 1,2,3,4,5,6,7,8 PlanetDistance:+Rnd(3.4,8.0) ' AUs
-				Case 9,10,11 PlanetDistance:+Rnd(1.4,16.0) ' AUs
-				Case 12 PlanetDistance:+Rnd(1.4,30.0) ' AUs
+			Select Rand(1,27)
+				Case 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 PlanetDistance:+Rnd(3.4,8.0) ' AUs
+				Case 20,21,22,23,24,25,26 PlanetDistance:+Rnd(1.4,16.0) ' AUs
+				Case 27 PlanetDistance:+Rnd(19.0, 30.0) ' AUs
 			End Select			
 		Next
 		
