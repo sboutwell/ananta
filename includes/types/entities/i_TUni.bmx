@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@ This file is part of Ananta.
 Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
-rem
+Rem
 	Ok, here's the true heart of the game: 
 	Procedurally generated universe with 500+ million nearly unique stars.
 
@@ -73,7 +73,7 @@ Type TUni
 							
 	' load an image representing the galaxy to the global TheMilkyWay int array
 	Method LoadGalaxy(file:String)
-		Local pix:TPixmap = LoadPixMap(file)
+		Local pix:TPixmap = LoadPixmap(file)
 		
 		' add an extra row and column to the array for "edge interpolation"
 		TheMilkyWay = TheMilkyWay[..(pix.width + 1) * (pix.height + 1)] 
@@ -131,9 +131,14 @@ Type TUni
 		Return syllArray
 	End Method
 	
+	Method GetPlanetName:String()
+		' until we make something specific...
+		Return GetSystemName()	
+	End Method
+	
 	'Method GetSystemName:String(coordx:Int, coordy:Int, sysnum:Int)
 	Method GetSystemName:String()
-		rem
+		Rem
 		coordx:+Sysnum
     	coordy:+coordx
     	coordx = rotl (coordx, 3)
@@ -198,8 +203,8 @@ Type TSector
 		SeedRnd((_x Shl 16) + _y) 	' seed the Mersenne Twister with the sector coordinates
 		
 		' create the stars
-		If not _L_systems Then _L_systems = CreateList()
-	    for Local i:Int = 0 To _getNrSystems() - 1
+		If Not _L_systems Then _L_systems = CreateList()
+	    For Local i:Int = 0 To _getNrSystems() - 1
 	        Local coordsOk:Int = True	' flag to indicate if this star overlaps with another star
 			Local y:Int, x:Int, mult:Int, typ:Int
 			Local name:String
@@ -211,7 +216,7 @@ Type TSector
 				y = y + Rand(0,_g_sectorSize)
 				x = x + Rand(0,_g_sectorSize)
 				For Local sys:TSystem = EachIn _L_systems	' iterate through the star list to see if this star overlaps with others
-					If sys._x = x And sys._y = y Then coordsOk = FALSE		' overlapping coordinates
+					If sys._x = x And sys._y = y Then coordsOk = False		' overlapping coordinates
 				Next
 			Until coordsOk	' rinse and repeat until the coordinates do not overlap
 			
@@ -266,6 +271,12 @@ Type TSector
 		' add some +- variance to the star count. Redo this with something faster than Rnd (bitmasking?)
 		c = c + Rnd(- 2, 1)
 	    Return Int(c) 
+	End Method
+
+	Method getSystemFromName:TSystem(name:String)
+		For Local i:TSystem=EachIn Self.GetSystemList()
+			If i.getName().toLower() = name.toLower() Return i
+		Next
 	End Method
 
 	Method GetSystemList:TList()

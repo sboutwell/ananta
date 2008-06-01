@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -34,26 +34,26 @@ Type TStarMap Extends TMiniMap
 	Field _galaxyImage:TImage
 
 	Method SetCamera(x:Double, y:Double)
-		_isScrolling = TRUE
+		_isScrolling = True
 		'ClearMiniMap()
-		super.SetCamera(x,y)
+		Super.SetCamera(x,y)
 		Update()
-		_isScrolling = FALSE
+		_isScrolling = False
 	End Method
 	
 	' scroll map along x axis
 	Method scrollX(dir:Int = 1)
 		_isScrolling = True
 		ClearMiniMap()
-		super.scrollX(dir)
+		Super.scrollX(dir)
 		UpdateCenteredSector()
 	End Method
 
 	' scroll map along y axis	
 	Method scrollY(dir:Int = 1) 
-		_isScrolling = TRUE
+		_isScrolling = True
 		ClearMiniMap()
-		super.scrollY(dir)
+		Super.scrollY(dir)
 		UpdateCenteredSector()
 	End Method
 
@@ -93,9 +93,9 @@ Type TStarMap Extends TMiniMap
 	
 	' centers camera to the middle of the active system
 	Method Center()
-		If NOT TSystem.GetActiveSystem() Then Return
+		If Not TSystem.GetActiveSystem() Then Return
 		Local sys:TSystem = TSystem.GetActiveSystem()
-		_isScrolling = TRUE
+		_isScrolling = True
 		_cameraX = sys.GetX()
 		_cameraY = sys.GetY()
 		ClearMiniMap()
@@ -108,6 +108,7 @@ Type TStarMap Extends TMiniMap
 		Local blip:TMapBlip = AddBlip(s.GetX() - _cameraX,s.GetY() - _cameraY,s.GetSize())
 		blip.SetBColor(G_starColor[s._type])
 		blip.SetName(s._name)
+		blip.SetSystem(s)
 	End Method
 
 	' update calculates which sectors should be visible in the map at the current
@@ -118,7 +119,7 @@ Type TStarMap Extends TMiniMap
 
 		If _isScrolling Then 	' don't update the visibility arrays if the map's not moving
 			UpdateVisibility()
-			_isScrolling = FALSE
+			_isScrolling = False
 		EndIf
 		
 		For Local line:Int = EachIn _visibleLines
@@ -127,9 +128,24 @@ Type TStarMap Extends TMiniMap
 				sect.Populate()
 				For Local sys:TSystem = EachIn sect.GetSystemList()
 					AddStarMapBlip(sys)
-				Next
+				Next				
 				sect.Forget()
 			Next
+		Next		
+	End Method
+	
+	Method getBlipUnderMouse:TMapBlip(within:Int=4)
+		Local mx:Int=MouseX()
+		Local my:Int=MouseY()
+		Local s:Int = 0
+		
+		For Local i:TMapBlip = EachIn _L_blips
+			s:Int = i.getSize()+within
+			If mx > (i.getX()-s) And mx < (i.getX()+s)
+				If my > (i.getY()-s) And my < (i.getY()+s)
+					Return i
+				EndIf
+			EndIf
 		Next
 	End Method
 	
@@ -172,12 +188,49 @@ Type TStarMap Extends TMiniMap
 	End Method
 		
 	Method DrawDetails()
-		super.DrawDetails()
+		Super.DrawDetails()
 		If _zoomFactor < _mapOverlayTreshold Then DrawMapOverlay()
 		DrawSectorGrid()
 		DrawSectorNumber()
 		G_debugWindow.AddText("Starmap blips: " + _L_Blips.Count())
-
+		
+		' draw the system our mouse is over and show the system underneath
+		' we'll have to load the system and place the loaded system in the
+		' TSystem._g_ViewingSystem variable
+		'
+		Local blipOver:TMapBlip = Self.getBlipUnderMouse(4) ' 4 = within radius of 4
+		If blipOver
+			Local SystemOver:TSystem = blipOver.getSystem()
+			
+			SetColor 255,0,0
+			Local blipName:String = blipOver.getName()
+			SetHandle(TextWidth(blipName) / 2, TextHeight(blipName))
+			DrawText(Capitalize(blipName), blipOver.getX(), blipOver.getY())
+			SetColor 255,255,255
+			SetHandle 0,0
+			
+			If MouseDown(1)
+				' load this system...				
+				' now load the new system we're under				
+				If systemOver<>Null					
+					If systemOver.isPopulated()=0 Then systemOver.populate()
+					
+					' now draw it
+					systemOver.drawSystemQuickly(blipOver.getX(),blipOver.getY(), 200)									
+				EndIf				
+			Else			
+				' when we let go of mousedown(1), forget the viewed system
+				If TSystem._g_ViewingSystem<>Null
+					TSystem._g_ViewingSystem.forget()
+					TSystem._g_ViewingSystem=Null
+				EndIf				
+			EndIf
+			
+			If KeyHit(KEY_H) And SystemOver
+				' hyperspace to this system...
+				G_Player.GetControlledShip().HyperspaceToSystem(systemOver)
+			EndIf
+		EndIf
 	End Method
 	
 	' draws the galaxy image overlay

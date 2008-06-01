@@ -65,7 +65,7 @@ Type TShip Extends TMovingObject
 		Super.Update()
 		
 		If isWarpDriveOn Then UpdatePosition(CalcWarpValue())  
-		If self._pilot = G_player Then G_DebugWindow.AddText("Max warp ratio: " + CalcWarpValue())
+		If Self._pilot = G_player Then G_DebugWindow.AddText("Max warp ratio: " + CalcWarpValue())
 	EndMethod
 	
 	Method CalcWarpValue:Double()
@@ -324,6 +324,27 @@ Type TShip Extends TMovingObject
 		Next
 	EndFunction
 
+	Method HyperspaceToSystem(s:TSystem)
+		' we are going to immediately jump to this system
+		Local currentlyActiveSystem:TSystem = TSystem._g_ActiveSystem
+		If currentlyActiveSystem currentlyActiveSystem.forget()
+		
+		s.SetAsActive() ' set as active
+		
+		s.populate() ' load it up
+		
+		Self.SetSystem(s) ' assign the ship's current system
+						
+		' position us by the star				
+		Self.SetCoordinates(s.getMainStar().GetX() + s.getMainStar().GetSize() * 1.0, s.getMainStar().GetY()) 
+		Self.SetOrbitalVelocity(s.getMainStar(), True) 		
+		
+		' centre the viewport
+		Local sMap:TStarMap = viewport.GetStarMap()		
+		sMap.Center()	' move the starmap "camera" to the middle of the active system
+		sMap.UpdateCenteredSector()
+		sMap.Update()		
+	End Method
 
 	Function Create:TShip(hullID:String, name:String = "Nameless") 
 

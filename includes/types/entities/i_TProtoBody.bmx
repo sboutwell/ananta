@@ -42,6 +42,9 @@ EndRem
 Type TProtoBody
 	Global g_L_ProtoBodies:TList	' a list to hold all prototypes
 
+	Global g_NumberOfStarTypes:Int = 0
+	Global g_NumberOfPlanetTypes:Int = 0
+
 	Field _Name:String		' the prototypes name. Stars will be 'Type 'F' white star', planets, "molten rock"
 	Field _ImageFile:String
 	Field _Description:String
@@ -49,7 +52,9 @@ Type TProtoBody
 	Field _MaxMass:Long
 	Field _MinScale:Float
 	Field _MaxScale:Float
-	
+	Field _comfortZone:String
+	Field _planetChance:String
+	Field _populationChance:String
 
 	' getters/setters
 	Method getMinMass:Long() Return _MinMass End Method
@@ -59,7 +64,13 @@ Type TProtoBody
 	Method getImageFile:String() Return _ImageFile End Method
 	Method getName:String() Return _Name End Method
 	Method getDescription:String() Return _Description End Method
-	
+	Method getPlanetChance:String() Return _planetChance End Method
+	Method getComfortZone:String() Return _comfortZone End Method
+	Method getPopulationChance:String() Return _populationChance End Method
+		
+	Method getNumberOfStarTypes:Int() Return g_NumberOfStarTypes End Method
+	Method getNumberOfPlanetTypes:Int() Return g_NumberOfPlanetTypes End Method
+		
 	Method setMinMass(m:Long) _MinMass = m End Method
 	Method setMaxMass(m:Long) _MaxMass = m End Method	
 	Method setMinScale(m:Float) _MinScale = m End Method
@@ -67,8 +78,10 @@ Type TProtoBody
 	Method setImageFile(m:String) _ImageFile = m End Method
 	Method setName(m:String) _Name = m End Method
 	Method setDescription(m:String) _Description = m End Method
-	
-		
+	Method setPlanetChance(m:String) _PlanetChance = m End Method
+	Method setComfortZone(m:String) _comfortZone = m End Method
+	Method setPopulationChance(m:String) _populationChance = m End Method
+			
 	' this function will find the prototype body and use it
 	' to populate the target stellar object, be it planet or sun.
 	
@@ -104,17 +117,22 @@ Type TProtoBody
 		
 		' find and return the "stars" node
 		searchnode = xmlGetNode(node, "stars") 
-		If searchnode <> Null Then TProtoBody.LoadAll(searchnode)
+		If searchnode <> Null Then TProtoBody.LoadAll(searchnode, TProtoBody.g_NumberOfStarTypes)
 
 		 ' find and return the "planets" node
 		searchnode = xmlGetNode(node, "planets")
-		If searchnode <> Null Then TProtoBody.LoadAll(searchnode)			
+		If searchnode <> Null Then TProtoBody.LoadAll(searchnode, TProtoBody.g_NumberOfPlanetTypes)			
 
-		If G_Debug Print "Finished reading and parsing Prototype Bodies from " + c_celestialTypes
+		If G_Debug 
+			Print "Finished reading and parsing Prototype Bodies from " + c_celestialTypes
+			Print ""
+			Print "Loaded "+TProtoBody.g_NumberOfStarTypes+" star types"
+			Print "Loaded "+TProtoBody.g_NumberOfPlanetTypes+" planet types"
+		EndIf
 	EndFunction
 	
 	' loads and parses all prototypes from the xml file
-	Function LoadAll(rootnode:TxmlNode)
+	Function LoadAll(rootnode:TxmlNode, count:Int Var)
 		If G_Debug Print "    Loading prototype bodies..."
 		
 		Local children:TList = rootnode.getChildren() 			
@@ -124,6 +142,7 @@ Type TProtoBody
 			Local p:TProtoBody = TProtoBody.Create(rootnode.GetName())			
 			Local pChildren:TList = rootnode.getChildren()
 			TProtoBody.LoadValues(pChildren, p) ' Pass the node list and the newly created engine object as parameters
+			count:+1 ' count and increment the count vriable
 		Next
 		
 		Return
@@ -140,6 +159,10 @@ Type TProtoBody
 			
 			If value.GetName() = "minmass" 	Then p.setMinMass(value.GetText().ToLong())
 			If value.GetName() = "maxmass" 	Then p.setMaxMass(value.GetText().ToLong())
+			
+			If value.getName() = "planetchance" Then p.setPlanetChance(value.getText())
+			If value.getName() = "comfortzone" Then p.setComfortZone(value.getText())
+			If value.getName() = "populationchance" Then p.setPopulationChance(value.getText())
 		Next
 	End Function
 

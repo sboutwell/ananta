@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -48,7 +48,7 @@ Function TileImage2 (image:TImage, x:Double=0:Double, y:Double=0:Double, frame:I
     w:Double=image_w * Abs(scale_x#)
     h:Double=image_h * Abs(scale_y#)
 
-    ox:DOuble=viewport_x-w+1
+    ox:Double=viewport_x-w+1
     oy:Double=viewport_y-h+1
 
     origin_X = origin_X Mod w
@@ -66,10 +66,10 @@ Function TileImage2 (image:TImage, x:Double=0:Double, y:Double=0:Double, frame:I
     If ty>=0 ty=ty Mod h + oy Else ty = h - -ty Mod h + oy
 
     vr:Double = viewport_x + viewport_w
-	vb:DOuble = viewport_y + viewport_h
+	vb:Double = viewport_y + viewport_h
 
     SetOrigin 0,0
-    iy:DOuble=ty
+    iy:Double=ty
     While iy<vb + h ' add image height to fill lower gap
         Local ix:Double=tx
         While ix<vr + w ' add image width to fill right gap
@@ -94,4 +94,32 @@ End Function
 ' converts an RGB pixel to grayscale using one common formula
 Function RGBtoGrayscale:Int(r:Int, g:Int, b:Int)
 	Return (0.3 * r + 0.59 * g + 0.11 * b)
+End Function
+
+Function drawCircle(x:Float,y:Float,radius:Int)
+	Local d:Float=360.0/10.0
+	Local fx:Float=0,fy:Float=0
+	Local ox:Float,oy:Float
+	Local x1:Float,y1:Float
+	
+	SetRotation(0)
+	SetBlend ALPHABLEND
+	SetScale 1,1	
+		
+	For Local i:Int=0 To 360 Step 10
+		x1=x+Cos(i)*radius
+		y1=y+Sin(i)*radius
+		
+		If ox<>0 And oy <>0
+			DrawLine x1,y1,ox,oy,0
+		EndIf
+		
+		ox=x1;oy=y1
+		
+		If fx=0 And fy=0		
+			fx=x1;fy=y1
+		EndIf
+	Next
+	
+	DrawLine fx,fy,x1,y1,0 ' last line
 End Function

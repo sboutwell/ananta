@@ -81,8 +81,14 @@ G_Universe.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the ga
 ' use =0 to try envionment with planets and manual system creation
 ' use =1 to try system.populate()
 
-SetupTestEnvironment(0)		' create the player, and a test system with some planets, asteroids and AI ships
-'SetupTestEnvironment(1)
+'SetupTestEnvironment(0)		' create the player, and a test system with some planets, asteroids and AI ships
+SetupTestEnvironment(1)
+
+
+
+
+
+
 
 
 
@@ -130,6 +136,9 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	EndIf
 	' ***************************************
 	
+	'If MouseDown(1)
+	'	TSystem._g_ActiveSystem.drawSystemQuickly(MouseX(),MouseY(),300)
+	'EndIf	
 	
 	If G_delta._isFrameRateLimited Then
 		G_delta.LimitFPS()        ' limit framerate
@@ -263,6 +272,7 @@ Function SetupTestEnvironment(setup:Byte=0)
 	If setup =0
 		centralStar:TStar = GenerateTestSystem(sSize)
 	Else		
+		
 		centralStar:TStar = GenerateTestSystem2(sSize) 
 	EndIf
 		
@@ -293,16 +303,8 @@ Function SetupTestEnvironment(setup:Byte=0)
 	
 	If setup=0
 	
-		' find the farthest planet to the center and make the player ship orbit it
-		Local orbitedPlanet:TStellarObject
-		Local maxDist:Double = 0
-		For Local obj:TStellarObject = EachIn TStellarObject.g_L_StellarObjects
-			Local dist:Double = Distance(0, 0,obj.GetX(),obj.GetY())
-			If TPlanet(obj) And dist > maxDist Then
-				orbitedPlanet = obj
-				maxDist = dist
-			EndIf
-		Next
+		Local v:Double=0
+		Local orbitedPlanet:TStellarObject = system.getFarthestObjectInSystem(v)
 	
 		
 		' Create one asteroid to orbit the same planet as the player
@@ -324,8 +326,8 @@ Function SetupTestEnvironment(setup:Byte=0)
 	
 	Else
 		
-		s1.SetCoordinates(system.getMainStar().GetX() + system.getMainStar().GetSize() * 1.7, system.getMainStar().GetY()) 
-		s1.SetOrbitalVelocity(system.getMainStar(), True) 
+		G_Player.GetControlledShip().HyperspaceToSystem(system)		
+
 	
 	EndIf
 	
@@ -333,18 +335,20 @@ Function SetupTestEnvironment(setup:Byte=0)
 	's1.SetCoordinates(100000,100000)
 	' set up bunch of AI pilots
 	
-	For Local i:Int = 1 To 25
-		Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
-		Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
-		ship.SetSystem(TSystem.GetActiveSystem()) 
-		ship.SetCoordinates(Rand(- sSize, sSize), Rand(- sSize, sSize)) 
-		'ship.SetCoordinates (600, 0)
-		ship.AssignPilot(ai) 
-		ai.SetTarget(s1)		' make the AI ship try to point at the player ship
-		'ship._xVel = Rand(- 100, 100) 
-		'ship._yVel = Rand(- 100, 100) 
-		ship.SetOrbitalVelocity(centralStar, Rand(0, 1) )
-	Next
+	If setup=0
+		For Local i:Int = 1 To 25
+			Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
+			Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
+			ship.SetSystem(TSystem.GetActiveSystem()) 
+			ship.SetCoordinates(Rand(- sSize, sSize), Rand(- sSize, sSize)) 
+			'ship.SetCoordinates (600, 0)
+			ship.AssignPilot(ai) 
+			ai.SetTarget(s1)		' make the AI ship try to point at the player ship
+			'ship._xVel = Rand(- 100, 100) 
+			'ship._yVel = Rand(- 100, 100) 
+			ship.SetOrbitalVelocity(centralStar, Rand(0, 1) )
+		Next
+	EndIf
 	
 	viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
 End Function

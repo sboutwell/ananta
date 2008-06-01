@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@ endrem
 ' Strings are split between words separated by a delimeter (default:space), never in the middle of a word.
 ' Returns a list of the splitted strings.
 
-Function StringSplitLength:TList(str:string,length:Int,delim:String=Chr(32))
+Function StringSplitLength:TList(str:String,length:Int,delim:String=Chr(32))
 	Local L_strings:TList = CreateList()	' create a list to hold the splitted strings
 	
 	Local L_delimitedStrings:String[] = SmartSplit(str, delim)	' split the string into delimited substrings
@@ -109,7 +109,7 @@ Function FloatToFixedPoint:String(f:Float, decimals:Int=2)
 	ElseIf decimals = 0
 		Return value[0..value.Length - decimals] 
 	Else
-		return value[0..value.length-decimals] + "." + value[value.length-decimals..value.length]  
+		Return value[0..value.length-decimals] + "." + value[value.length-decimals..value.length]  
 	EndIf
 	
 End Function
@@ -117,5 +117,26 @@ End Function
 ' capitalizes the FIRST letter of a string
 Function Capitalize:String(str:String)
 	Return Chr(str[0]).ToUpper() + str[1..]
+End Function
+
+' this method will return an array of integers from the planetChance string
+' this will allow us to pick a number from it quickly
+'
+' Yet Another String to Array Routine - BMX by altitudems
+' http://www.blitzbasic.com/codearcs/codearcs.php?code=1417
+' This code has been declared by its author to be Public Domain code.
+
+Function StringToIntArray:Int [] (_String:String, _Delimiter:String)
+	Local TempArray:Int [1]
+	Local TempString:String
+	While _String.Find(_Delimiter) <> -1
+		TempString = _String[.._String.Find(_Delimiter)]
+		_String = _String[TempString.Length+1..]
+		TempArray[TempArray.Length - 1] = Int(TempString)
+		TempArray = TempArray[..TempArray.Length+1]
+	Wend
+	TempString = _String
+	TempArray[TempArray.Length - 1] = Int(TempString)
+	Return TempArray
 End Function
 
