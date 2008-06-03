@@ -264,7 +264,7 @@ Type TSpaceObject Abstract
 		_system = s
 	End Method
 	
-	Method GetMass:Float() 
+	Method GetMass:Long() 
 		Return _mass
 	End Method
 	

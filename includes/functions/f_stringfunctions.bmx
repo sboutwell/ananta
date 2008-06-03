@@ -115,7 +115,7 @@ Function FloatToFixedPoint:String(f:Float, decimals:Int=2)
 End Function
 
 ' capitalizes the FIRST letter of a string
-Function Capitalize:String(str:String)
+Function ProperCase:String(str:String)
 	Return Chr(str[0]).ToUpper() + str[1..]
 End Function
 

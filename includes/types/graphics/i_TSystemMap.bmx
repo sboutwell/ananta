@@ -54,7 +54,7 @@ Type TSystemMap Extends TMiniMap
 	End Method
 
 	Method DrawDetails()
-		Self.SetTitle("System: " + Capitalize(TSystem.GetActiveSystem()._name))
+		Self.SetTitle("System: " + ProperCase(TSystem.GetActiveSystem()._name))
 		super.DrawDetails()	
 	
 		' use type casting to determine if the centered object is a TMovingObject
