@@ -92,7 +92,7 @@ Type TProtoBody
 			Return
 		EndIf
 	
-		target.setMass(Rand(found.getMinMass(),found.getMaxMass()))
+		target.setMass(Rand64(found.getMinMass(),found.getMaxMass()))
 		target.setScaleX(Rnd(found.getMinScale(),found.getMaxScale()))
 		target.setScaleY(target.getScaleX())
 		target.setImage(found.getImageFile())

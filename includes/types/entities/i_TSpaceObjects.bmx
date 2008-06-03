@@ -70,6 +70,11 @@ Type TSpaceObject Abstract
 	Field _integrity:Float = -1			' the amount of damage the object can handle, -1 for indestructible
 	Field _description:String			' a description of the body (planet with high winds, asteroidal body, etc)
 	
+	' used for TSystem.drawSystemQuickly()
+	Field _parent:TStellarObject
+	Field _tempX:Int,_tempY:Int			' store drawn position for children planets to be drawn around. speed fix.
+	' -----------------------------------|
+	
 	' used for random effects
 	Field _minScale:Float,_maxScale:Float
 		
@@ -97,6 +102,7 @@ Type TSpaceObject Abstract
 	
 	Method Explode() 
 		' a makeshift "explosion" effect for testing. Redo this with some pretty particle fireworks.
+		Rem
 		Local expScale:Float = CalcImageSize(_image) / 128.0 * _scaleX * 1.5
 		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 2, expScale, 1, _System) 
 		part.SetXVel(_xVel) 
@@ -104,8 +110,11 @@ Type TSpaceObject Abstract
 		part.SetRot(Rand(0, 360)) 
 		part.SetRotationSpd(Self.GetRotSpd() + Rnd(- 10, 10)) 
 		part._affectedByGravity = True
+		
+		EndRem
 		 
 		Destroy() 
+		
 	End Method
 		
 	' draws the body of the spaceobject
@@ -135,8 +144,10 @@ Type TSpaceObject Abstract
 		
 		' This commented code block is trying to define if the object will be visible on the screen to avoid
 		' drawing non-visible objects. Not working. So, in the meantime we'll suffer from a performance hit.
-		'If x + _size * _scaleX * viewport._zoomfactor / 2 < startX Then Return
-		'If x - _size * _scaleX * viewport._zoomFactor / 2 > startX + vp.GetWidth() Then Return
+		
+		Local zoom:Float = viewport._zoomfactor
+		If x + (_size * (_scaleX * zoom) / 2) < startX Then Return
+		If x - (_size * (_scaleX * zoom) / 2) > startX + vp.GetWidth() Then Return
 				
 		SetViewport(startX, startY, vp.GetWidth(), vp.GetHeight()) 
 		'SetViewport(0, 0, 800, 600) 
@@ -315,6 +326,14 @@ Type TSpaceObject Abstract
 	Method SetMass(m:Long)
 		_mass = m
 	End Method
+
+	Method setParent(p:TStellarObject)
+		_parent = p
+	End Method
+	
+	Method GetParent:TStellarObject()
+		Return _parent
+	End Method	
 	
 	Method setImage(file:String)
 		If FileSize(file)

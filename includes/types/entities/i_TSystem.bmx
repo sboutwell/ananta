@@ -82,7 +82,7 @@ Type TSystem Final
 	Method Populate()	
 		
 	
-		Local ONE_AU:Long = 20000
+		Local ONE_AU:Long = 200000
 	
 		Local seed:Long = ((Self._sectorX Shl 16) + Self._sectorY) + (Self._x + Self._y)	
 		SeedRnd(seed)
@@ -101,13 +101,15 @@ Type TSystem Final
 		' 
 		
 		DebugLog "	> Main star of type "+Self.GetCentralStarType()
-		
+				
 		' if it's a lone star, just name it the system name, otherwise, number them.
 		Local name:String = ""
 		If _multiple=0 name=Self.getName() Else name=Self.GetName()+" I"
 		
 		Local mainStar:TStar = TStar.createFromProto(0, 0, Self, name)		
 		Self.SetMainStar(mainStar)		
+	
+		DebugLog "	> Mass: "+Self.GetMainStar().GetMass()
 	
 		Local sunPrototypeBody:TProtoBody = TProtoBody.findProtoBodyFromName("sun"+Self.GetCentralStarType())
 	
@@ -128,6 +130,9 @@ Type TSystem Final
 		If Rand(1,15)=1 PlanetDistance = Rnd(1.6,5.5) ' AUs	
 		
 		DebugLog "	> System "+Self.getName()+" has "+Self.getNumberOfPlanets()+" planets"
+		
+		' load this here so we only have to do it once instead of every loop.
+		Local comfortableMoons:TList = Self.compileListOfPlanetsAtThisDistance(0.5) ' only planets that can be moons, we don't want gas giant moons!
 		
 		' create the planets. Main planets first, moons nested.
 		For Local i:Int = 0 To Self.getNumberOfPlanets()-1
@@ -156,6 +161,8 @@ Type TSystem Final
 			
 				newPlanet:TPlanet = TPlanet.createFromProto(px,py,Self,planetName,planetType)
 				
+				newPlanet.setParent(mainStar)
+				
 				Local populationChance:Int[] = StringToIntArray(pProtoType.getPopulationChance(),",")
 				
 				' !!
@@ -178,8 +185,47 @@ Type TSystem Final
 				DebugLog "			> Mass: "+newPlanet.getMass()+" Kg"
 				DebugLog "			> Size: "+newPlanet.getSize()
 				DebugLog "			> ScaleX/Y: "+newPlanet.getScaleX()
-				DebugLog "			> Using proto: "+pProtoType.getName()
+				DebugLog "			> Using proto: "+pProtoType.getName()				
+				
+				
+				Local moonChance:Int[] = [0,0,0,0,0,0,1,2,3,4,5]
+				
+				Local moonDistance:Float = Rnd(0.4,0.85) ' AUs
+				Local numberOfMoons:Int = moonChance[Rand(0,moonChance.length-1)]
+								
+				DebugLog "			> Number of Moons: "+numberOfMoons
+								
+				For Local i:Int=0 To numberOfMoons-1					
+					Local mProtoType:TProtoBody = TProtoBody(comfortableMoons.valueAtIndex(Rand(0,comfortableMoons.count()-1)))
+					
+					angle=Rnd(360.0)
+					
+					' now assign the moon the attributes of this prototype
+					Local moonType:String = mProtoType.getName()							
+	
+					Local px:Int = newPlanet.getX()+Cos(angle)*(moonDistance*ONE_AU)
+					Local py:Int = newPlanet.getY()+Sin(angle)*(moonDistance*ONE_AU)
+				
+					Local newMoon:TPlanet = TPlanet.createFromProto(px,py,Self,planetName+" "+i,moonType) ' name it planet+#
+					
+					' hack for testing...
+					' make it smaller than its parent.
+					newMoon.setScaleX(newPlanet.getScaleX()*0.3)
+					newMoon.setScaleY(newMoon.getScaleX())
+					
+					newMoon.setSize(CalcImageSize(newMoon._image, False) * newMoon.GetScaleX())
+					
+					newMoon.setParent(newPlanet) ' make the moon's parent, the last planet we created
+					
+					DebugLog "				> New Moon: "+planetName+" "+i
+					DebugLog "				> Of Type: "+moonType
+					DebugLog "				> At "+moonDistance+" AU from its parent"
+					
+					moonDistance:+Rnd(0.04,0.3)	' move out!				
+				Next			
+				
 				DebugLog ""
+				
 			Else
 				' either too far or too close to make a planet
 			EndIf
@@ -190,6 +236,9 @@ Type TSystem Final
 				Case 27 PlanetDistance:+Rnd(19.0, 30.0) ' AUs
 			End Select			
 		Next
+		
+		'TAsteroid.createAsteroidBelt(Self,MainStar.getX()+150000, mainStar.getY()+150000, 12000, 100)
+		'TAsteroid.createAsteroidsRealistically(Self,MainStar.getX()+150000, mainStar.getY()+150000, 100, 120)
 		
 		
 		' now we calculate the economy, danger level, government and tech level
@@ -237,25 +286,29 @@ Type TSystem Final
 		Local d:Double = 0.0
 		Local FarthestObject:TStellarObject = getFarthestObjectInSystem(d)
 		
-		Local v:Float = d/(width/2)
-		
 		' now squash it down so we can see it all within the width specified
+		Local v:Float = d/(width/2)
+				
 		Local sun:TStar=Self.getMainStar()
+		sun._tempX = x
+		sun._tempY = y
 		
 		DrawRect x,y,2,2 ' draw the sun
 		
 		For Local i:TPlanet = EachIn Self._L_SpaceObjects
-			Local d1:Float = Distance(sun.GetX(), sun.GetY(), i.GetX(), i.GetY()) / v
-			Local a1:Float = DirectionTo(sun.GetX(), sun.GetY(), i.GetX(), i.GetY())-180
+			Local d1:Float = Distance(i.GetParent().GetX(), i.GetParent().GetY(), i.GetX(), i.GetY()) / v
+			Local a1:Float = DirectionTo(i.GetParent().GetX(), i.GetParent().GetY(), i.GetX(), i.GetY())-180
 			Local px:Int = x+Cos(a1)*d1
 			Local py:Int = y+Sin(a1)*d1
 			
 			SetColor 255,255,255
 			SetAlpha 0.2
-			drawCircle(x,y,d1)
+			drawCircle(i.GetParent()._tempX, i.GetParent()._tempY, d1)
 			SetAlpha 1			
 			SetColor 0,255,0
-			DrawRect px-2, py-2, 4, 4								
+			DrawRect px-2, py-2, 4, 4
+			i._tempX = px
+			i._tempY = py								
 		Next
 		
 		For Local i:TShip = EachIn Self._L_SpaceObjects
@@ -366,6 +419,7 @@ Type TSystem Final
 		For Local i:TSpaceObject = EachIn Self._L_SpaceObjects
 			RemoveSpaceObject(i)
 		Next
+		Self._L_SpaceObjects.clear()		
 		_systemHasBeenPopulated=0
 	End Method
 	

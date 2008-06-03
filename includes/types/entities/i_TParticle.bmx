@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -140,7 +140,7 @@ Type TProjectile Extends TParticle	' projectile is a special type of particle
 	
 	Method Explode() 
 		' a makeshift "explosion" effect for testing
-		If not _system Then Return
+		If Not _system Then Return
 		Local expScale:Float = CalcImageSize(_image) / 128.0 * _scaleX * 2
 		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 0.5, expScale, 1, _System) 
 		part.SetXVel(_xVel) 
