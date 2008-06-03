@@ -208,6 +208,11 @@ Type TStarMap Extends TMiniMap
 			DrawText(ProperCase(blipName), blipOver.getX(), blipOver.getY())
 			SetColor 255,255,255
 			SetHandle 0,0
+
+			If KeyHit(KEY_H) And SystemOver
+				' hyperspace to this system...
+				G_Player.GetControlledShip().HyperspaceToSystem(systemOver)
+			EndIf
 			
 			If MouseDown(1)
 				' load this system...				

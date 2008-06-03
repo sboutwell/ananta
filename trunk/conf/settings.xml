@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 This file is part of Ananta.
@@ -46,7 +46,7 @@ Copyright 2007, 2008 Jussi Pakkanen
       <top>5</top>
       <bottom>5</bottom>
       <left>5</left>
-      <right>200</right>
+      <right>5</right>
     </viewportmarginals>
     <!-- the border around the viewport -->
     <border>

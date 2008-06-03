@@ -147,6 +147,8 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 		Flip(0) 
 	EndIf
 	
+	
+	
 	' clear the whole viewport backbuffer
 	SetViewport(0,0,viewport.GetResX(),viewport.GetResY())
 	Cls

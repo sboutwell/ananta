@@ -327,7 +327,7 @@ Type TShip Extends TMovingObject
 	Method HyperspaceToSystem(s:TSystem)
 		' we are going to immediately jump to this system
 		Local currentlyActiveSystem:TSystem = TSystem._g_ActiveSystem
-		If currentlyActiveSystem currentlyActiveSystem.forget()
+		If currentlyActiveSystem currentlyActiveSystem.forget();TSystem._g_ActiveSystem=Null
 		
 		s.SetAsActive() ' set as active
 		
