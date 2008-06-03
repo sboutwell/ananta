@@ -32,7 +32,7 @@ Type TParticle Extends TMovingObject
 	End Method
 	
 	Method Destroy() 
-		_System.RemoveSpaceObject(Self) 
+		If _System Then _System.RemoveSpaceObject(Self) 
 		If g_L_Particles Then g_L_Particles.Remove(Self) 
 	End Method
 			
