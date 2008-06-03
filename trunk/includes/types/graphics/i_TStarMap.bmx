@@ -140,7 +140,7 @@ Type TStarMap Extends TMiniMap
 		Local s:Int = 0
 		
 		For Local i:TMapBlip = EachIn _L_blips
-			s:Int = i.getSize()+within
+			s:Int = (i.getSize()/_zoomFactor) + within
 			If mx > (i.getX()-s) And mx < (i.getX()+s)
 				If my > (i.getY()-s) And my < (i.getY()+s)
 					Return i
@@ -205,7 +205,7 @@ Type TStarMap Extends TMiniMap
 			SetColor 255,0,0
 			Local blipName:String = blipOver.getName()
 			SetHandle(TextWidth(blipName) / 2, TextHeight(blipName))
-			DrawText(Capitalize(blipName), blipOver.getX(), blipOver.getY())
+			DrawText(ProperCase(blipName), blipOver.getX(), blipOver.getY())
 			SetColor 255,255,255
 			SetHandle 0,0
 			
@@ -226,7 +226,7 @@ Type TStarMap Extends TMiniMap
 				EndIf				
 			EndIf
 			
-			If KeyHit(KEY_H) And SystemOver
+			If KeyDown(KEY_H) And SystemOver
 				' hyperspace to this system...
 				G_Player.GetControlledShip().HyperspaceToSystem(systemOver)
 			EndIf

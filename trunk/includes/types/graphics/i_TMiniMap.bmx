@@ -369,7 +369,7 @@ Type TMapBlip
 	Method DrawName()
 		SetColor(190, 190, 240)
 		SetHandle(TextWidth(_blipName) / 2, TextHeight(_blipName))
-		DrawText(Capitalize(_blipName), _x, _y)
+		DrawText(ProperCase(_blipName), _x, _y)
 	End Method
 	
 	Function Create:TMapBlip(x:Int, y:Int, size:Int) 
