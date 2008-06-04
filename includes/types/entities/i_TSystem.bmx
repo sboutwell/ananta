@@ -76,11 +76,9 @@ Type TSystem Final
 	EndMethod
 
 	' placeholder method for procedural planet generation
-	' Matt - in progress...
-	
-	
-	Method Populate()	
-		
+	' Matt - in progress...	
+	Method Populate()			
+		Local verbose:Int = False ' output all the generation stuff to the debuglog
 	
 		Local ONE_AU:Long = 200000
 	
@@ -88,7 +86,7 @@ Type TSystem Final
 		SeedRnd(seed)
 		
 	
-		DebugLog "	> Generating system "+Self.GetName()+" (seed: "+seed+")"
+		If verbose DebugLog "	> Generating system "+Self.GetName()+" (seed: "+seed+")"
 		
 		' create a star
 		' the createFromProto automatically looks at the current system's central star type
@@ -100,7 +98,7 @@ Type TSystem Final
 		' 	TProtoBody.populateBodyFromName(mainStar, "sun0")
 		' 
 		
-		DebugLog "	> Main star of type "+Self.GetCentralStarType()
+		If verbose DebugLog "	> Main star of type "+Self.GetCentralStarType()
 				
 		' if it's a lone star, just name it the system name, otherwise, number them.
 		Local name:String = ""
@@ -109,7 +107,7 @@ Type TSystem Final
 		Local mainStar:TStar = TStar.createFromProto(0, 0, Self, name)		
 		Self.SetMainStar(mainStar)		
 	
-		DebugLog "	> Mass: "+Self.GetMainStar().GetMass()
+		If verbose DebugLog "	> Mass: "+Self.GetMainStar().GetMass()
 	
 		Local sunPrototypeBody:TProtoBody = TProtoBody.findProtoBodyFromName("sun"+Self.GetCentralStarType())
 	
@@ -129,7 +127,7 @@ Type TSystem Final
 		' freak occurance, start the planets way out.
 		If Rand(1,15)=1 PlanetDistance = Rnd(1.6,5.5) ' AUs	
 		
-		DebugLog "	> System "+Self.getName()+" has "+Self.getNumberOfPlanets()+" planets"
+		If verbose DebugLog "	> System "+Self.getName()+" has "+Self.getNumberOfPlanets()+" planets"
 		
 		' load this here so we only have to do it once instead of every loop.
 		Local comfortableMoons:TList = Self.compileListOfPlanetsAtThisDistance(0.5) ' only planets that can be moons, we don't want gas giant moons!
@@ -178,22 +176,23 @@ Type TSystem Final
 				' increase the system's population
 				SystemPopulation:+newPlanet.getPopulation()	
 				
-				DebugLog "		> New planet:"	
-				DebugLog "			> Name: "+newPlanet.getName()
-				DebugLog "			> Population: "+newPlanet.getPopulation()+" Billion"			
-				DebugLog "			> Distance: "+planetDistance+" from main star"
-				DebugLog "			> Mass: "+newPlanet.getMass()+" Kg"
-				DebugLog "			> Size: "+newPlanet.getSize()
-				DebugLog "			> ScaleX/Y: "+newPlanet.getScaleX()
-				DebugLog "			> Using proto: "+pProtoType.getName()				
-				
+				If verbose 
+					DebugLog "		> New planet:"	
+					DebugLog "			> Name: "+newPlanet.getName()
+					DebugLog "			> Population: "+newPlanet.getPopulation()+" Billion"			
+					DebugLog "			> Distance: "+planetDistance+" from main star"
+					DebugLog "			> Mass: "+newPlanet.getMass()+" Kg"
+					DebugLog "			> Size: "+newPlanet.getSize()
+					DebugLog "			> ScaleX/Y: "+newPlanet.getScaleX()
+					DebugLog "			> Using proto: "+pProtoType.getName()				
+				EndIf
 				
 				Local moonChance:Int[] = [0,0,0,0,0,0,1,2,3,4,5]
 				
 				Local moonDistance:Float = Rnd(0.4,0.85) ' AUs
 				Local numberOfMoons:Int = moonChance[Rand(0,moonChance.length-1)]
 								
-				DebugLog "			> Number of Moons: "+numberOfMoons
+				If verbose DebugLog "			> Number of Moons: "+numberOfMoons
 								
 				For Local i:Int=0 To numberOfMoons-1					
 					Local mProtoType:TProtoBody = TProtoBody(comfortableMoons.valueAtIndex(Rand(0,comfortableMoons.count()-1)))
@@ -217,14 +216,16 @@ Type TSystem Final
 					
 					newMoon.setParent(newPlanet) ' make the moon's parent, the last planet we created
 					
-					DebugLog "				> New Moon: "+planetName+" "+i
-					DebugLog "				> Of Type: "+moonType
-					DebugLog "				> At "+moonDistance+" AU from its parent"
+					If verbose 
+						DebugLog "				> New Moon: "+planetName+" "+i
+						DebugLog "				> Of Type: "+moonType
+						DebugLog "				> At "+moonDistance+" AU from its parent"
+					EndIf
 					
 					moonDistance:+Rnd(0.04,0.3)	' move out!				
 				Next			
 				
-				DebugLog ""
+				If verbose DebugLog ""
 				
 			Else
 				' either too far or too close to make a planet
@@ -258,6 +259,9 @@ Type TSystem Final
 		Else		
 		EndIf
 		
+		
+		'DebugLog "populating "+Self.getName()
+		
 		_systemHasBeenPopulated = True
   	End Method
 	
@@ -275,10 +279,14 @@ Type TSystem Final
 		Return l
 	End Method
 	
-	Method drawSystemQuickly(x:Int, y:Int, width:Int)
-		SetColor 0,255,0
-		SetAlpha 0.1
-		DrawRect x-width/2,y-width/2,width,width
+	Method drawSystemQuickly(x:Int, y:Int, width:Float, drawBackground:Int=0)
+	
+		' draw a background box
+		If drawBackground
+			SetColor 0,255,0
+			SetAlpha 0.1
+			DrawRect x-width/2,y-width/2,width,width
+		EndIf
 		
 		SetColor 255,255,255
 		SetAlpha 1
@@ -293,24 +301,54 @@ Type TSystem Final
 		sun._tempX = x
 		sun._tempY = y
 		
-		DrawRect x,y,2,2 ' draw the sun
+		drawCircle(x, y, 6)
 		
+		' draw initial planets to get their _tempX + _tempY for moons
 		For Local i:TPlanet = EachIn Self._L_SpaceObjects
-			Local d1:Float = Distance(i.GetParent().GetX(), i.GetParent().GetY(), i.GetX(), i.GetY()) / v
-			Local a1:Float = DirectionTo(i.GetParent().GetX(), i.GetParent().GetY(), i.GetX(), i.GetY())-180
-			Local px:Int = x+Cos(a1)*d1
-			Local py:Int = y+Sin(a1)*d1
-			
-			SetColor 255,255,255
-			SetAlpha 0.2
-			drawCircle(i.GetParent()._tempX, i.GetParent()._tempY, d1)
-			SetAlpha 1			
-			SetColor 0,255,0
-			DrawRect px-2, py-2, 4, 4
-			i._tempX = px
-			i._tempY = py								
+			If i.GetParent()=Null
+				Local d1:Float = Distance(i.GetParent().GetX(), i.GetParent().GetY(), i.GetX(), i.GetY()) / v
+				Local a1:Float = DirectionTo(i.GetParent().GetX(), i.GetParent().GetY(), i.GetX(), i.GetY())-180
+				Local px:Int = x+Cos(a1)*d1
+				Local py:Int = y+Sin(a1)*d1
+				
+				SetColor 255,255,255
+				SetAlpha 0.2
+				drawCircle(i.GetParent()._tempX, i.GetParent()._tempY, d1)
+				SetAlpha 1			
+				SetColor 0,255,0					
+				DrawRect px,py,2,2
+				
+				If viewport.GetStarMap().getZoomFactor() > 4300
+					SetColor 255,255,255
+					DrawText "planet "+i.getName(),px+20,py+2
+				EndIf
+									
+				i._tempX = px
+				i._tempY = py
+			EndIf								
 		Next
 		
+		' now draw the moons
+		For Local i:TPlanet = EachIn Self._L_SpaceObjects
+			If i.GetParent()<>Null
+				Local d1:Float = Distance(i.GetParent().GetX(), i.GetParent().GetY(), i.GetX(), i.GetY()) / v
+				Local a1:Float = DirectionTo(i.GetParent().GetX(), i.GetParent().GetY(), i.GetX(), i.GetY())-180
+				Local px:Int = i.GetParent()._tempX+Cos(a1)*d1
+				Local py:Int = i.GetParent()._tempY+Sin(a1)*d1
+				
+				SetColor 255,255,255
+				SetAlpha 0.2
+				drawCircle(i.GetParent()._tempX, i.GetParent()._tempY, d1)
+				SetAlpha 1			
+				SetColor 0,255,0					
+				DrawRect px,py,2,2
+				
+				i._tempX = px
+				i._tempY = py								
+			EndIf
+		Next		
+		
+		' now draw ships in that system
 		For Local i:TShip = EachIn Self._L_SpaceObjects
 			Local d1:Float = Distance(sun.GetX(), sun.GetY(), i.GetX(), i.GetY()) / v
 			Local a1:Float = DirectionTo(sun.GetX(), sun.GetY(), i.GetX(), i.GetY())-180
@@ -318,9 +356,15 @@ Type TSystem Final
 			Local py:Int = y+Sin(a1)*d1
 			SetAlpha 1			
 			SetColor 255,0,0
-			DrawRect px-2, py-2, 4, 4
+			
+			DrawRect(px, py, 2, 2)
+			
+			SetRotation 0
 			SetColor 255,255,255								
-		Next				
+		Next		
+		
+		SetRotation 0	
+		SetScale 1,1	
 		SetColor 255,255,255
 	End Method	
 	
@@ -414,13 +458,15 @@ Type TSystem Final
 		Return _g_ActiveSystem
 	End Function
 	
-	Method Forget()
+	Method Forget()		
+		If Self._L_SpaceObjects = Null _systemHasBeenPopulated=0;Return
 		' remove all the objects from this system
 		For Local i:TSpaceObject = EachIn Self._L_SpaceObjects
 			RemoveSpaceObject(i)
 		Next
 		Self._L_SpaceObjects.clear()		
 		_systemHasBeenPopulated=0
+		'DebugLog "forgetting "+Self.getName()
 	End Method
 	
 	Function Create:TSystem(sectX:Int, sectY:Int,x:Int,y:Int,name:String,typ:Int,mult:Int)

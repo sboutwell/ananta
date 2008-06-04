@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -93,7 +93,7 @@ Function ToggleBoolean(bool:Int Var)
 End Function
 
 ' presents long integers with prefix multipliers (kilo, mega, giga, etc)
-Function getPrefix(pref:String var, val:Long var) 
+Function getPrefix(pref:String Var, val:Long Var) 
 	Local prefixes:String[] =["", "", "",  ..
 							"k", "k", "k",  ..
 							"M", "M", "M",  ..
@@ -119,7 +119,7 @@ End Function
 ' Returns an integer representation of RGBA pixel values
 Function MakeCol:Int(a:Byte, r:Byte, g:Byte, b:Byte) 
 	Local n:Int
-	Local m:Byte ptr = VarPtr n
+	Local m:Byte Ptr = Varptr n
 	m[0] = b
 	m[1] = g
 	m[2] = r
@@ -162,3 +162,31 @@ Function rotateBits:Int(num:Int, bitLength:Int = 32, rotate:Int = 1)
 	
 	Return number
 End Function
+
+' Not sure where to put these. Math functions seem the closest.
+' http://www.blitzbasic.com/Community/posts.php?topic=47133
+' Perturbatio
+
+Function MouseXSpeed:Int()
+	Global lastX:Int =0
+	Local result:Int = MouseX()-lastX
+	lastX = MouseX()	
+	Return result
+End Function
+
+
+Function MouseYSpeed:Int()
+	Global lastY:Int =0
+	Local result:Int = MouseY()-lastY
+	lastY = MouseY()	
+	Return result
+End Function
+
+
+Function MouseZSpeed:Int()
+	Global lastZ:Int =0
+	Local result:Int = MouseZ()-lastZ
+	lastZ = MouseZ()	
+	Return result
+End Function
+

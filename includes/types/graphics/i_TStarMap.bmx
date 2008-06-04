@@ -31,8 +31,10 @@ Type TStarMap Extends TMiniMap
 	Field _visibleLines:Int[]	' two arrays containing the sectors visible in the minimap
 	Field _visibleColumns:Int[] ' at the current camera position and zoom level
 	Field _mapOverlayTreshold:Float	' zoom level at which star generation is replaced with overlay galaxy map
-	Field _galaxyImage:TImage
-
+	Field _galaxyImage:TImage	
+	Field _closestSystemToScreenCentre:TSystem
+	Field _ClosestSystemBlip:TMapBlip
+	
 	Method SetCamera(x:Double, y:Double)
 		_isScrolling = True
 		'ClearMiniMap()
@@ -42,7 +44,7 @@ Type TStarMap Extends TMiniMap
 	End Method
 	
 	' scroll map along x axis
-	Method scrollX(dir:Int = 1)
+	Method scrollX(dir:Double = 1)
 		_isScrolling = True
 		ClearMiniMap()
 		Super.scrollX(dir)
@@ -50,7 +52,7 @@ Type TStarMap Extends TMiniMap
 	End Method
 
 	' scroll map along y axis	
-	Method scrollY(dir:Int = 1) 
+	Method scrollY(dir:Double = 1) 
 		_isScrolling = True
 		ClearMiniMap()
 		Super.scrollY(dir)
@@ -84,6 +86,10 @@ Type TStarMap Extends TMiniMap
 		Update()
 		_isZooming = False
 	End Method
+	
+	Method getZoomFactor:Float()
+		Return _zoomFactor
+	End Method
 
 	Method StopZoom() 
 		_zoomAmount = _zoomAmountReset
@@ -104,11 +110,12 @@ Type TStarMap Extends TMiniMap
 		'_isScrolling = FALSE
 	End Method
 	
-	Method AddStarMapBlip(s:TSystem)
+	Method AddStarMapBlip:TMapBlip(s:TSystem)
 		Local blip:TMapBlip = AddBlip(s.GetX() - _cameraX,s.GetY() - _cameraY,s.GetSize())
 		blip.SetBColor(G_starColor[s._type])
 		blip.SetName(s._name)
 		blip.SetSystem(s)
+		Return blip
 	End Method
 
 	' update calculates which sectors should be visible in the map at the current
@@ -122,31 +129,53 @@ Type TStarMap Extends TMiniMap
 			_isScrolling = False
 		EndIf
 		
+		' clear our viewing system
+		If TSystem._g_ViewingSystem<>Null
+			If TSystem._g_ActiveSystem<>TSystem._g_ViewingSystem
+				If TSystem._g_ViewingSystem.isPopulated()
+					TSystem._g_ViewingSystem.forget()
+					TSystem._g_ViewingSystem=Null
+				EndIf
+			EndIf
+		EndIf
+		
+		setClosestSystemToScreenCentre(Null) ' reset!
+		
+		Local minDis:Float = 99999999999999
+		
 		For Local line:Int = EachIn _visibleLines
 			For Local column:Int = EachIn _visibleColumns
 				Local sect:TSector = TSector.Create(column,line)
 				sect.Populate()
+												
 				For Local sys:TSystem = EachIn sect.GetSystemList()
-					AddStarMapBlip(sys)
+					Local blip:TMapBlip = AddStarMapBlip(sys)
+								
+					Local screenX:Int = blip.getX()
+					Local screenY:Int = blip.getY()
+					Local d:Float = Distance(screenX,screenY,GraphicsWidth()/2,GraphicsHeight()/2)
+					If d < minDis
+						minDis = d
+						setClosestSystemToScreenCentre(sys)
+						_ClosestSystemBlip = blip
+					EndIf
 				Next				
 				sect.Forget()
 			Next
-		Next		
-	End Method
-	
-	Method getBlipUnderMouse:TMapBlip(within:Int=4)
-		Local mx:Int=MouseX()
-		Local my:Int=MouseY()
-		Local s:Int = 0
+		Next			
 		
-		For Local i:TMapBlip = EachIn _L_blips
-			s:Int = (i.getSize()/_zoomFactor) + within
-			If mx > (i.getX()-s) And mx < (i.getX()+s)
-				If my > (i.getY()-s) And my < (i.getY()+s)
-					Return i
-				EndIf
-			EndIf
-		Next
+		' hmmm, as we're working with system objects that get re-created every refresh, we'll have to re-populate the system everytime
+		' So here we'll load our target system into TSystem._g_ViewingSystem and populate() it.
+		
+		TSystem._g_ViewingSystem = getClosestSystemToScreenCentre()
+		If TSystem._g_ViewingSystem<>Null
+			If TSystem._g_ViewingSystem.isPopulated()=0 TSystem._g_ViewingSystem.populate() 		
+		EndIf
+				
+		' set closest blip alpha here, seeing as it's created every refresh
+		If _zoomFactor > 200
+			_ClosestSystemBlip.setBlipAlpha(0)
+		EndIf							
 	End Method
 	
 	' updates arrays holding the galaxy sector X and Y-coordinates that should be visible in the starmap
@@ -179,6 +208,14 @@ Type TStarMap Extends TMiniMap
 		Next
 	End Method
 	
+	Method setClosestSystemToScreenCentre(s:TSystem)
+		_closestSystemToScreenCentre=s
+	End Method
+	
+	Method getClosestSystemToScreenCentre:TSystem()
+		Return _closestSystemToScreenCentre
+	End Method
+	
 	Method GetVisibleLines:Int[]()
 		Return _visibleLines
 	End Method
@@ -193,49 +230,41 @@ Type TStarMap Extends TMiniMap
 		DrawSectorGrid()
 		DrawSectorNumber()
 		G_debugWindow.AddText("Starmap blips: " + _L_Blips.Count())
+		If getClosestSystemToScreenCentre()<>Null
+			G_debugWindow.AddText("Closest System To Screen Centre: " + getClosestSystemToScreenCentre().getName())
+			If TSystem._g_ViewingSystem
+				G_debugWindow.AddText("Viewing System: " + TSystem._g_ViewingSystem.getName())
+			EndIf
+		EndIf
 		
-		' draw the system our mouse is over and show the system underneath
-		' we'll have to load the system and place the loaded system in the
-		' TSystem._g_ViewingSystem variable
-		'
+		' we have the closestBlip/System. Highlight it.
+		If _ClosestSystemBlip
+			TColor.SetTColor(TColor.FindColor("crimson"))
+			drawCircle(_ClosestSystemBlip.getX(),_ClosestSystemBlip.getY(),20)
+			TColor.SetTColor(TColor.FindColor("white"))
+		EndIf
+		
 		Local blipOver:TMapBlip = Self.getBlipUnderMouse(4) ' 4 = within radius of 4
 		If blipOver
-			Local SystemOver:TSystem = blipOver.getSystem()
-			
+			Local SystemOver:TSystem = blipOver.getSystem()			
 			SetColor 255,0,0
 			Local blipName:String = blipOver.getName()
 			SetHandle(TextWidth(blipName) / 2, TextHeight(blipName))
 			DrawText(ProperCase(blipName), blipOver.getX(), blipOver.getY())
 			SetColor 255,255,255
 			SetHandle 0,0
-
-			If KeyHit(KEY_H) And SystemOver
-				' hyperspace to this system...
-				G_Player.GetControlledShip().HyperspaceToSystem(systemOver)
-			EndIf
-			
-			If MouseDown(1)
-				' load this system...				
-				' now load the new system we're under				
-				If systemOver<>Null					
-					If systemOver.isPopulated()=0 Then systemOver.populate()
-					
-					' now draw it
-					systemOver.drawSystemQuickly(blipOver.getX(),blipOver.getY(), 200)									
-				EndIf				
-			Else			
-				' when we let go of mousedown(1), forget the viewed system
-				If TSystem._g_ViewingSystem<>Null
-					TSystem._g_ViewingSystem.forget()
-					TSystem._g_ViewingSystem=Null
-				EndIf				
-			EndIf
-			
-			If KeyDown(KEY_H) And SystemOver
-				' hyperspace to this system...
-				G_Player.GetControlledShip().HyperspaceToSystem(systemOver)
-			EndIf
 		EndIf
+	
+		If TSystem._g_ViewingSystem<>Null
+			If _zoomFactor > 115
+				TSystem._g_ViewingSystem.drawSystemQuickly(_ClosestSystemBlip.getX(),_ClosestSystemBlip.getY(), 0.15*_zoomFactor)			
+				_ClosestSystemBlip.setBlipAlpha(0)
+			Else
+				_ClosestSystemBlip.setBlipAlpha(1.0)' reset
+			EndIf			
+		EndIf	
+		
+					
 	End Method
 	
 	' draws the galaxy image overlay

@@ -325,25 +325,31 @@ Type TShip Extends TMovingObject
 	EndFunction
 
 	Method HyperspaceToSystem(s:TSystem)
+		If s=_system Return ' can't hyperspace to the system you're already in
+		
 		' we are going to immediately jump to this system
 		Local currentlyActiveSystem:TSystem = TSystem._g_ActiveSystem
 		If currentlyActiveSystem currentlyActiveSystem.forget();TSystem._g_ActiveSystem=Null
-		
-		s.SetAsActive() ' set as active
-		
-		s.populate() ' load it up
-		
-		Self.SetSystem(s) ' assign the ship's current system
 						
-		' position us by the star				
-		Self.SetCoordinates(s.getMainStar().GetX() + s.getMainStar().GetSize() * 1.5, s.getMainStar().GetY()) 
-		Self.SetOrbitalVelocity(s.getMainStar(), True) 		
+		s.populate() ' load it up		
+		Self.SetSystem(s) ' assign the ship's current system		
+		s.SetAsActive() ' set as active
+						
+		' position us by the star	
+		Local farthestDistance:Double = 0
+		Local FarthestObject:TStellarObject = s.getFarthestObjectInSystem(farthestDistance)
+				
+		' position us at the farthest object			
+		Self.SetCoordinates(FarthestObject.GetX() + FarthestObject.GetSize() * 3, FarthestObject.GetY()) 
+		Self.SetOrbitalVelocity(FarthestObject, True) 		
 		
 		' centre the viewport
 		Local sMap:TStarMap = viewport.GetStarMap()		
 		sMap.Center()	' move the starmap "camera" to the middle of the active system
 		sMap.UpdateCenteredSector()
-		sMap.Update()		
+		sMap.Update()	
+		
+		viewport.CreateMsg("Hyperspaced to " + s.getName())
 	End Method
 
 	Function Create:TShip(hullID:String, name:String = "Nameless") 
