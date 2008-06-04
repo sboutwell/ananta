@@ -102,7 +102,6 @@ Type TSpaceObject Abstract
 	
 	Method Explode() 
 		' a makeshift "explosion" effect for testing. Redo this with some pretty particle fireworks.
-		Rem
 		Local expScale:Float = CalcImageSize(_image) / 128.0 * _scaleX * 1.5
 		Local part:TParticle = TParticle.Create(TImg.LoadImg("smoke.png"), _x, _y, 2, expScale, 1, _System) 
 		part.SetXVel(_xVel) 
@@ -110,8 +109,6 @@ Type TSpaceObject Abstract
 		part.SetRot(Rand(0, 360)) 
 		part.SetRotationSpd(Self.GetRotSpd() + Rnd(- 10, 10)) 
 		part._affectedByGravity = True
-		
-		EndRem
 		 
 		Destroy() 
 		
@@ -145,9 +142,9 @@ Type TSpaceObject Abstract
 		' This commented code block is trying to define if the object will be visible on the screen to avoid
 		' drawing non-visible objects. Not working. So, in the meantime we'll suffer from a performance hit.
 		
-		Local zoom:Float = viewport._zoomfactor
-		If x + (_size * (_scaleX * zoom) / 2) < startX Then Return
-		If x - (_size * (_scaleX * zoom) / 2) > startX + vp.GetWidth() Then Return
+		'Local zoom:Float = viewport._zoomfactor
+		'If x + (_size * (_scaleX * zoom) / 2) < startX Then Return
+		'If x - (_size * (_scaleX * zoom) / 2) > startX + vp.GetWidth() Then Return
 				
 		SetViewport(startX, startY, vp.GetWidth(), vp.GetHeight()) 
 		'SetViewport(0, 0, 800, 600) 
@@ -344,6 +341,10 @@ Type TSpaceObject Abstract
 			'TImg.LoadImg("no_image_generated")
 		EndIf
 	End Method	
+	
+	Method getImage:TImage()
+		Return _image
+	End Method
 	
 	Method setDescription(m:String)
 		_description = m

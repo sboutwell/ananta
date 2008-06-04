@@ -136,10 +136,6 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	EndIf
 	' ***************************************
 	
-	'If MouseDown(1)
-	'	TSystem._g_ActiveSystem.drawSystemQuickly(MouseX(),MouseY(),300)
-	'EndIf	
-	
 	If G_delta._isFrameRateLimited Then
 		G_delta.LimitFPS()        ' limit framerate
 		Flip(1) 
@@ -174,12 +170,12 @@ End Function
 
 ' new generate system test
 Function GenerateTestSystem2:TStar(sSize:Long) 
-	Local system1:TSystem = TSystem.GetActiveSystem()
+'	Local system1:TSystem = TSystem.GetActiveSystem()
 	
-	DebugLog "populating system "+system1.GetName()+"..."		
-	system1.populate()		
+'	DebugLog "populating system "+system1.GetName()+"..."		
+'	system1.populate()		
 	
-	Return system1.getMainStar()	
+'	Return system1.getMainStar()	
 End Function
 
 

@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@ Type TSystemMap Extends TMiniMap
 	
 	Field _attitudeIndicator:TImage ' attitude indicator image
 	
-	Method AddSystemMapBlip(o:TSpaceObject)
+	Method AddSystemMapBlip:TMapBlip (o:TSpaceObject)
 		Local blip:TMapBlip = AddBlip(viewport.GetCameraPosition_X() - o.GetX(),viewport.GetCameraPosition_Y() - o.GetY(),o.GetSize())
 		
 		' use casting to find out the type of the object and set the color accordingly
@@ -51,11 +51,13 @@ Type TSystemMap Extends TMiniMap
 			blip.SetBColor(_selfColor) 
 			If TShip(o) And blip.GetSize() < 3 Then blip.SetSize(0.0)   ' do not draw the blip (set size to 0) when zoomed out "enough". The attitude indicator should do the job.
 		EndIf	
+		
+		Return blip
 	End Method
 
 	Method DrawDetails()
 		Self.SetTitle("System: " + ProperCase(TSystem.GetActiveSystem()._name))
-		super.DrawDetails()	
+		Super.DrawDetails()	
 	
 		' use type casting to determine if the centered object is a TMovingObject
 		Local obj:TMovingObject = TMovingObject(viewport.GetCenteredObject()) 
@@ -98,7 +100,7 @@ Type TSystemMap Extends TMiniMap
 		map._height = h
 		map._width = w
 		
-		map.isVisible = TRUE
+		map.isVisible = True
 		
 		map._defaultZoom = 0.1
 		map._title = "System map"

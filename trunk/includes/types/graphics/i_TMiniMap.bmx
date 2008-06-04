@@ -78,14 +78,14 @@ Type TMiniMap
 	End Method
 	
 	' scrolls the minimap along x-axis
-	Method scrollX(speed:Int = 1) 
+	Method scrollX(speed:Double = 1) 
 		Local speedMultiplier:Double = (_scrollspeed / _zoomFactor)
 		If speedMultiplier < 10 Then speedMultiplier = 10:Double
 		_cameraX = _cameraX + (speedMultiplier * speed) * G_delta.GetDelta(False) 	' delta not affected by time compression 
 	End Method
 	
 	' scrolls the minimap along y-axis
-	Method scrollY(speed:Int = 1) 
+	Method scrollY(speed:Double = 1) 
 		Local speedMultiplier:Double = (_scrollspeed / _zoomFactor)
 		If speedMultiplier < 10 Then speedMultiplier = 10:Double
 		_cameraY = _cameraY + (speedMultiplier * speed) * G_delta.GetDelta(False)  	' delta not affected by time compression 
@@ -99,6 +99,26 @@ Type TMiniMap
 	Method SetCamera(x:Double,y:Double)
 		_cameraX = x
 		_cameraY = y
+	End Method
+	
+	Method getCamera(x:Double Var,y:Double Var)
+		x = _cameraX
+		y = _cameraY
+	End Method
+
+	Method getBlipUnderMouse:TMapBlip(within:Int=4)
+		Local mx:Int=MouseX()
+		Local my:Int=MouseY()
+		Local s:Int = 0
+		
+		For Local i:TMapBlip = EachIn _L_blips
+			s:Int = (i.getSize()/_zoomFactor) + within
+			If mx > (i.getX()-s) And mx < (i.getX()+s)
+				If my > (i.getY()-s) And my < (i.getY()+s)
+					Return i
+				EndIf
+			EndIf
+		Next
 	End Method
 		
 	' draws the actual minimap
@@ -301,6 +321,7 @@ EndType
 
 Type TMapBlip
 	Field _x:Int, _y:Int
+	Field _alpha:Float
 	Field _size:Float
 	Field _color:TColor
 	Field _blipName:String = ""
@@ -342,6 +363,14 @@ Type TMapBlip
 		_color = col
 	End Method
 
+	Method SetBlipAlpha(a:Float)
+		_alpha = a
+	End Method
+	
+	Method GetBlipAlpha:Float()
+		Return _alpha
+	End Method
+
 	' isOverBoundaries checks if the blip would show on the minimap. Returns "true" if not.
 	Method isOverBoundaries:Int(startX:Int, startY:Int, width:Int, height:Int) 
 		Return _x + _size / 2 < startX Or ..
@@ -358,12 +387,16 @@ Type TMapBlip
 			SetColor(255, 255, 255) 	' default color white if not set
 		EndIf
 		
+		SetAlpha _alpha ' set its alpha
+		
 		If _size < 2 Then	' if the size is smaller than 2 pixels, plot a pixel instead of drawing an oval
 			Plot (_x,_y)
 		Else
 			SetHandle(_size / 2, _size / 2)       ' oval handle to the middle of the oval
 			DrawOval (_x, _y, _size, _size) 
 		End If
+		
+		SetAlpha 1 ' return to norm
 	End Method
 	
 	Method DrawName()
@@ -377,6 +410,7 @@ Type TMapBlip
 		blip._x = x
 		blip._y = y
 		blip._size = size
+		blip._alpha = 1.0
 		Return blip
 	End Function
 	

@@ -1,4 +1,4 @@
-rem
+Rem
 This file is part of Ananta.
 
     Ananta is free software: you can redistribute it and/or modify
@@ -54,6 +54,11 @@ Type TPlayer Extends TPilot
 	Method GetInput()
 		If _controlledShip Then
 		' ship controls
+
+			' jump to the system in the centre of the screen
+			If KeyDown(KEY_H) And viewport.GetStarMap().getClosestSystemToScreenCentre()
+				Self.GetControlledShip().HyperspaceToSystem(viewport.GetStarMap().getClosestSystemToScreenCentre())
+			EndIf
 		
 			If KeyDown(KEY_UP) _controlledShip.SetThrottle(1) 
 			If KeyDown(KEY_DOWN) _controlledShip.SetThrottle(- 1) 
@@ -93,14 +98,23 @@ Type TPlayer Extends TPilot
 		
 		' starmap scrolling
 		If viewport.GetStarMap().isVisible Then
-			Local multiplier:Int = 1
+			Local multiplier:Float = 1
 			If KeyDown(KEY_LSHIFT) Or KeyDown(KEY_RSHIFT) Then 
 				multiplier = 10		' with shift multiply the scroll speed by 10
 			EndIf
+			
+			Local zoom:double = viewport.GetStarMap().getZoomFactor()
+			
+			If zoom > 200
+				multiplier = 0.05-((0.05/2000.0)*zoom)
+				If multiplier < 0.001 multiplier=0.001
+			EndIf	
+							
 			If KeyDown(KEY_A) Then viewport.GetStarMap().scrollX(- 1 * multiplier)  	' scroll left
 			If KeyDown(KEY_D) Then viewport.GetStarMap().scrollX(1 * multiplier)  		' scroll right
 			If KeyDown(KEY_S) Then viewport.GetStarMap().scrollY(1 * multiplier) 		' scroll down
 			If KeyDown(KEY_W) Then viewport.GetStarMap().scrollY(- 1 * multiplier) 		' scroll up
+			
 			If KeyDown(KEY_C) Then viewport.GetStarMap()._isPersistent = False; viewport.GetStarMap().ZoomIn() 	' zoom in starmap
 			If KeyDown(KEY_V) Then viewport.GetStarMap()._isPersistent = False; viewport.GetStarMap().ZoomOut() 	' zoom out starmap
 		End If
@@ -118,8 +132,8 @@ Type TPlayer Extends TPilot
 			viewport.GetSystemMap().StopZoom() 
 		EndIf
 		
-		If Not viewport.GetStarMap()._isPersistent AND Not KeyDown(KEY_C) And Not KeyDown(KEY_V) Then
-			viewport.GetStarMap()._isPersistent = TRUE
+		If Not viewport.GetStarMap()._isPersistent And Not KeyDown(KEY_C) And Not KeyDown(KEY_V) Then
+			viewport.GetStarMap()._isPersistent = True
 			viewport.GetStarMap().StopZoom() 
 			viewport.GetStarMap().Update()
 		EndIf
@@ -204,7 +218,7 @@ Type TAIPlayer Extends TPilot
 	EndMethod
 	
 	Function UpdateAllAI()
-		If NOT g_L_AIPilots Return
+		If Not g_L_AIPilots Return
 		For Local ai:TAIPlayer = EachIn g_L_AIPilots
 			ai.Think()  ' the main AI routine
 		Next
