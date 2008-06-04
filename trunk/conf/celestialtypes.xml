@@ -23,7 +23,7 @@ Copyright 2007, 2008 Jussi Pakkanen
 <celestialtypes>
 	<stars>
 		<sun0>	<!-- Stellar object ID -->
-			<image>star_generated</image>				<!-- the pic representing this object / INFO: temp usage of star_generated for testing -->
+			<image>star_gen_red</image>				<!-- the pic representing this object / INFO: temp usage of star_generated for testing -->
 			<description>Type 'M' Flare Star</description>
 			<minscale>20</minscale>					<!-- the min scale of the visual image -->
 			<maxscale>30</maxscale>					<!-- the max scale of the visual image -->
@@ -32,7 +32,7 @@ Copyright 2007, 2008 Jussi Pakkanen
 			<planetchance>0,0,0,0,0,1,3</planetchance>		<!-- number of planets - chance of -->
 		</sun0>	
 		<sun1>	
-			<image>star_generated</image>				
+			<image>star_gen_faintred</image>				
 			<description>Faint Type 'M' Flare Star</description>
 			<minscale>30</minscale>					
 			<maxscale>40</maxscale>					
@@ -41,7 +41,7 @@ Copyright 2007, 2008 Jussi Pakkanen
 			<planetchance>0,0,1,1,1,2,3,3,4,5</planetchance>
 		</sun1>		
 		<sun2>	
-			<image>star_generated</image>				
+			<image>star_gen_red</image>				
 			<description>Type 'M' Red Star</description>
 			<minscale>40</minscale>					
 			<maxscale>60</maxscale>					
@@ -50,7 +50,7 @@ Copyright 2007, 2008 Jussi Pakkanen
 			<planetchance>0,1,1,2,2,3,4,4,4,5,6</planetchance>
 		</sun2>	
 		<sun3>	
-			<image>star_generated</image>				
+			<image>star_gen_orange</image>				
 			<description>Type 'K' Orange Star</description>
 			<minscale>40</minscale>					
 			<maxscale>50</maxscale>					
@@ -59,7 +59,7 @@ Copyright 2007, 2008 Jussi Pakkanen
 			<planetchance>2,2,2,3,4,4,4,5,6,7,8,8</planetchance>
 		</sun3>		
 		<sun4>	
-			<image>star_generated</image>				
+			<image>star_gen_yellow</image>				
 			<description>Type 'G' Yellow Star</description>
 			<minscale>40</minscale>					
 			<maxscale>50</maxscale>					
@@ -68,7 +68,7 @@ Copyright 2007, 2008 Jussi Pakkanen
 			<planetchance>3,3,4,4,4,5,5,6,7,7,8,9,9,10,10,11,11</planetchance>
 		</sun4>		
 		<sun5>	
-			<image>star_generated</image>				
+			<image>star_gen_white</image>				
 			<description>Type 'F' White Star</description>
 			<minscale>15</minscale>					
 			<maxscale>20</maxscale>					
@@ -77,7 +77,7 @@ Copyright 2007, 2008 Jussi Pakkanen
 			<planetchance>0,1,1,2,3,4,5,6,7,8,9,10</planetchance>
 		</sun5>	
 		<sun6>	
-			<image>star_generated</image>				
+			<image>star_gen_silver</image>				
 			<description>Type 'A' Hot White Star</description>
 			<minscale>12</minscale>					
 			<maxscale>17</maxscale>					
@@ -86,7 +86,7 @@ Copyright 2007, 2008 Jussi Pakkanen
 			<planetchance>0,0,1,1,2,3,3,3,4,4,4</planetchance>
 		</sun6>		
 		<sun7>	
-			<image>star_generated</image>				
+			<image>star_gen_white</image>				
 			<description>White Dwarf Star</description>
 			<minscale>6</minscale>					
 			<maxscale>9</maxscale>					
@@ -95,7 +95,7 @@ Copyright 2007, 2008 Jussi Pakkanen
 			<planetchance>0,0,1,1,2,3,6,3</planetchance>
 		</sun7>
 		<sun8>	
-			<image>star_generated</image>				
+			<image>star_gen_red</image>				
 			<description>Red Giant Star</description>
 			<minscale>70</minscale>					
 			<maxscale>120</maxscale>					

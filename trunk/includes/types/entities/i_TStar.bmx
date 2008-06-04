@@ -5,15 +5,18 @@ Type TStar Extends TStellarObject
 	End Method
 
 	' uses Cairo vector graphics library to generate a star image of a radius supplied by a parameter
-	Function GenerateStarTexture:TImage(r:Int) 
+	' Star color is supplier by "inner" and "outer" RGB double values (0..1) to produce a stepless radial gradient
+	Function GenerateStarTexture:TImage(r:Int, i_r:Double, i_g:Double, i_b:Double, o_r:Double, o_g:Double, o_b:Double)
 		Local cairo:TCairo = TCairo.Create(TCairoImageSurface.CreateForPixmap(r * 2, r * 2)) 
 	
 		Local normalizeMat:TCairoMatrix = TCairoMatrix.CreateScale(r * 2, r * 2) 
 		cairo.SetMatrix(normalizeMat) 
 		
 		Local pat:TCairoPattern = TCairoPattern.CreateRadial (0.5, 0.5, 6, 0.5, 0.5, 30) 
-		pat.AddColorStopRGBA(1, 1, 1, 0.5, 1) 
-		pat.AddColorStopRGBA(0, 0.95, 0.95, 0, 1) 
+		' outer gradient color
+		pat.AddColorStopRGBA(1, o_r, o_g, o_b, 1)
+		' inner gradient color
+		pat.AddColorStopRGBA(0, i_r, i_g, i_b, 1) 
 		cairo.SetSource(pat) 
 		cairo.Arc(0.5, 0.5, 0.5, 0, 360) 
 		cairo.Fill() 

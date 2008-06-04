@@ -161,7 +161,13 @@ Wend
 ' =========== to be moved or integrated somewhere else later =======
 ' ==================================================================
 Function GenerateVectorTextures() 
-	TImg.StoreImg(TStar.GenerateStarTexture(1024) , "star_generated") 
+	TImg.StoreImg(TStar.GenerateStarTexture(1024, 0.95, 0.95, 0, 1, 1, 0.5) , "star_gen_yellow")
+	TImg.StoreImg(TStar.GenerateStarTexture(1024, 0.45, 0.05, 0.05, 0.8, 0.3, 0.3) , "star_gen_red")
+	TImg.StoreImg(TStar.GenerateStarTexture(1024, 0.5, 0.5, 0.5, 0.7, 0.7, 0.7) , "star_gen_silver")
+	TImg.StoreImg(TStar.GenerateStarTexture(1024, 0.95, 0.95, 0.95, 0.7, 0.7, 0.8) , "star_gen_white")
+	TImg.StoreImg(TStar.GenerateStarTexture(1024, 0.9, 0.6, 0.1, 0.45, 0.35, 0.05) , "star_gen_orange")
+	TImg.StoreImg(TStar.GenerateStarTexture(1024, 0.7, 0.4, 0.15, 0.3, 0.3, 0.03) , "star_gen_brown")
+	TImg.StoreImg(TStar.GenerateStarTexture(1024, 0.3, 0.01, 0.01, 0.15, 0.01, 0.0) , "star_gen_faintred")
 End Function
 
 
