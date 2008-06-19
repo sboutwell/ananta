@@ -309,10 +309,10 @@ Type TShip Extends TMovingObject
 	End Method
 	
 	Method Destroy() 
-		_pilot.Kill() 
+		If _pilot Then _pilot.Kill() 
 		_pilot = Null
 		
-		_System.RemoveSpaceObject(Self)
+		If _System Then _System.RemoveSpaceObject(Self)
 		g_L_Ships.Remove(Self) 
 		g_nrShips:-1
 	End Method
