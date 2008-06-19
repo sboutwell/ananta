@@ -61,7 +61,7 @@ Type TParticle Extends TMovingObject
 		If Not g_L_Particles Then g_L_Particles = CreateList() 
 		g_L_particles.AddLast(part) 
 		
-		System.AddSpaceObject(part) 
+		If System Then System.AddSpaceObject(part) 
 		
 		Return part
 	EndFunction
