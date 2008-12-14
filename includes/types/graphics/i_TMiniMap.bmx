@@ -391,7 +391,7 @@ Type TMapBlip
 		
 		If _size < 2 Then	' if the size is smaller than 2 pixels, plot a pixel instead of drawing an oval
 			Plot (_x,_y)
-		Else
+		Else If _size < viewport.GetResX() * 2 ' drawing insanely large ovals causes a slowdown...
 			SetHandle(_size / 2, _size / 2)       ' oval handle to the middle of the oval
 			DrawOval (_x, _y, _size, _size) 
 		End If
