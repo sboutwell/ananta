@@ -102,13 +102,6 @@ Type TPlayer Extends TPilot
 			If KeyDown(KEY_LSHIFT) Or KeyDown(KEY_RSHIFT) Then 
 				multiplier = 10		' with shift multiply the scroll speed by 10
 			EndIf
-			
-			Local zoom:double = viewport.GetStarMap().getZoomFactor()
-			
-			If zoom > 200
-				multiplier = 0.05-((0.05/2000.0)*zoom)
-				If multiplier < 0.001 multiplier=0.001
-			EndIf	
 							
 			If KeyDown(KEY_A) Then viewport.GetStarMap().scrollX(- 1 * multiplier)  	' scroll left
 			If KeyDown(KEY_D) Then viewport.GetStarMap().scrollX(1 * multiplier)  		' scroll right

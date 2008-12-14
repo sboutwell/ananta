@@ -173,9 +173,9 @@ Type TStarMap Extends TMiniMap
 		EndIf
 				
 		' set closest blip alpha here, seeing as it's created every refresh
-		If _zoomFactor > 200
-			_ClosestSystemBlip.setBlipAlpha(0)
-		EndIf							
+		'If _zoomFactor > 200
+		'	_ClosestSystemBlip.setBlipAlpha(0)
+		'EndIf							
 	End Method
 	
 	' updates arrays holding the galaxy sector X and Y-coordinates that should be visible in the starmap
@@ -254,7 +254,7 @@ Type TStarMap Extends TMiniMap
 			SetColor 255,255,255
 			SetHandle 0,0
 		EndIf
-	
+
 		If TSystem._g_ViewingSystem<>Null
 			If _zoomFactor > 115
 				TSystem._g_ViewingSystem.drawSystemQuickly(_ClosestSystemBlip.getX(),_ClosestSystemBlip.getY(), 0.15*_zoomFactor)			

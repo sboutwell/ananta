@@ -34,10 +34,10 @@ Type TMiniMap
 	Field _cameraX:Double		' absolute camera coordinates
 	Field _cameraY:Double
 	Field _isScrolling:Int = False	' flag to show if the map is currently scrolling
-	Field _scrollSpeed:Float = 500	' the base scroll speed in units per second
+	Field _scrollSpeed:Double = 500	' the base scroll speed in units per second
 	
 	Field _defaultZoom:Float = 1
-	Field _zoomFactor:Float
+	Field _zoomFactor:Double
 	Field _zoomAmount:Float 			' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
 	Field _zoomStep:Float = 0.5			' the amount added to the _zoomAmount per each second of zooming
@@ -73,22 +73,23 @@ Type TMiniMap
 		Local blip:TMapBlip = TMapBlip.Create(x, y, size) 
 		
 		If Not _L_blips Then _L_blips = New TList
-		If blip.GetSize() > 0 Then _L_blips.AddLast(blip) 
+ 		
+		' added a check against minimap zoomfactor to avoid drawing insanely large blips 
+		' (for example when zooming into the solar system on the galactic map)
+		If blip.GetSize() > 0 And _zoomFactor <= 115 Then _L_blips.AddLast(blip) 
 		Return blip
 	End Method
 	
 	' scrolls the minimap along x-axis
 	Method scrollX(speed:Double = 1) 
 		Local speedMultiplier:Double = (_scrollspeed / _zoomFactor)
-		If speedMultiplier < 10 Then speedMultiplier = 10:Double
-		_cameraX = _cameraX + (speedMultiplier * speed) * G_delta.GetDelta(False) 	' delta not affected by time compression 
+		_cameraX = _cameraX + (speedMultiplier:Double * speed:Double) * G_delta.GetDelta(False) 	' delta not affected by time compression 
 	End Method
 	
 	' scrolls the minimap along y-axis
 	Method scrollY(speed:Double = 1) 
 		Local speedMultiplier:Double = (_scrollspeed / _zoomFactor)
-		If speedMultiplier < 10 Then speedMultiplier = 10:Double
-		_cameraY = _cameraY + (speedMultiplier * speed) * G_delta.GetDelta(False)  	' delta not affected by time compression 
+		_cameraY = _cameraY + (speedMultiplier:Double * speed:Double) * G_delta.GetDelta(False) 	' delta not affected by time compression 
 	End Method
 	
 	Method GetBlipCount:Int()
@@ -124,6 +125,7 @@ Type TMiniMap
 	' draws the actual minimap
 	Method draw() 
 		If Not isVisible Then Return		' return without drawing if hidden
+
 		SetViewport(_startX, _startY, _width, _height)  ' set drawing area
 
 		SetBlend(ALPHABLEND) 
@@ -381,6 +383,7 @@ Type TMapBlip
 	
 	Method Draw() 
 		If _size = 0 Then Return		' don't draw 0-sized blips (shouldn't happen as the size check is already done elsewhere)
+		
 		If _color Then 
 			TColor.SetTColor(_color) 
 		Else
@@ -391,7 +394,7 @@ Type TMapBlip
 		
 		If _size < 2 Then	' if the size is smaller than 2 pixels, plot a pixel instead of drawing an oval
 			Plot (_x,_y)
-		Else If _size < viewport.GetResX() * 2 ' drawing insanely large ovals causes a slowdown...
+		Else
 			SetHandle(_size / 2, _size / 2)       ' oval handle to the middle of the oval
 			DrawOval (_x, _y, _size, _size) 
 		End If
