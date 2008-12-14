@@ -339,9 +339,13 @@ Type TShip Extends TMovingObject
 		Local farthestDistance:Double = 0
 		Local FarthestObject:TStellarObject = s.getFarthestObjectInSystem(farthestDistance)
 				
-		' position us at the farthest object			
-		Self.SetCoordinates(FarthestObject.GetX() + FarthestObject.GetSize() * 3, FarthestObject.GetY()) 
-		Self.SetOrbitalVelocity(FarthestObject, True) 		
+		' position us at the farthest object
+		If FarthestObject Then			
+			Self.SetCoordinates(FarthestObject.GetX() + FarthestObject.GetSize() * 3, FarthestObject.GetY()) 
+			Self.SetOrbitalVelocity(FarthestObject, True) 		
+		Else
+			Self.SetCoordinates(20000,20000)
+		EndIf
 		
 		' centre the viewport
 		Local sMap:TStarMap = viewport.GetStarMap()		
