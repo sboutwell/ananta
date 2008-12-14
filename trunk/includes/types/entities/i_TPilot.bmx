@@ -56,7 +56,7 @@ Type TPlayer Extends TPilot
 		' ship controls
 
 			' jump to the system in the centre of the screen
-			If KeyDown(KEY_H) And viewport.GetStarMap().getClosestSystemToScreenCentre()
+			If KeyHit(KEY_H) And viewport.GetStarMap().getClosestSystemToScreenCentre()
 				Self.GetControlledShip().HyperspaceToSystem(viewport.GetStarMap().getClosestSystemToScreenCentre())
 			EndIf
 		
@@ -137,6 +137,7 @@ Type TPlayer Extends TPilot
 			viewport.GetStarMap().StopZoom() 
 			viewport.GetStarMap().Update()
 		EndIf
+		
 	EndMethod
 	
 	Function Create:TPlayer(name:String)
