@@ -344,7 +344,7 @@ Type TShip Extends TMovingObject
 			Self.SetCoordinates(FarthestObject.GetX() + FarthestObject.GetSize() * 3, FarthestObject.GetY()) 
 			Self.SetOrbitalVelocity(FarthestObject, True) 		
 		Else
-			Self.SetCoordinates(20000,20000)
+			Self.SetCoordinates(500000,500000)
 		EndIf
 		
 		' centre the viewport

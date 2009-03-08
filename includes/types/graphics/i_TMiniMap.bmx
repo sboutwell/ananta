@@ -233,7 +233,7 @@ Type TMiniMap
 		Local prefix:String		' prefix is kilo, mega, giga, tera, etc
 		Local val:Long = 10.0 ^ k * _lineStep	' value is the actual line step value without a prefix. Often a huge number with lots of zeroes.
 		
-		getPrefix(prefix, val) 	' GetPrefix adjusts prefix and value according to the amount of digits in the value
+		TValue.getLongPrefix(prefix, val) 	' GetLongPrefix adjusts prefix and value according to the amount of digits in the value
 		
 		SetScale(1, 1) 
 		SetRotation(0) 
