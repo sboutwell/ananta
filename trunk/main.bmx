@@ -62,6 +62,8 @@ Include "includes/types/graphics/i_TStarMap.bmx"		'Star map extended of TMinimap
 Include "includes/types/graphics/i_TColor.bmx"			'A structure-like type to map color names to their RGB values
 Include "includes/types/graphics/i_TMedia.bmx"			'Type that loads and holds media files
 Include "includes/types/i_TDelta.bmx"					'Delta timer
+Include "includes/types/math/i_TValue.bmx"				'Scalars and units (distance, mass, etc)
+
 
 TColor.LoadAll()      				' load all color info from colors.xml (must be loaded before initializing the viewport)
 viewport.InitViewportVariables() 	' load various viewport-related settings from settings.xml and precalc some other values
