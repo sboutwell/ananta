@@ -29,7 +29,6 @@ Type TViewport
 	Global g_BitDepth:Int
 	Global g_RefreshRate:Int
 
-	Global g_media_spacedust:TImage		' image global for the "space dust" particle mask
 	Global g_media_spaceBG:TImage		' image global for the space background
 
 	Field _startX:Int	' screen coordinates and dimensions of the viewport
@@ -40,6 +39,8 @@ Type TViewport
 	Field _midY:Int		' center position
 	Field _cameraPosition_X:Double
 	Field _cameraPosition_Y:Double
+	Field _camXVel:Double
+	Field _camYVel:Double
 	Field _centeredObject:TSpaceObject	' the object the camera is centered on
 	Field _marginalTop:Int
 	Field _marginalBottom:Int
@@ -93,6 +94,7 @@ Type TViewport
 		'_starMap = TStarMap.Create(g_ResolutionX - 195, 200, 195, 195)
 		_starMap = TStarMap.Create(_startX, _startY, _height, _width)
 
+		TScreenParticle.Init() ' populate screen particle array
 	EndMethod
 
 	' draws the viewport borders and background images
@@ -101,6 +103,16 @@ Type TViewport
 		If _centeredObject Then
 			_CameraPosition_X:Double = _centeredObject.GetX() 
 			_CameraPosition_Y:Double = _centeredObject.GetY() 
+			_camXVel:Double = _centeredObject.GetXVel() ' camera velocity for drawing speed lines 
+			_camYVel:Double = _centeredObject.GetYVel()
+			
+			If TShip(_centeredObject) Then
+				Local ship:Tship = TShip(_centeredObject)
+				If ship.isWarpDriveOn Then 
+					_camXVel = _camXVel	* ship._warpRatio
+					_camYVel = _camYVel	* ship._warpRatio
+				EndIf
+			EndIf
 		EndIf
 
 		SetViewport(_startX ,_startY, _width, _height)  ' limit the drawing area to viewport margins
@@ -118,17 +130,11 @@ Type TViewport
 		' -----
 		
 		SetColor 255, 255, 255
+		
 		' ----- draw the space dust with zoom-dependent alpha
-		If Not _isZooming And _zoomFactor < 0.1 Then ' if we're zoomed out far enough, gradually fade the space dust
-			SetAlpha (0.95 / 0.1 * _zoomFactor) 
-		ElseIf _isZooming Then  ' while we are zooming in or out, don't draw the space dust
-			SetAlpha 0
-		Else
-			SetAlpha 0.95
-		EndIf
-		TileImage2 (G_media_spacedust, _CameraPosition_X:Double * _zoomFactor, _CameraPosition_Y:Double * _zoomFactor)
+		DrawSpaceDecals()
 		' ---------
-
+		
 		' draw a colored border around the viewport
 		DrawBorder(_borderWidth, _borderColor) 
 		
@@ -137,6 +143,11 @@ Type TViewport
 	' CenterCamera sets an object for the camera to follow
 	Method CenterCamera(o:TSpaceObject) 
 		_centeredObject = o
+	End Method
+	
+	' draws random "space dust" and velocity lines
+	Method DrawSpaceDecals()
+		TScreenParticle.UpdateAndDrawAll()
 	End Method
 	
 	Method DrawBorder(w:Int,color:TColor)
@@ -159,7 +170,7 @@ Type TViewport
 	EndMethod
 	
 	' draw miscellanous viewport stuff such as minimaps, hud and messages
-	Method DrawMisc() 
+	Method DrawMisc()
 		_systemMap.Draw() 
 		If Not _starMap._isPersistent Or _starMap._isScrolling Then _starMap.Update()
 		_starMap.Draw()
@@ -233,6 +244,18 @@ Type TViewport
 		
 	Method GetZoomFactor:Float()
 		Return _zoomFactor
+	End Method
+	
+	Method GetCamXVel:Double()
+		Return self._camXVel
+	End Method
+
+	Method GetCamYVel:Double()
+		Return self._camYVel
+	End Method
+
+	Method GetCamSpeed:Double()
+		Return (GetSpeed(_camXVel,_camYVel))
 	End Method
 	
 	Method SetZoomFactor(z:Float) 
@@ -318,7 +341,6 @@ Type TViewport
 		g_BitDepth			= XMLFindFirstMatch(xmlfile,"settings/graphics/bitdepth").ToInt()
 		g_RefreshRate = XMLFindFirstMatch(xmlfile, "settings/graphics/refreshrate").ToInt() 
 		
-		g_media_spacedust = TImg.LoadImg("spacedust.png") 
 		g_media_spaceBG = TImg.LoadImg("space_bg.jpg") 
 	EndFunction
 
@@ -328,3 +350,157 @@ Type TViewport
 	EndFunction
 
 EndType
+
+' space dust particles
+Type TScreenParticle
+	Global g_maxParticles:Int = 800 ' number of particles spread around the specified area
+	Global g_ScreenParticles:TScreenParticle [g_maxParticles] ' array holding all particles
+	Global g_pAreaWidth:Int  = 2400		' particle area dimensions in screen pixels
+	Global g_pAreaHeight:Int = 1800		'
+	Global g_particleAreaStartX:Double	' top left (world) coordinate of the particle area
+	Global g_particleAreaStartY:Double	' top left (world) coordinate of the particle area
+	Global g_particleAreaEndX:Double	' bottom right (world) coordinate of the particle area
+	Global g_particleAreaEndY:Double	' bottom right (world) coordinate of the particle area
+	Global g_isRandomized:Int = False
+	Global g_streakSpeedTreshold:Int = 400
+	Global g_streakSpeedLimit:Int = 1200
+	Global g_streakCoeff:Double = 1
+	Global g_streakAlphaCoeff:Double = 1
+	Field _x:Double ' screen coordinates
+	Field _y:Double '
+	Field _worldX:Double ' world coordinates
+	Field _worldY:Double '
+			
+	
+	Method _draw()
+		SetColor(255,255,255)
+		
+		If viewport.GetCamSpeed() > g_streakSpeedTreshold Then ' draw a streak
+			Local streakStartX:Double = _x
+			Local streakStartY:Double = _y 
+			Local streakEndX:Double = _x - viewport.GetCamXVel() * g_streakCoeff * viewport.GetZoomFactor()
+			Local streakEndY:Double = _y - viewport.GetCamYVel() * g_streakCoeff * viewport.GetZoomFactor()
+			' return without drawing if no part of the streak is visible on viewport
+			If  streakStartx < viewport._startX And streakStartY < viewport._startY And ..
+				streakStartx > viewport._startX + viewport.GetWidth() And ..
+				streakStartY > viewport._startY + viewport.GetHeight() And ..
+				streakEndx < viewport._startX And streakEndY < viewport._startY And ..
+				streakEndx > viewport._startX + viewport.GetWidth() And ..
+				streakEndY > viewport._startY + viewport.GetHeight() Then Return
+				
+			DrawLine(streakStartX, streakStartY, streakEndX, streakEndY)
+		Else ' if we're not moving very fast, plot a pixel instead of a streak
+			' don't draw if pixel is not visible on the viewport
+			If  _x < viewport._startX Or _y < viewport._startY Or ..
+				_x > viewport._startX + viewport.GetWidth() Or ..
+				_y > viewport._startY + viewport.GetHeight() Then Return
+			Plot(_x,_y)
+		End If
+	End Method
+	
+	Method _isOutOfBoundaries:Int()	' returns true if particle is out of area boundaries
+		Return _worldX > g_ParticleAreaEndX Or _worldX < g_ParticleAreaStartX Or _worldY > g_PArticleAreaEndY Or _worldY < g_ParticleAreaStartY
+	End Method
+	
+	Method _randomizePosition()
+		_worldX = Rand(g_ParticleAreaStartX,g_ParticleAreaEndX)
+		_worldY = Rand(g_ParticleAreaStartY,g_ParticleAreaEndY)
+	End Method
+	
+	' repositions (wrap around) a particle found to be outside the allowed area
+	Method _reposition()
+		Local maxDeviation:Double = 0 ' how far the particle is from the allowed area border
+		If _worldX > g_ParticleAreaEndX Then 
+			_worldX = g_ParticleAreaStartX + _worldX - g_ParticleAreaEndX
+			local xdev:Double = Abs(_worldX - g_ParticleAreaEndX)
+			if xdev > maxDeviation Then maxDeviation = xdev
+		EndIf
+		If _worldX < g_ParticleAreaStartX Then 
+			_worldX = g_ParticleAreaEndX + _worldX - g_ParticleAreaStartX
+			Local xDev:Double = Abs(_worldX - g_ParticleAreaStartX)
+			if xdev > maxDeviation Then maxDeviation = xdev
+		EndIf
+		If _worldY > g_ParticleAreaEndY Then 
+			_worldY = g_ParticleAreaStartY + _worldY - g_ParticleAreaEndY
+			Local xDev:Double = Abs(_worldY - g_ParticleAreaEndY)
+			if xdev > maxDeviation Then maxDeviation = xdev
+		EndIf
+		If _worldY < g_ParticleAreaStartY Then 
+			_worldY = g_ParticleAreaEndY + _worldY - g_ParticleAreaStartY
+			Local xDev:Double = Abs(_worldY - g_ParticleAreaStartY)
+			if xdev > maxDeviation Then maxDeviation = xdev
+		EndIf
+		
+		' *** Re-randomize the whole bunch if we're warping way out of the area
+		' This trick is due to a faulty logic in the code which makes the stardust effect
+		' 	lag out of screen during extreme speeds with jumpdrive on. Comment the line to see what I mean.
+		' I hate it when I have to resort to "duct tape fixes"!  
+		' /JP
+		If maxDeviation > 4.0 * g_pAreaWidth Then RandomizeAll()  
+		' ***
+	End Method
+	
+	Function CalculateScreenLimits()
+		g_particleAreaStartX = viewport.GetCameraPosition_X() - g_pAreaWidth
+		g_particleAreaEndX = viewport.GetCameraPosition_X() + g_pAreaWidth
+		g_particleAreaStartY = viewport.GetCameraPosition_Y() - g_pAreaHeight
+		g_particleAreaEndY = viewport.GetCameraPosition_Y() + g_pAreaHeight
+	End Function
+	
+	Function RandomizeAll()
+		CalculateScreenLimits()
+		For Local part:TScreenParticle = EachIn g_ScreenParticles
+			part._randomizePosition()
+		Next
+		g_isRandomized = True
+	End Function
+	
+	' precalculates the length of the speed streaks and streak alpha
+	Function CalculateStreakCoeff()
+		g_streakAlphaCoeff = 1.0
+		Local streakSpeed:Double = viewport.GetCamSpeed()
+		If streakSpeed > g_streakSpeedLimit Then streakSpeed = g_streakSpeedLimit
+		
+		
+		Local reduction:Double = (streakSpeed / g_streakSpeedTreshold)^(1.0/16.0)
+		g_streakCoeff = 1.0 - reduction
+		
+		' reduce streak alpha gradually IF above the streak treshold
+		If streakSpeed > g_streakSpeedTreshold Then g_streakAlphaCoeff = (1.0 - (reduction - 1.0))^10.0
+	End Function
+	
+	Function UpdateAndDrawAll()
+		If Not g_isRandomized Then RandomizeAll()
+		CalculateScreenLimits()
+		CalculateStreakCoeff()
+		
+		For Local part:TScreenParticle = EachIn g_ScreenParticles
+			If viewport.GetZoomFactor() < 0.8 Then ' if we're zoomed out far enough, gradually fade the space dust
+				SetAlpha (0.65 / 0.8 * viewport.GetZoomFactor()) * g_streakAlphaCoeff
+			Else
+				SetAlpha 0.65 * g_streakAlphaCoeff
+			EndIf
+			If GetAlpha() < 0.01 Then Return
+
+			If part._isOutOfBoundaries() Then part._reposition()
+			' calculate screen position based on world position and zoom
+			part._x = viewport.GetCameraPosition_X() - part._worldX
+			part._y = viewport.GetCameraPosition_Y() - part._worldY
+			part._x = part._x * viewport.GetZoomFactor() + viewport.GetMidX() + viewport.GetStartX()
+			part._y = part._y * viewport.GetZoomFactor() + viewport.GetMidY() + viewport.GetStartY()
+			part._draw()
+		Next
+	End Function
+	
+	' prepopulate screen particle array
+	Function Init()
+		For Local i:Int = 0 To g_maxParticles - 1
+			g_ScreenParticles[i] = TScreenParticle.Create()
+		Next
+	End Function
+	
+	Function Create:TScreenParticle()
+		Local part:TScreenParticle = New TScreenParticle
+		Return part
+	End Function
+End Type

@@ -83,14 +83,7 @@ G_Universe.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the ga
 ' use =0 to try envionment with planets and manual system creation
 ' use =1 to try system.populate()
 
-'SetupTestEnvironment(0)		' create the player, and a test system with some planets, asteroids and AI ships
-SetupTestEnvironment(1)
-
-
-
-
-
-
+SetupTestEnvironment()
 
 
 
@@ -171,117 +164,34 @@ End Function
 
 
 ' new generate system test
-Function GenerateTestSystem2:TStar(sSize:Long) 
-'	Local system1:TSystem = TSystem.GetActiveSystem()
+Function GenerateTestSystem2:TStar() 
+	Local system1:TSystem = TSystem.GetActiveSystem()
 	
 '	DebugLog "populating system "+system1.GetName()+"..."		
-'	system1.populate()		
+	system1.populate()		
 	
-'	Return system1.getMainStar()	
+	Return system1.getMainStar()	
 End Function
 
 
 
-Function GenerateTestSystem:TStar(sSize:Long) 
-	Local asteroids:Int = 30
-	Local planets:Int = 10
-	
-	' generate a system
-	Local system1:TSystem = TSystem.GetActiveSystem()
-
-	' ================ randomize System and planetary object for testing ===================
-	'SeedRnd(MilliSecs()) 
-	' create a star
-	Local st1:TStar = TStar.Create(0, 0, System1, 1000000, 5, "Sol") 
-	st1._image = TImg.LoadImg("star_generated") 
-	st1._rotation = -90
-	st1._scaleX = 20
-	st1._scaleY = st1._scaleX
-	st1._size = CalcImageSize(st1._image, False) * st1._scaleX
-	st1._mass = (st1._scaleX ^ 2) * 2000000000
-	
-	system1._mainStar = st1
-	
-	' create some planets
-	For Local i:Int = 1 To planets
-		'Function Create:TPlanet(x:Int,y:Int,System:TSystem,mass:Long,size:Int,name:String)
-		Local pl2:TPlanet = TPlanet.Create(Rand(- sSize, sSize), Rand(- sSize, sSize), System1, 100000, 10, "Jupiter " + i) 
-		
-		' Re-randomize the coordinates if the planet is too close to the sun 
-		Local again:Int = False
-		Repeat
-			If Distance(st1.GetX(), st1.GetY(), pl2.GetX(), pl2.GetY()) < st1.GetSize() * 2 Then
-				pl2.SetX(Rand(-sSize,sSize))
-				pl2.SetY(Rand(-sSize,sSize))
-				again = True
-				DebugLog("Planet " + i + " too close to the sun, repositioning...")
-			Else
-				again = False
-			EndIf
-		Until again = False
-		
-		pl2._image = TImg.LoadImg("jupiter.png") 
-		pl2._rotation=-90
-		pl2._scaleX = Rnd(0.5, 2) 
-		pl2._scaleY = pl2._scaleX
-		pl2._size = CalcImageSize(pl2._image, False) * pl2._scaleX
-		pl2._mass = (pl2._scaleX ^ 2) * Rand(200000000, 400000000) 
-		pl2._hasGravity = True
-	Next
-	
-	' create some asteroids
-	For Local i:Int = 1 To asteroids
-		Local scale:Float = Rnd(0.3, 2) 
-		Local size:Int = CalcImageSize(TImg.LoadImg("asteroid.png"), False) * scale
-		Local mass:Long = (scale ^ 2) * Rand(3000, 10000) 
-		
-		Local ast:TAsteroid = TAsteroid.Create("asteroid.png", System1, Rand(- sSize, sSize), Rand(- sSize, sSize), mass) 
-		ast._scaleX = scale
-		ast._scaleY = scale
-		ast._size = size
-		ast.SetRotationSpd(Rand(- 200, 200)) 
-		'Make the asteroid orbit the sun
-		ast.SetOrbitalVelocity(st1, Rand(0, 1)) 
-
-	Next
-	
-	Return st1
-End Function
-
-
-Function SetupTestEnvironment(setup:Byte=0)
-	'Local sectX:Int = 16
-	'Local sectY:Int = 16
-	Local sectX:Int = 5793
+Function SetupTestEnvironment()
+	Local sectX:Int = 5793	' starting sector coordinates
 	Local sectY:Int = 5649
 	
 	' make sure the starting sector has at least 1 star in it...
 	Local sect:TSector
 	sect = TSector.Create(sectX, sectY)
 	sect.Populate()
-	
-	'DebugLog(sect._L_systems.Count() + " systems")
-	
+
+	' set the first system of the generated sector active	
 	Local system:TSystem = TSystem(sect._L_systems.ValueAtIndex(1))
 	system.SetAsActive()
-	
-	' now the first system of the generated sector should be "active"
-	
-	Local sSize:Long = 148000000:Long	' real solar system size (compared to the star diameter)
-	'Local sSize:Long = 300000000:Long
-	'Local sSize:Long = 500000:Long
 	
 	' **************************************************************
 	' to see system.populate progress, use GenerateTestSystem2
 	' **************************************************************
-	Local centralStar:TStar
-	If setup =0
-		centralStar:TStar = GenerateTestSystem(sSize)
-	Else		
-		
-		centralStar:TStar = GenerateTestSystem2(sSize) 
-	EndIf
-		
+	GenerateTestSystem2()
 	
 	' ----------- STARMAP ----------
 	Local sMap:TStarMap = viewport.GetStarMap()
@@ -295,66 +205,21 @@ Function SetupTestEnvironment(setup:Byte=0)
 	G_Player = TPlayer.Create("Da Playah") 
 	Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
 	s1.SetName("Player ship") 
+	s1.SetCoordinates(50000,50000)
 	s1.SetSystem(TSystem.GetActiveSystem()) 
 	s1._rotation = 90
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
 
+	' attach a particle generator (this is to be integrated to TShip)
 	Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
 	part1.SetRandomDir(2) 
 	s1.AddAttachment(part1, - 28, 0, 0, False) 	
-	TAttachment.Create(s1, "attach.png", - 10, 10, 0, 0.1, 0.1, False) 	
+	
+	'TAttachment.Create(s1, "attach.png", - 10, 10, 0, 0.1, 0.1, False) 	
 
 
-	
-	If setup=0
-	
-		Local v:Double=0
-		Local orbitedPlanet:TStellarObject = system.getFarthestObjectInSystem(v)
-	
-		
-		' Create one asteroid to orbit the same planet as the player
-		Local ascale:Float = orbitedPlanet.GetScaleX() 
-		Local asize:Int = CalcImageSize(TImg.LoadImg("asteroid.png"), False) * ascale
-		Local amass:Long = (ascale ^ 2) * Rand(3000, 10000) 
-		Local ast:TAsteroid = TAsteroid.Create("asteroid.png", TSystem.GetActiveSystem(), Rand(- sSize, sSize), Rand(- sSize, sSize), amass) 
-		ast._scaleX = ascale
-		ast._scaleY = ascale
-		ast._size = asize
-		ast.SetRotationSpd(Rand(- 50, 50)) 
-		ast.SetX(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
-		ast.SetY(orbitedPlanet.GetY() + orbitedPlanet.GetSize() * Rnd(0.75, 1.1)) 
-		ast.SetOrbitalVelocity(orbitedPlanet,True)
-		ast = Null
-	
-		s1.SetCoordinates(orbitedPlanet.GetX() + orbitedPlanet.GetSize() * 0.7, orbitedPlanet.GetY()) 
-		s1.SetOrbitalVelocity(orbitedPlanet, True) 	
-	
-	Else
-		
-		G_Player.GetControlledShip().HyperspaceToSystem(system)		
-
-	
-	EndIf
-	
 	viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
-	's1.SetCoordinates(100000,100000)
-	' set up bunch of AI pilots
-	
-	If setup=0
-		For Local i:Int = 1 To 25
-			Local ai:TAIPlayer = TAIPlayer.Create("Da AI Playah") 
-			Local ship:TShip = TShipModel.BuildShipFromModel("olympus") 
-			ship.SetSystem(TSystem.GetActiveSystem()) 
-			ship.SetCoordinates(Rand(- sSize, sSize), Rand(- sSize, sSize)) 
-			'ship.SetCoordinates (600, 0)
-			ship.AssignPilot(ai) 
-			ai.SetTarget(s1)		' make the AI ship try to point at the player ship
-			'ship._xVel = Rand(- 100, 100) 
-			'ship._yVel = Rand(- 100, 100) 
-			ship.SetOrbitalVelocity(centralStar, Rand(0, 1) )
-		Next
-	EndIf
 	
 	viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
 End Function

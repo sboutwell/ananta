@@ -163,20 +163,29 @@ Type TAIPlayer Extends TPilot
 	' "Think" is the main AI routine to be called
 	Method Think() 
 		If Not _controlledShip Return
+		If Not _targetObject Return
+		
+		FollowTarget()
+	EndMethod
+
+	Method FollowTarget()
 		_desiredRotation = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
-		'_controlledShip.AutoPilotRotation(_desiredRotation) 	' use the ship's autopilot function to rotate the ship as desired
+	End Method
+
+	Method AimTarget()
+		_desiredRotation = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
 		
 		Local tDist:Double = Distance(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
 		Local rotDiff:Float = Abs(_controlledShip.GetRot() - _desiredRotation) 
 		If tDist > 1000 Or rotDiff > 15 Then
-			RotateTo(_desiredRotation)     	' use the AI logic to manually turn to the desired rotation
+			RotateTo(_desiredRotation)     	' use the AI logic to turn to the desired rotation
 			_controlledShip._triggerDown = False
 		Else
-			RotateTo(_desiredRotation, True)      	' use the AI logic to manually turn to the desired rotation
-			_controlledShip._triggerDown = True
-		EndIf
-	EndMethod
-
+			RotateTo(_desiredRotation, True)      	' use the AI logic to turn to the desired rotation
+			_controlledShip._triggerDown = True		' fire
+		EndIf		
+	End Method
+		
 	Method SetTarget(obj:TSpaceObject)
 		_targetObject = obj
 	End Method
