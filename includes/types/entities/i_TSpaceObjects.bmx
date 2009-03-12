@@ -236,8 +236,8 @@ Type TSpaceObject Abstract
 		Return _scaleY
 	End Method
 	
-	Method GetVel:Float() 
-		Return Sqr(_xVel ^ 2 + _yVel ^ 2) 
+	Method GetVel:Double() 
+		Return GetSpeed(_xVel, _yVel) 
 	End Method
 	
 	Method GetXVel:Double() 

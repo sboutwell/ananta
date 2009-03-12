@@ -98,7 +98,7 @@ Function SmartSplit:String[] (str:String, dels:String, text_qual:String = "~q")
 			
 End Function	
 
-' "Rounds" a float into a fixed-point string for display
+' Truncates a float into a fixed-point string for display
 Function FloatToFixedPoint:String(f:Float, decimals:Int=2)
 	Local i:Long = (10^decimals)*f
 	Local value:String = String.fromlong(i)
