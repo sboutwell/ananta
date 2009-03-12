@@ -135,11 +135,14 @@ Type TFuel Extends TCommodity
 	Global g_L_Fuels:TList		' a list to hold all fuel types
 	Field _energy:Float			' energy (megajoules) produced by one kilogram of fuel
 	
+	Method GetEnergy:Float() Return _energy EndMethod
+	Method SetEnergy(e:Float) _energy = e EndMethod
+	
 	Function ReturnFuel:TFuel(idString:String)
 		If Not g_L_Fuels Then Print "ReturnFuel: no fuels defined" ; Return Null	' return if the list is empty
 		
 		For Local f:TFuel = EachIn g_L_Fuels
-			If f._id = idString Then Return f
+			If f.GetID() = idString Then Return f
 		Next
 
 		Print "ReturnFuel: no fuel matching the ID '" + idString + " found"
@@ -157,7 +160,7 @@ Type TFuel Extends TCommodity
 			
 			Local fuelChildren:TList = rootnode.getChildren()
 			For Local value:TxmlNode = EachIn fuelChildren
-				If value.GetName() = "energy"		Then fuel._energy = value.GetText().ToFloat()
+				If value.GetName() = "energy"		Then fuel.SetEnergy(value.GetText().ToFloat())
 			Next
 
 			' Load all values common to all commodities and save them to corresponding fields of the object.

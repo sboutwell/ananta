@@ -24,6 +24,8 @@ Type TParticle Extends TMovingObject
 	Field _life:Float			' life of the particle in seconds
 	Field _alphaDelta:Float		' alpha change per second
 	
+	Method SetLife(l:Float) _life = l End Method
+	
 	Method Update() 
 		_life:-1 * G_delta.GetDelta()      			 ' decrement life by 1 frame worth of seconds
 		_alpha:-_alphaDelta * G_delta.GetDelta()     ' decrement alpha by alphaDelta
@@ -46,15 +48,15 @@ Type TParticle Extends TMovingObject
 	
 	Function Create:TParticle(img:TImage, x:Double, y:Double, life:Float, scale:Float, alpha:Float = 0.8, System:TSystem) 
 		Local part:TParticle = New TParticle
-		part._x = x
-		part._y = y
-		part._life = life
-		part._scaleX = scale
-		part._scaleY = scale
-		part._alpha = alpha
+		part.SetX(x)
+		part.SetY(y)
+		part.SetLife(life)
+		part.SetScaleX(scale)
+		part.SetScaleY(scale)
+		part.SetOAlpha(alpha)
 		part._alphaDelta = alpha / life
-		part._affectedByGravity = False
-		part._isShownOnMap = False
+		part.isAffectedByGravity = False
+		part.isShownOnMap = False
 		part._image = img
 		part._System = System
 		
@@ -121,22 +123,15 @@ Type TProjectile Extends TParticle	' projectile is a special type of particle
 	Field _damage:Float = 500	' damage this particle will do on impact
 	Field _shotBy:TShip = Null	' the ship that shot this projectile
 	
-	Method GetDamage:Float() 
-		Return _damage * _alpha
-	End Method
+	Method GetDamage:Float() Return _damage * _alpha End Method
+	Method GetShooter:TShip() Return _shotBy EndMethod
+	Method SetShooter(sh:TShip) _shotBy = sh End Method
 	
 	Method Destroy() 
 		_shotBy = Null
 		Super.Destroy()  ' call destroy() of TParticle
 	End Method
 	
-	Method SetShooter(sh:TShip) 
-		_shotBy = sh
-	End Method
-	
-	Method GetShooter:TShip() 
-		Return _shotBy
-	End Method
 	
 	Method Explode() 
 		' a makeshift "explosion" effect for testing
@@ -160,8 +155,8 @@ Type TProjectile Extends TParticle	' projectile is a special type of particle
 		part._scaleY = scale
 		part._alpha = alpha
 		part._alphaDelta = alpha / life
-		part._affectedByGravity = False
-		part._isShownOnMap = True
+		part.isAffectedByGravity = False
+		part.isShownOnMap = True
 		part._image = img
 		part._System = System
 		part._size = 2

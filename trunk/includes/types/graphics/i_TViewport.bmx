@@ -109,8 +109,8 @@ Type TViewport
 			If TShip(_centeredObject) Then
 				Local ship:Tship = TShip(_centeredObject)
 				If ship.isWarpDriveOn Then 
-					_camXVel = _camXVel	* ship._warpRatio
-					_camYVel = _camYVel	* ship._warpRatio
+					_camXVel = _camXVel	* ship.GetWarpRatio()
+					_camYVel = _camYVel	* ship.GetWarpRatio()
 				EndIf
 			EndIf
 		EndIf
@@ -172,10 +172,10 @@ Type TViewport
 	' draw miscellanous viewport stuff such as minimaps, hud and messages
 	Method DrawMisc()
 		_systemMap.Draw() 
-		If Not _starMap._isPersistent Or _starMap._isScrolling Then _starMap.Update()
+		If Not _starMap.isPersistent Or _starMap.isScrolling Then _starMap.Update()
 		_starMap.Draw()
 		
-		SetViewport(0, 0, viewport.GetResX(), viewport.GetResY()) 
+		SetViewport(0, 0, G_viewport.GetResX(), G_viewport.GetResY()) 
 		SetScale(1, 1) 
 		SetBlend(ALPHABLEND) 
 		SetRotation(0) 
@@ -185,7 +185,7 @@ Type TViewport
 		G_debugWindow.DrawAllLines() 
 		
 		' draw some miscellaneous information
-		DrawText "Hold F1 for controls", viewport.GetResX() - 190, GetResY()-25
+		DrawText "Hold F1 for controls", G_viewport.GetResX() - 190, GetResY()-25
 	EndMethod
 
 	Method GetCenteredObject:TSpaceObject() 
@@ -302,7 +302,7 @@ Type TViewport
 		G_DebugWindow.AddText("c/v                  - starmap zoom in/out")
 		G_DebugWindow.AddText("alt+c                - center starmap")
 		G_debugWindow.AddText("alt+enter            - toggle fullscreen") 
-		G_debugWindow.AddText("h		            - hyperspace to system under mouse")
+		G_debugWindow.AddText("h                    - hyperspace to system under mouse")
 		G_DebugWindow.AddText("ESC                  - exit")
 	End Method
 	
@@ -353,10 +353,10 @@ EndType
 
 ' space dust particles
 Type TScreenParticle
-	Global g_maxParticles:Int = 800 ' number of particles spread around the specified area
+	Global g_maxParticles:Int = 2200 ' number of particles spread around the specified area
 	Global g_ScreenParticles:TScreenParticle [g_maxParticles] ' array holding all particles
-	Global g_pAreaWidth:Int  = 2400		' particle area dimensions in screen pixels
-	Global g_pAreaHeight:Int = 1800		'
+	Global g_pAreaWidth:Int  = 2800		' particle area dimensions in screen pixels
+	Global g_pAreaHeight:Int = 2000		'
 	Global g_particleAreaStartX:Double	' top left (world) coordinate of the particle area
 	Global g_particleAreaStartY:Double	' top left (world) coordinate of the particle area
 	Global g_particleAreaEndX:Double	' bottom right (world) coordinate of the particle area
@@ -375,25 +375,25 @@ Type TScreenParticle
 	Method _draw()
 		SetColor(255,255,255)
 		
-		If viewport.GetCamSpeed() > g_streakSpeedTreshold Then ' draw a streak
+		If G_viewport.GetCamSpeed() > g_streakSpeedTreshold Then ' draw a streak
 			Local streakStartX:Double = _x
 			Local streakStartY:Double = _y 
-			Local streakEndX:Double = _x - viewport.GetCamXVel() * g_streakCoeff * viewport.GetZoomFactor()
-			Local streakEndY:Double = _y - viewport.GetCamYVel() * g_streakCoeff * viewport.GetZoomFactor()
+			Local streakEndX:Double = _x - G_viewport.GetCamXVel() * g_streakCoeff * G_viewport.GetZoomFactor()
+			Local streakEndY:Double = _y - G_viewport.GetCamYVel() * g_streakCoeff * G_viewport.GetZoomFactor()
 			' return without drawing if no part of the streak is visible on viewport
-			If  streakStartx < viewport._startX And streakStartY < viewport._startY And ..
-				streakStartx > viewport._startX + viewport.GetWidth() And ..
-				streakStartY > viewport._startY + viewport.GetHeight() And ..
-				streakEndx < viewport._startX And streakEndY < viewport._startY And ..
-				streakEndx > viewport._startX + viewport.GetWidth() And ..
-				streakEndY > viewport._startY + viewport.GetHeight() Then Return
+			If  streakStartx < G_viewport.GetStartX() And streakStartY < G_viewport.GetStartY() And ..
+				streakStartx > G_viewport.GetStartX() + G_viewport.GetWidth() And ..
+				streakStartY > G_viewport.GetStartY() + G_viewport.GetHeight() And ..
+				streakEndx < G_viewport.GetStartX() And streakEndY < G_viewport.GetStartY() And ..
+				streakEndx > G_viewport.GetStartX() + G_viewport.GetWidth() And ..
+				streakEndY > G_viewport.GetStartY() + G_viewport.GetHeight() Then Return
 				
 			DrawLine(streakStartX, streakStartY, streakEndX, streakEndY)
 		Else ' if we're not moving very fast, plot a pixel instead of a streak
 			' don't draw if pixel is not visible on the viewport
-			If  _x < viewport._startX Or _y < viewport._startY Or ..
-				_x > viewport._startX + viewport.GetWidth() Or ..
-				_y > viewport._startY + viewport.GetHeight() Then Return
+			If  _x < G_viewport.GetStartX() Or _y < G_viewport.GetStartY() Or ..
+				_x > G_viewport.GetStartX() + G_viewport.GetWidth() Or ..
+				_y > G_viewport.GetStartY() + G_viewport.GetHeight() Then Return
 			Plot(_x,_y)
 		End If
 	End Method
@@ -441,10 +441,10 @@ Type TScreenParticle
 	End Method
 	
 	Function CalculateScreenLimits()
-		g_particleAreaStartX = viewport.GetCameraPosition_X() - g_pAreaWidth
-		g_particleAreaEndX = viewport.GetCameraPosition_X() + g_pAreaWidth
-		g_particleAreaStartY = viewport.GetCameraPosition_Y() - g_pAreaHeight
-		g_particleAreaEndY = viewport.GetCameraPosition_Y() + g_pAreaHeight
+		g_particleAreaStartX = G_viewport.GetCameraPosition_X() - g_pAreaWidth
+		g_particleAreaEndX = G_viewport.GetCameraPosition_X() + g_pAreaWidth
+		g_particleAreaStartY = G_viewport.GetCameraPosition_Y() - g_pAreaHeight
+		g_particleAreaEndY = G_viewport.GetCameraPosition_Y() + g_pAreaHeight
 	End Function
 	
 	Function RandomizeAll()
@@ -458,7 +458,7 @@ Type TScreenParticle
 	' precalculates the length of the speed streaks and streak alpha
 	Function CalculateStreakCoeff()
 		g_streakAlphaCoeff = 1.0
-		Local streakSpeed:Double = viewport.GetCamSpeed()
+		Local streakSpeed:Double = G_viewport.GetCamSpeed()
 		If streakSpeed > g_streakSpeedLimit Then streakSpeed = g_streakSpeedLimit
 		
 		
@@ -466,7 +466,7 @@ Type TScreenParticle
 		g_streakCoeff = 1.0 - reduction
 		
 		' reduce streak alpha gradually IF above the streak treshold
-		If streakSpeed > g_streakSpeedTreshold Then g_streakAlphaCoeff = (1.0 - (reduction - 1.0))^10.0
+		If streakSpeed > g_streakSpeedTreshold Then g_streakAlphaCoeff = (1.0 - (reduction - 1.0))^15.0
 	End Function
 	
 	Function UpdateAndDrawAll()
@@ -475,8 +475,8 @@ Type TScreenParticle
 		CalculateStreakCoeff()
 		
 		For Local part:TScreenParticle = EachIn g_ScreenParticles
-			If viewport.GetZoomFactor() < 0.8 Then ' if we're zoomed out far enough, gradually fade the space dust
-				SetAlpha (0.65 / 0.8 * viewport.GetZoomFactor()) * g_streakAlphaCoeff
+			If G_viewport.GetZoomFactor() < 0.8 Then ' if we're zoomed out far enough, gradually fade the space dust
+				SetAlpha (0.65 / 0.8 * G_viewport.GetZoomFactor()) * g_streakAlphaCoeff
 			Else
 				SetAlpha 0.65 * g_streakAlphaCoeff
 			EndIf
@@ -484,10 +484,10 @@ Type TScreenParticle
 
 			If part._isOutOfBoundaries() Then part._reposition()
 			' calculate screen position based on world position and zoom
-			part._x = viewport.GetCameraPosition_X() - part._worldX
-			part._y = viewport.GetCameraPosition_Y() - part._worldY
-			part._x = part._x * viewport.GetZoomFactor() + viewport.GetMidX() + viewport.GetStartX()
-			part._y = part._y * viewport.GetZoomFactor() + viewport.GetMidY() + viewport.GetStartY()
+			part._x = G_viewport.GetCameraPosition_X() - part._worldX
+			part._y = G_viewport.GetCameraPosition_Y() - part._worldY
+			part._x = part._x * G_viewport.GetZoomFactor() + G_viewport.GetMidX() + G_viewport.GetStartX()
+			part._y = part._y * G_viewport.GetZoomFactor() + G_viewport.GetMidY() + G_viewport.GetStartY()
 			part._draw()
 		Next
 	End Function

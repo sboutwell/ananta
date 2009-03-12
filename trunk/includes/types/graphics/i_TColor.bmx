@@ -26,15 +26,10 @@ Type TColor Final
 	Field _green:Int			' green component
 	Field _blue:Int			' blue component
 
-	Method GetRed:Int()
-		Return _red
-	End Method
-	Method GetGreen:Int()
-		Return _green
-	End Method
-	Method GetBlue:Int()
-		Return _blue
-	End Method
+	Method GetRed:Int() Return _red	End Method
+	Method GetGreen:Int() Return _green	End Method
+	Method GetBlue:Int() Return _blue End Method
+	Method GetName:String() Return _name End Method
 	
 	Function GetRGB(r:Int var, g:Int var, b:Int var, col:TColor)
 		r = col.GetRed()
@@ -55,7 +50,7 @@ Type TColor Final
 		If Not g_L_Colors Then DebugLog "FindColor: no colors defined" ; Return Null	' return if the list is empty
 		
 		For Local color:TColor = EachIn g_L_Colors
-			If color._name = colorname Then Return color	' Matching color found, return the object
+			If color.GetName() = colorname Then Return color	' Matching color found, return the object
 		Next
 
 		DebugLog "FindColor: no color matching the name '" + colorname + "' found"

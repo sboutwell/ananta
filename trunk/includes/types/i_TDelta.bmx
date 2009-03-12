@@ -32,9 +32,9 @@ Type TDelta
 	Field _isFirstRound:Int = True
 	Field _timeCompression:Double = 1
 	
-	Method GetFPS:Int() 
-		Return _currentFPS
-	End Method
+	Method GetFPS:Int() Return _currentFPS End Method
+	Method GetTimeCompression:Double() Return _timeCompression EndMethod
+	Method SetTimeCompression(t:Double) _timeCompression = t EndMethod
 	
 	' If compression = False, the returned delta is not affected by time compression.
 	' Useful for GUI related timing (zooming, scrolling etc)

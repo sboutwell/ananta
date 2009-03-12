@@ -95,7 +95,7 @@ Type TProtoBody
 		target.setMass(Rand64(found.getMinMass(),found.getMaxMass()))
 		target.setScaleX(Rnd(found.getMinScale(),found.getMaxScale()))
 		target.setScaleY(target.getScaleX())
-		target.setImage(found.getImageFile())
+		target.LoadImage(found.getImageFile())
 		target.setDescription(found.getDescription())
 		
 		target.setSize(CalcImageSize(target._image, False) * target.GetScaleX())

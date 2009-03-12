@@ -34,6 +34,8 @@ Type TMessageWindow
 	Field _y:Float = 10					' starting y-coordinate for the window
 	Field _defaultColor:TColor			' default font color
 	
+	Method GetFontScale:Float() Return _fontScale EndMethod
+	
 	' CreateMsg() creates a new text message into the message window
 	Method CreateMsg(str:String,colString:String)
 		Local col:TColor = Null
@@ -97,7 +99,7 @@ Type TMessageWindow
 		SetRotation(0)
 		
 		For Local window:TMessageWindow = EachIn g_L_MessageWindows
-			SetScale(window._fontScale,window._fontScale)
+			SetScale(window.GetFontScale(),window.GetFontScale())
 			window.DrawAllLines()
 		Next
 	End Function

@@ -21,9 +21,9 @@ Type TPlanet Extends TStellarObject
 		
 		TProtoBody.populateBodyFromName(pl, planetType)		
 		
-		pl._hasGravity = True
-		pl._canCollide = True
-		pl._isShownOnMap = True
+		pl.hasGravity = True
+		pl.canCollide = True
+		pl.isShownOnMap = True
 		
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
 		g_L_StellarObjects.AddLast pl											' add the newly created object to the end of the list
@@ -41,9 +41,9 @@ Type TPlanet Extends TStellarObject
 		pl._System = System									' the System
 		pl._mass = mass										' mass in kg
 		pl._size = size										' size in pixels
-		pl._hasGravity = True
-		pl._canCollide = True
-		pl._isShownOnMap = True
+		pl.hasGravity = True
+		pl.canCollide = True
+		pl.isShownOnMap = True
 		
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
 		g_L_StellarObjects.AddLast pl											' add the newly created object to the end of the list
