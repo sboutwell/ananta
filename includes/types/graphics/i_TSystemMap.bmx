@@ -34,7 +34,7 @@ Type TSystemMap Extends TMiniMap
 	Field _attitudeIndicator:TImage ' attitude indicator image
 	
 	Method AddSystemMapBlip:TMapBlip (o:TSpaceObject)
-		Local blip:TMapBlip = AddBlip(viewport.GetCameraPosition_X() - o.GetX(),viewport.GetCameraPosition_Y() - o.GetY(),o.GetSize())
+		Local blip:TMapBlip = AddBlip(G_viewport.GetCameraPosition_X() - o.GetX(),G_viewport.GetCameraPosition_Y() - o.GetY(),o.GetSize())
 		
 		' use casting to find out the type of the object and set the color accordingly
 		If TStar(o) Then 
@@ -47,7 +47,7 @@ Type TSystemMap Extends TMiniMap
 		EndIf
  	
 		' special behaviour for the centered blip
-		If o = viewport._centeredObject Then
+		If o = G_viewport.GetCenteredObject() Then
 			blip.SetBColor(_selfColor) 
 			If TShip(o) And blip.GetSize() < 3 Then blip.SetSize(0.0)   ' do not draw the blip (set size to 0) when zoomed out "enough". The attitude indicator should do the job.
 		EndIf	
@@ -56,16 +56,16 @@ Type TSystemMap Extends TMiniMap
 	End Method
 
 	Method DrawDetails()
-		Self.SetTitle("System: " + ProperCase(TSystem.GetActiveSystem()._name))
+		Self.SetTitle("System: " + ProperCase(TSystem.GetActiveSystem().GetName()))
 		Super.DrawDetails()	
 	
 		' use type casting to determine if the centered object is a TMovingObject
-		Local obj:TMovingObject = TMovingObject(viewport.GetCenteredObject()) 
+		Local obj:TMovingObject = TMovingObject(G_viewport.GetCenteredObject()) 
 		If Not obj Then Return		' return if object is not a moving object
 		DrawVelocityVector(obj)  	' draw velocity vector for the centered object
 		
 		' use type casting to determine if the centered object is a TShip
-		Local ship:TShip = TShip(viewport.GetCenteredObject()) 
+		Local ship:TShip = TShip(G_viewport.GetCenteredObject()) 
 		If Not ship Then Return		' return if the object is not a ship
 		DrawAttitudeIndicator(ship)    ' draw the T-shaped attitude indicator to the middle of the map
 	End Method	

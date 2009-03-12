@@ -36,16 +36,16 @@ Type TStarMap Extends TMiniMap
 	Field _ClosestSystemBlip:TMapBlip
 	
 	Method SetCamera(x:Double, y:Double)
-		_isScrolling = True
+		isScrolling = True
 		'ClearMiniMap()
 		Super.SetCamera(x,y)
 		Update()
-		_isScrolling = False
+		isScrolling = False
 	End Method
 	
 	' scroll map along x axis
 	Method scrollX(dir:Double = 1)
-		_isScrolling = True
+		isScrolling = True
 		ClearMiniMap()
 		Super.scrollX(dir)
 		UpdateCenteredSector()
@@ -53,7 +53,7 @@ Type TStarMap Extends TMiniMap
 
 	' scroll map along y axis	
 	Method scrollY(dir:Double = 1) 
-		_isScrolling = True
+		isScrolling = True
 		ClearMiniMap()
 		Super.scrollY(dir)
 		UpdateCenteredSector()
@@ -74,17 +74,17 @@ Type TStarMap Extends TMiniMap
 	End Method
 	
 	Method ResetZoomFactor() 
-		_isZooming = True
+		isZooming = True
 		SetZoomFactor(_defaultZoom)
 		Update()
-		_isZooming = False
+		isZooming = False
 	End Method
 	
 	Method SetZoomFactor(z:Float) 
-		_isZooming = True
+		isZooming = True
 		_zoomfactor = z
 		Update()
-		_isZooming = False
+		isZooming = False
 	End Method
 	
 	Method getZoomFactor:Float()
@@ -94,20 +94,20 @@ Type TStarMap Extends TMiniMap
 	Method StopZoom() 
 		_zoomAmount = _zoomAmountReset
 		UpdateVisibility()
-		_isZooming = False
+		isZooming = False
 	End Method
 	
 	' centers camera to the middle of the active system
 	Method Center()
 		If Not TSystem.GetActiveSystem() Then Return
 		Local sys:TSystem = TSystem.GetActiveSystem()
-		_isScrolling = True
+		isScrolling = True
 		_cameraX = sys.GetX()
 		_cameraY = sys.GetY()
 		ClearMiniMap()
 		Update()
 		UpdateCenteredSector()
-		'_isScrolling = FALSE
+		'isScrolling = FALSE
 	End Method
 	
 	Method AddStarMapBlip:TMapBlip(s:TSystem)
@@ -124,9 +124,9 @@ Type TStarMap Extends TMiniMap
 		If Not isVisible Then Return
 		If _zoomFactor < _mapOverlayTreshold Then Return
 
-		If _isScrolling Then 	' don't update the visibility arrays if the map's not moving
+		If isScrolling Then 	' don't update the visibility arrays if the map's not moving
 			UpdateVisibility()
-			_isScrolling = False
+			isScrolling = False
 		EndIf
 		
 		' clear our viewing system
@@ -384,7 +384,7 @@ Type TStarMap Extends TMiniMap
 		'map._minZoom = 0.08
 		map._minZoom = 0.0003
 		map._scrollSpeed = XMLGetSingleValue("conf/settings.xml","settings/graphics/starmap/scrollspeed").ToFloat()
-		map._labelsShown = True
+		map.areLabelsShown = True
 		map._labelTreshold = XMLGetSingleValue("conf/settings.xml","settings/graphics/starmap/labelTreshold").ToFloat()
 		map._title = "Starmap"
 		map._unit = "ly"

@@ -12,11 +12,11 @@ Type TMovingObject Extends TSpaceObject Abstract
 		'If squaredDist > 500000000 Then Return	' don't apply gravity if the source is "too far"
 
 		' apply gravity
-		If gs._hasGravity Then
+		If gs.hasGravity Then
 			'g = (G * M) / d^2
 			Local a:Double = (c_GravConstant * gs.GetMass()) / dist ^ 2
 			
-			If a < 0 Then DebugLog Self._name + " affected by negative gravity! Gravsource: " + gs._name
+			If a < 0 Then DebugLog self.getName() + " affected by negative gravity! Gravsource: " + gs.GetName()
 			
 			' update strongest gravity source fields
 			If not _strongestGravSource Or _strongestGravity < a Then 
@@ -38,7 +38,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		EndIf
 
 		' do a preliminary circle-to-circle collision detection
-		If _canCollide And gs._canCollide Then
+		If canCollide And gs.canCollide Then
 			Local collisionDistance:Double = Self.GetSize() / 2 + gs.GetSize() / 2
 			If Dist < collisionDistance Then
 				CollideWith(gs, Dist, collisionDistance) 
@@ -49,10 +49,10 @@ Type TMovingObject Extends TSpaceObject Abstract
 
 	Method ApplyGravityAndCollision() 
 		' don't bother iterating if gravity and collisions have no effect to this object
-		If Not _affectedByGravity And Not _canCollide Then Return
+		If Not isAffectedByGravity And Not canCollide Then Return
 		
 		' iterate through all objects in the active System
-		For Local obj:TSpaceObject = EachIn TSystem.GetActiveSystem()._L_SpaceObjects
+		For Local obj:TSpaceObject = EachIn TSystem.GetActiveSystem().GetSpaceObjects()
 			If obj = Self Then Continue						' don't apply gravity or collision if source is self!
 			'If obj._System <> Self._System Then Continue 	' return if the object is in another System
 			DoGravityAndCollisions(obj)  	' do gravity and collision checking against 'obj'
@@ -64,7 +64,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		' Return if the MOVING object we're colliding with hasn't been updated yet
 		' This check ensures that collisions between moving objects are checked only after both
 		' objects' positions have been updated. Failure to do so will lead to a double collision response.
-		If Not obj._updated And TMovingObject(obj) Then Return
+		If Not obj.isUpdated And TMovingObject(obj) Then Return
 		
 		' check for projectile collision
 		Local proj:TProjectile = TProjectile(Self) 
@@ -72,8 +72,8 @@ Type TMovingObject Extends TSpaceObject Abstract
 		If proj Or proj2 Then
 			Local ship:TShip = TShip(obj) 
 			' don't collide if the projectile was shot by the colliding ship
-			If ship And proj And proj._shotBy = ship Then Return
-			If ship And proj2 And proj2._shotBy = ship Then Return
+			If ship And proj And proj.GetShooter() = ship Then Return
+			If ship And proj2 And proj2.GetShooter() = ship Then Return
 			CheckProjectileCollision(obj) 
 		EndIf
 		
@@ -118,7 +118,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		Local yVelAbsorb:Double = (optimisedP * (1 - elas) * obj.GetMass() * nY) 
 		Local CollEnergy:Float = 0.5 * Self.GetMass() * xVelAbsorb ^ 2 * yVelAbsorb ^ 2 / 100000000
 		
-		'If Self._name = "Player ship" Then
+		'If Self.GetName() = "Player ship" Then
 		'	G_debugWindow.AddText ("CollEnergy: " + collEnergy) 
 		'End If
 		If TStar(obj) Then collEnergy = 99999999
@@ -128,7 +128,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		xVelAbsorb:Double = (optimisedP * (1 - elas) * Self.GetMass() * nX) 
 		yVelAbsorb:Double = (optimisedP * (1 - elas) * Self.GetMass() * nY) 
 		CollEnergy:Float = 0.5 * obj.GetMass() * xVelAbsorb ^ 2 * yVelAbsorb ^ 2 / 100000000
-		'If obj._name = "Player ship" Then
+		'If obj.GetName() = "Player ship" Then
 		'	G_debugWindow.AddText ("CollEnergy: " + collEnergy) 
 		'End If
 		If collEnergy > 150 Then obj.SustainDamage(CollEnergy) 

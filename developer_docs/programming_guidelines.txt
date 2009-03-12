@@ -7,7 +7,7 @@
 	Global lists are named as g_L_ListName.
 -	All methods, functions, fields that are supposed to be private to the type 
 	(ie. not to be accessed directly outside of the type) should begin
-	an _underscore (example _L_PrivateList). 
+	with an _underscore (example _L_PrivateList or _myName).
 	As Blitz doesn't support actual private declarations (the limits cannot be enforced by the compiler), 
 	the naming convention is for convenience and readability only.
 -	Try to discourage direct manipulation of fields outside the type by using the 
@@ -15,6 +15,8 @@
 	to the types instead. Ie. a field called _money should be accessed through methods called 
 	SetMoney() and GetMoney(). This "rule" will save us from huge future headaches (tracking mystical bugs)
 	and help dramatically with future changes to the type interface.
+	Booleans types (true/false) are an exception to this rule; they should be simple enough to 
+	be accessed without getters/setters. Unless the boolean is not meant to be accessed from the outside, that is.
 
 Use descriptive names for type fields, methods and functions. 
 Method OpenPodBayDoor(door.id) tells a lot more than Method Open(d.i)

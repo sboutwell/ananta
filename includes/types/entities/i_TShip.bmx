@@ -26,7 +26,7 @@ Type TShip Extends TMovingObject
 	Field _selectedWeapon:TWeapon			' ... and the weapon itself in the active slot
 	
 	Field _lastShot:Int						' milliseconds since last shot
-	Field _triggerDown:Int = False			' is weapon trigger down
+	Field isTriggerDown:Int = False			' is weapon trigger down
 	' todo: integrate weapon-related fields to TWeapon
 	
 	Field isWarpDriveOn:Int = False
@@ -54,7 +54,7 @@ Type TShip Extends TMovingObject
 		EndIf
 		
 		' firing
-		If _triggerDown And Not isWarpDriveOn Then FireWeapon() 
+		If isTriggerDown And Not isWarpDriveOn Then FireWeapon() 
 		
 		' apply rotation thrusters
 		ApplyRotation(_controllerPosition * _rotAcceleration)
@@ -107,7 +107,7 @@ Type TShip Extends TMovingObject
 		Local xOff:Float = _selectedWeaponSlot.GetXOffSet() 
 		Local yOff:Float = _selectedWeaponSlot.GetYOffSet() 
 		
-		shot._canCollide = True
+		shot.canCollide = True
 		
 	    shot._x = _x + yOff * Cos(_rotation) + xOff * Sin(_rotation) 
 	    shot._y = _y + yOff * Sin(_rotation) - xOff * Cos(_rotation) 
@@ -127,13 +127,17 @@ Type TShip Extends TMovingObject
 		If isWarpDriveOn Then
 			SetThrottle(0)
 			SetController(0)
-			_triggerDown = False
+			isTriggerDown = False
 		EndIf
 
 	End Method
 	
 	Method GetRotAccel:Float()
 		Return _rotAcceleration
+	End Method
+	
+	Method GetWarpRatio:Double()
+		Return _warpRatio
 	End Method
 	
 	Method SetThrottle(thr:Float)
@@ -348,12 +352,12 @@ Type TShip Extends TMovingObject
 		EndIf
 		
 		' centre the viewport
-		Local sMap:TStarMap = viewport.GetStarMap()		
+		Local sMap:TStarMap = G_viewport.GetStarMap()		
 		sMap.Center()	' move the starmap "camera" to the middle of the active system
 		sMap.UpdateCenteredSector()
 		sMap.Update()	
 		
-		viewport.CreateMsg("Hyperspaced to " + s.getName())
+		G_viewport.CreateMsg("Hyperspaced to " + s.getName())
 	End Method
 
 	Function Create:TShip(hullID:String, name:String = "Nameless") 
@@ -367,8 +371,8 @@ Type TShip Extends TMovingObject
 		sh._scaleX = sh._hull._scale
 		sh._scaleY = sh._hull._scale
 		sh._name = name					' give a name
-		sh._isShownOnMap = True
-		sh._canCollide = True
+		sh.isShownOnMap = True
+		sh.canCollide = True
 		sh._integrity = sh._hull.GetMass() 
 		
 		If Not g_L_Ships Then g_L_Ships = CreateList() 

@@ -23,7 +23,7 @@ Global G_debug:Int = XMLGetSingleValue(c_SettingsFile,"settings/debug").ToInt()
 
 ' create the screen and initialize the graphics mode
 ' Make it global so that viewport:TViewport is accessible everywhere
-Global viewport:TViewport = TViewport.Create()
+Global G_viewport:TViewport = TViewport.Create()
 
 ' The upper left debug info display
 Global G_debugWindow:TDebugWindow = TDebugWindow.Create(10, 25) 
@@ -39,4 +39,4 @@ Global G_delta:TDelta = TDelta.Create(XMLGetSingleValue(c_SettingsFile,  ..
 	"settings/graphics/framerate").ToInt(),  ..
 	XMLGetSingleValue(c_settingsFile, "settings/graphics/limitframerate").ToInt(),  ..
 	XMLGetSingleValue(c_settingsFile, "settings/graphics/maxdelta").ToInt()) 
-G_delta._timeCompression = 1
+G_delta.SetTimeCompression(1)

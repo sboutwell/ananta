@@ -66,7 +66,7 @@ Include "includes/types/math/i_TValue.bmx"				'Scalars and units (distance, mass
 
 
 TColor.LoadAll()      				' load all color info from colors.xml (must be loaded before initializing the viewport)
-viewport.InitViewportVariables() 	' load various viewport-related settings from settings.xml and precalc some other values
+G_viewport.InitViewportVariables() 	' load various viewport-related settings from settings.xml and precalc some other values
 TViewport.InitGraphicsMode()		' lets go graphical using the values read from the xml file
 TCommodity.LoadAllCommodities()		' load and parse the contents of commodities.xml
 TShipModel.LoadAll()  				' load and parse the contents of shipmodels.xml
@@ -77,15 +77,7 @@ GenerateVectorTextures()    		' generate some vector textures as new image files
 G_Universe = TUni.Create()
 G_Universe.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the galaxy image for universe creation
 
-
-
-' param, setup
-' use =0 to try envionment with planets and manual system creation
-' use =1 to try system.populate()
-
 SetupTestEnvironment()
-
-
 
 ' Main loop
 While Not KeyHit(KEY_ESCAPE) And Not AppTerminate() 
@@ -105,16 +97,16 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	TShip.UpdateAll()
 
 	' draw the level
-	viewport.DrawLevel()
+	G_viewport.DrawLevel()
 	
 	' update and draw particles 
 	TParticle.UpdateAndDrawAll()
 	 
 	' draw each object in the currently active System
-	TSystem.GetActiveSystem().DrawAllInSystem(viewport) 
+	TSystem.GetActiveSystem().DrawAllInSystem(G_viewport) ' seeing as G_viewport is a global, do we really need to pass it?
 
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
-	viewport.DrawMisc() 
+	G_viewport.DrawMisc() 
 	
 	
 	' *********** DEBUG INFO ****************
@@ -141,7 +133,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	
 	
 	' clear the whole viewport backbuffer
-	SetViewport(0,0,viewport.GetResX(),viewport.GetResY())
+	SetViewport(0,0,G_viewport.GetResX(),G_viewport.GetResY())
 	Cls
 Wend
 
@@ -194,7 +186,7 @@ Function SetupTestEnvironment()
 	GenerateTestSystem2()
 	
 	' ----------- STARMAP ----------
-	Local sMap:TStarMap = viewport.GetStarMap()
+	Local sMap:TStarMap = G_viewport.GetStarMap()
 	sMap.Center()	' move the starmap "camera" to the middle of the active system
 	sMap.UpdateCenteredSector()
 	sMap.Update()
@@ -211,15 +203,13 @@ Function SetupTestEnvironment()
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
 
-	' attach a particle generator (this is to be integrated to TShip)
+	' attach a particle generator (this is to be integrated to TShip at a later stage)
 	Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
 	part1.SetRandomDir(2) 
 	s1.AddAttachment(part1, - 28, 0, 0, False) 	
 	
-	'TAttachment.Create(s1, "attach.png", - 10, 10, 0, 0.1, 0.1, False) 	
 
-
-	viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
+	G_viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
 	
-	viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
+	G_viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
 End Function

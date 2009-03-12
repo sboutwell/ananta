@@ -56,16 +56,16 @@ Type TPlayer Extends TPilot
 		' ship controls
 
 			' jump to the system in the centre of the screen
-			If KeyHit(KEY_H) And viewport.GetStarMap().getClosestSystemToScreenCentre()
-				Self.GetControlledShip().HyperspaceToSystem(viewport.GetStarMap().getClosestSystemToScreenCentre())
+			If KeyHit(KEY_H) And G_viewport.GetStarMap().getClosestSystemToScreenCentre()
+				Self.GetControlledShip().HyperspaceToSystem(G_viewport.GetStarMap().getClosestSystemToScreenCentre())
 			EndIf
 		
 			If KeyDown(KEY_UP) _controlledShip.SetThrottle(1) 
 			If KeyDown(KEY_DOWN) _controlledShip.SetThrottle(- 1) 
 			If KeyDown(KEY_RIGHT) _controlledShip.SetController(1) 
 			If KeyDown(KEY_LEFT) _controlledShip.SetController(- 1) 	
-			If KeyDown(KEY_LCONTROL) Or KeyDown(KEY_RCONTROL) Then _controlledShip._TriggerDown = True
-			If Not KeyDown(KEY_LCONTROL) And Not KeyDown(KEY_RCONTROL) Then _controlledShip._TriggerDown = False
+			If KeyDown(KEY_LCONTROL) Or KeyDown(KEY_RCONTROL) Then _controlledShip.isTriggerDown = True
+			If Not KeyDown(KEY_LCONTROL) And Not KeyDown(KEY_RCONTROL) Then _controlledShip.isTriggerDown = False
 			' relase controls if keyboard keys are released
 			If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) 		_controlledShip.SetThrottle(0)
 			If Not KeyDown(KEY_RIGHT) And Not KeyDown(KEY_LEFT) _controlledShip.SetController(0) 
@@ -77,58 +77,58 @@ Type TPlayer Extends TPilot
 		
 		' misc controls
 		If KeyDown(KEY_F1) Then
-			viewport.ShowInstructions()
+			G_viewport.ShowInstructions()
 		End If
 		
-		If KeyHit(KEY_G) Then viewport.GetStarMap().ToggleVisibility()
+		If KeyHit(KEY_G) Then G_viewport.GetStarMap().ToggleVisibility()
 		
 		If Not KeyDown(KEY_LSHIFT) And ..
 			Not KeyDown(KEY_RSHIFT) And ..
 			Not KeyDown(KEY_RALT) And ..
 			Not KeyDown(KEY_LALT) Then
-				If KeyDown(KEY_Z) Then viewport.ZoomIn() 
-				If KeyDown(KEY_X) Then viewport.ZoomOut() 
+				If KeyDown(KEY_Z) Then G_viewport.ZoomIn() 
+				If KeyDown(KEY_X) Then G_viewport.ZoomOut() 
 		EndIf
 		
 		If KeyDown(KEY_LSHIFT) Or KeyDown(KEY_RSHIFT) Then
-			If KeyDown(KEY_Z) Then viewport.GetSystemMap().ZoomIn() 
-			If KeyDown(KEY_X) Then viewport.GetSystemMap().ZoomOut() 
+			If KeyDown(KEY_Z) Then G_viewport.GetSystemMap().ZoomIn() 
+			If KeyDown(KEY_X) Then G_viewport.GetSystemMap().ZoomOut() 
 			
 		EndIf
 		
 		' starmap scrolling
-		If viewport.GetStarMap().isVisible Then
+		If G_viewport.GetStarMap().isVisible Then
 			Local multiplier:Float = 1
 			If KeyDown(KEY_LSHIFT) Or KeyDown(KEY_RSHIFT) Then 
 				multiplier = 10		' with shift multiply the scroll speed by 10
 			EndIf
 							
-			If KeyDown(KEY_A) Then viewport.GetStarMap().scrollX(- 1 * multiplier)  	' scroll left
-			If KeyDown(KEY_D) Then viewport.GetStarMap().scrollX(1 * multiplier)  		' scroll right
-			If KeyDown(KEY_S) Then viewport.GetStarMap().scrollY(1 * multiplier) 		' scroll down
-			If KeyDown(KEY_W) Then viewport.GetStarMap().scrollY(- 1 * multiplier) 		' scroll up
+			If KeyDown(KEY_A) Then G_viewport.GetStarMap().scrollX(- 1 * multiplier)  	' scroll left
+			If KeyDown(KEY_D) Then G_viewport.GetStarMap().scrollX(1 * multiplier)  		' scroll right
+			If KeyDown(KEY_S) Then G_viewport.GetStarMap().scrollY(1 * multiplier) 		' scroll down
+			If KeyDown(KEY_W) Then G_viewport.GetStarMap().scrollY(- 1 * multiplier) 		' scroll up
 			
-			If KeyDown(KEY_C) Then viewport.GetStarMap()._isPersistent = False; viewport.GetStarMap().ZoomIn() 	' zoom in starmap
-			If KeyDown(KEY_V) Then viewport.GetStarMap()._isPersistent = False; viewport.GetStarMap().ZoomOut() 	' zoom out starmap
+			If KeyDown(KEY_C) Then G_viewport.GetStarMap().isPersistent = False; G_viewport.GetStarMap().ZoomIn() 	' zoom in starmap
+			If KeyDown(KEY_V) Then G_viewport.GetStarMap().isPersistent = False; G_viewport.GetStarMap().ZoomOut() 	' zoom out starmap
 		End If
 		
 		' alt modifiers
 		If KeyDown(KEY_LALT) Or KeyDown(KEY_RALT) Then
 			If KeyDown(KEY_ENTER) Then TViewport.ToggleFullScreen() 
-			If KeyDown(KEY_Z) Then viewport.ResetZoomFactor() 
-			If KeyDown(KEY_X) Then viewport.GetSystemMap().ResetZoomFactor() 
-			If KeyDown(KEY_C) Then viewport.GetStarMap().Center() 	' center the starmap with shift-c
+			If KeyDown(KEY_Z) Then G_viewport.ResetZoomFactor() 
+			If KeyDown(KEY_X) Then G_viewport.GetSystemMap().ResetZoomFactor() 
+			If KeyDown(KEY_C) Then G_viewport.GetStarMap().Center() 	' center the starmap with shift-c
 		End If
 		
 		If Not KeyDown(KEY_Z) And Not KeyDown(KEY_X) Then
-			viewport.StopZoom() 
-			viewport.GetSystemMap().StopZoom() 
+			G_viewport.StopZoom() 
+			G_viewport.GetSystemMap().StopZoom() 
 		EndIf
 		
-		If Not viewport.GetStarMap()._isPersistent And Not KeyDown(KEY_C) And Not KeyDown(KEY_V) Then
-			viewport.GetStarMap()._isPersistent = True
-			viewport.GetStarMap().StopZoom() 
-			viewport.GetStarMap().Update()
+		If Not G_viewport.GetStarMap().isPersistent And Not KeyDown(KEY_C) And Not KeyDown(KEY_V) Then
+			G_viewport.GetStarMap().isPersistent = True
+			G_viewport.GetStarMap().StopZoom() 
+			G_viewport.GetStarMap().Update()
 		EndIf
 		
 	EndMethod
@@ -179,10 +179,10 @@ Type TAIPlayer Extends TPilot
 		Local rotDiff:Float = Abs(_controlledShip.GetRot() - _desiredRotation) 
 		If tDist > 1000 Or rotDiff > 15 Then
 			RotateTo(_desiredRotation)     	' use the AI logic to turn to the desired rotation
-			_controlledShip._triggerDown = False
+			_controlledShip.isTriggerDown = False
 		Else
 			RotateTo(_desiredRotation, True)      	' use the AI logic to turn to the desired rotation
-			_controlledShip._triggerDown = True		' fire
+			_controlledShip.isTriggerDown = True		' fire
 		EndIf		
 	End Method
 		

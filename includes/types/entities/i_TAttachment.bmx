@@ -33,8 +33,8 @@ Type TAttachment Extends TSpaceObject
 		Local a:TAttachment = New TAttachment
 		parent.AddAttachment(a, x, y, rot, onTop) 
 		a._image = TImg.LoadImg(image) 
-		a._scaleX = scaleX
-		a._scaleY = scaleY
+		a.SetScaleX(scaleX)
+		a.SetScaleY(scaleY)
 		Return a
 	End Function
 End Type

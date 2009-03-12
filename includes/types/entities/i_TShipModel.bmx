@@ -70,10 +70,10 @@ Type TShipModel
 		Local ship:TShip = TShip.Create(model.GetHullID())  	' build the basic hull
 		
 		For Local modelpart:TShipModelPart = EachIn model.GetParts()  	' find and create each part
-			Local part:TShippart = TShippart.FindShipPart(modelpart._partID) 
+			Local part:TShippart = TShippart.FindShipPart(modelpart.GetPartID()) 
 			If part Then												' if part matching the id is found
 				Local component:TComponent = TComponent.Create(part)  	' create a component based on the part
-				ship.AddComponentToSlotID(component, modelpart._slotID)  ' and add the part to the correct slot 
+				ship.AddComponentToSlotID(component, modelpart.GetSlotID())  ' and add the part to the correct slot 
 			EndIf
 		Next
 		Return ship
@@ -143,6 +143,9 @@ End Type
 Type TShipModelPart
 	Field _slotID:String		' the slot ID this part goes to
 	Field _partID:String		' the part ID of the part
+	
+	Method GetSlotID:String() Return _slotID End Method		
+	Method GetPartID:String() Return _partID End Method		
 	
 	Function Create:TShipModelPart(sID:String, pID:String) 
 		Local smp:TShipModelPart = New TShipModelPart

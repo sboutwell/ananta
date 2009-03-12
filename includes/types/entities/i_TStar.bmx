@@ -44,9 +44,9 @@ Type TStar Extends TStellarObject
 		
 		TProtoBody.populateBodyFromName(st, "sun"+system.GetCentralStarType())
 				
-		st._hasGravity = True
-		st._canCollide = True
-		st._isShownOnMap = True
+		st.hasGravity = True
+		st.canCollide = True
+		st.isShownOnMap = True
 
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
 		g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list
@@ -63,9 +63,9 @@ Type TStar Extends TStellarObject
 		st._System = System							' the System
 		st._mass = mass								' mass in kg
 		st._size = size								' size in pixels
-		st._hasGravity = True
-		st._canCollide = True
-		st._isShownOnMap = True
+		st.hasGravity = True
+		st.canCollide = True
+		st.isShownOnMap = True
 
 		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
 		g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list

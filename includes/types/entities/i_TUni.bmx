@@ -216,7 +216,7 @@ Type TSector
 				y = y + Rand(0,_g_sectorSize)
 				x = x + Rand(0,_g_sectorSize)
 				For Local sys:TSystem = EachIn _L_systems	' iterate through the star list to see if this star overlaps with others
-					If sys._x = x And sys._y = y Then coordsOk = False		' overlapping coordinates
+					If sys.GetX() = x And sys.GetY() = y Then coordsOk = False		' overlapping coordinates
 				Next
 			Until coordsOk	' rinse and repeat until the coordinates do not overlap
 			
@@ -225,7 +225,7 @@ Type TSector
 			typ:Int = G_Universe.StarChance_Type[Rand(0, G_Universe.StarChance_Type.Length - 1)]
 			name:String = G_Universe.GetSystemName() ' generate system name with the current SFMT seed
 			Local system:TSystem = TSystem.Create(_x, _y, x, y, name, typ, mult)
-			system._size = (G_Universe.StarSize[typ] + mult * 100) / 200.0
+			system.SetSize((G_Universe.StarSize[typ] + mult * 100) / 200.0)
 			_L_systems.AddLast(system) 
 		Next
 		_isPopulated = True	' switch the flag on to indicate this sector is populated

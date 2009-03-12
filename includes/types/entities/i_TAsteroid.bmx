@@ -6,7 +6,7 @@ Type TAsteroid Extends TMovingObject
 	Method Destroy() 
 		' remove the asteroid from all lists so that GC can delete the object
 		g_L_Asteroids.Remove(Self) 
-		Self._System.RemoveSpaceObject(Self) 
+		_System.RemoveSpaceObject(Self) 
 		g_L_MovingObjects.Remove(Self) 
 		g_nrAsteroids:-1
 	End Method
@@ -124,9 +124,9 @@ Type TAsteroid Extends TMovingObject
 		a._System = System
 		a._x = x
 		a._y = y
-		a._isShownOnMap = True
-		a._canCollide = True
-		a._affectedByGravity = True
+		a.isShownOnMap = True
+		a.canCollide = True
+		a.isAffectedByGravity = True
 		a._integrity = mass
 		
 		If Not g_L_Asteroids Then g_L_Asteroids = CreateList() 

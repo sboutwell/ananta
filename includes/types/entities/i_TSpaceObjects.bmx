@@ -59,14 +59,14 @@ Type TSpaceObject Abstract
 	Field _scaleX:Float = 1				' The scale of the drawn image (1 being full resolution, 2 = double size, 0.5 = half size)
 	Field _scaleY:Float = 1				
 	Field _name:String = "Nameless"		' The name of the object
-	Field _isShownOnMap:Int = False		' flag to indicate minimap visibility
-	Field _hasGravity:Int	= False			' a true-false flag to indicate gravitational pull
+	Field isShownOnMap:Int = False		' flag to indicate minimap visibility
+	Field hasGravity:Int	= False			' a true-false flag to indicate gravitational pull
 	Field _xVel:Double						' velocity vector x-component
 	Field _yVel:Double						' velocity vector y-component
 	Field _rotationSpd:Float				' rotation speed in degrees per second
-	Field _affectedByGravity:Int = True		' does gravity affect the object?
-	Field _canCollide:Int = False			' flag to indicate if this object can collide with other objects with the same flag set
-	Field _updated:Int = False			' a flag to indicate if this object has been updated during the frame
+	Field isAffectedByGravity:Int = True		' does gravity affect the object?
+	Field canCollide:Int = False			' flag to indicate if this object can collide with other objects with the same flag set
+	Field isUpdated:Int = False			' a flag to indicate if this object has been updated during the frame
 	Field _integrity:Float = -1			' the amount of damage the object can handle, -1 for indestructible
 	Field _description:String			' a description of the body (planet with high winds, asteroidal body, etc)
 	
@@ -108,7 +108,7 @@ Type TSpaceObject Abstract
 		part.SetYVel(_yVel) 
 		part.SetRot(Rand(0, 360)) 
 		part.SetRotationSpd(Self.GetRotSpd() + Rnd(- 10, 10)) 
-		part._affectedByGravity = True
+		part.isAffectedByGravity = True
 		 
 		Destroy() 
 		
@@ -136,13 +136,13 @@ Type TSpaceObject Abstract
 		Local midX:Int = vp.GetMidX()
 		Local midY:Int = vp.GetMidY()
 		' *********
-		Local x:Double = (vp.GetCameraPosition_X() - _x) * viewport.GetZoomFactor() + midX + startX
-		Local y:Double = (vp.GetCameraPosition_Y() - _y) * viewport.GetZoomFactor() + midY + startY
+		Local x:Double = (vp.GetCameraPosition_X() - _x) * G_viewport.GetZoomFactor() + midX + startX
+		Local y:Double = (vp.GetCameraPosition_Y() - _y) * G_viewport.GetZoomFactor() + midY + startY
 		
 		' This commented code block is trying to define if the object will be visible on the screen to avoid
 		' drawing non-visible objects. Not working. So, in the meantime we'll suffer from a performance hit.
 		
-		'Local zoom:Float = viewport._zoomfactor
+		'Local zoom:Float = viewport.GetZoomFactor()
 		'If x + (_size * (_scaleX * zoom) / 2) < startX Then Return
 		'If x - (_size * (_scaleX * zoom) / 2) > startX + vp.GetWidth() Then Return
 				
@@ -152,7 +152,7 @@ Type TSpaceObject Abstract
 		SetRotation _rotation + 90
 		SetBlend ALPHABLEND
 		SetColor 255,255,255
-		SetScale _scaleX * viewport._zoomFactor, _scaleY * viewport._zoomFactor
+		SetScale _scaleX * G_viewport.GetZoomFactor(), _scaleY * G_viewport.GetZoomFactor()
 		
 		DrawImage _image, x, y
 		
@@ -175,12 +175,12 @@ Type TSpaceObject Abstract
 			_y = pY + _xOffset * Sin(pRot) - _yOffset * Cos(pRot) 
 			_rotation = pRot + _rotationOffset
 		EndIf
-		_updated = True
+		isUpdated = True
 	End Method
 	
 	' attach another object. Attached objects cannot move themselves.
 	Method AddAttachment(obj:TSpaceObject, xo:Float = 0, yo:Float = 0, roto:Float = 0, onTop:Int = True) 
-		obj._parentObject = Self
+		obj.setParentObject(Self)
 		obj._xOffset = xo
 		obj._yOffset = yo
 		obj._rotationOffset = roto
@@ -272,6 +272,14 @@ Type TSpaceObject Abstract
 		_system = s
 	End Method
 	
+	Method SetOAlpha(a:Float)
+		_alpha = a
+	End Method
+	
+	Method GetOAlpha:Float()
+		Return _alpha
+	End Method
+	
 	Method GetMass:Long() 
 		Return _mass
 	End Method
@@ -297,7 +305,7 @@ Type TSpaceObject Abstract
 	End Method
 	
 	Method showsOnMap:Int() 
-		Return _isShownOnMap
+		Return isShownOnMap
 	End Method
 	
 	Method SetX(coord:Double) 
@@ -324,6 +332,10 @@ Type TSpaceObject Abstract
 		_mass = m
 	End Method
 
+	Method SetParentObject(p:TSpaceObject)
+		_parentObject = p
+	End Method
+
 	Method setParent(p:TStellarObject)
 		_parent = p
 	End Method
@@ -332,7 +344,11 @@ Type TSpaceObject Abstract
 		Return _parent
 	End Method	
 	
-	Method setImage(file:String)
+	Method GetParentObject:TSpaceObject()
+		Return _parentObject
+	End Method
+	
+	Method LoadImage(file:String)
 		If FileSize(file)
 			_image = TImg.LoadImg(file)
 		Else

@@ -33,7 +33,7 @@ Type TMiniMap
 	Field _alpha:Float = 0.8 ' alpha of the map. Affects everything: blips, lines and text.
 	Field _cameraX:Double		' absolute camera coordinates
 	Field _cameraY:Double
-	Field _isScrolling:Int = False	' flag to show if the map is currently scrolling
+	Field isScrolling:Int = False	' flag to show if the map is currently scrolling
 	Field _scrollSpeed:Double = 500	' the base scroll speed in units per second
 	
 	Field _defaultZoom:Float = 1
@@ -41,7 +41,7 @@ Type TMiniMap
 	Field _zoomAmount:Float 			' amount of zoom per keypress
 	Field _zoomAmountReset:Float = 0.5	' the value _zoomAmount is reset to when zooming stopped
 	Field _zoomStep:Float = 0.5			' the amount added to the _zoomAmount per each second of zooming
-	Field _isZooming:Int = False		' flag to show if the map is currently zooming
+	Field isZooming:Int = False		' flag to show if the map is currently zooming
 	Field _minZoom:Float	' zoom limits
 	Field _maxZoom:Float
 	
@@ -49,12 +49,12 @@ Type TMiniMap
 	
 	Field _scale:Float = 1	' how many map pixels does a real world distance unit represent
 	
-	Field _isPersistent:Int = False  ' no auto clearing the map blips after drawing them? Useful for maps with stationary blips.
+	Field isPersistent:Int = False  ' no auto clearing the map blips after drawing them? Useful for maps with stationary blips.
 	Field isVisible:Int = False		' toggling maps on/off toggles this boolean
-	Field _labelsShown:Int = False	' are blip labels visible
+	Field areLabelsShown:Int = False	' are blip labels visible
 	Field _labelTreshold:Float = 1.0	' zoom level at which labels are shown
 	
-	Field _hasScaleIndicator:Int = True	' scale indicator is a horizontal dynamic scale (with vertical scale lines) on the minimap
+	Field hasScaleIndicator:Int = True	' scale indicator is a horizontal dynamic scale (with vertical scale lines) on the minimap
 	Field _lineStep:Float = 100	' base value for scale indicator step. Step is the space between scale lines.
 	Field _unit:String = "" 	' unit visible on the scale gauge (LY, AU, m, etc)
 
@@ -142,13 +142,13 @@ Type TMiniMap
 					Continue
 				Else
 					blip.Draw()
-					If _labelsShown And _zoomFactor > _labelTreshold Then blip.DrawName()
+					If areLabelsShown And _zoomFactor > _labelTreshold Then blip.DrawName()
 				EndIf
 			Next
 			
 			' After drawing all blips, clear the list if the map is not set as "persistent"
 			' It is useful to set maps with rarely-moving blips as persistent for performance.
-			If Not _isPersistent Then ClearMinimap()
+			If Not isPersistent Then ClearMinimap()
 		EndIf
 		
 		DrawDetails() 
@@ -161,7 +161,7 @@ Type TMiniMap
 	' draw miscellaneous map details	
 	Method DrawDetails() 
 		SetHandle(0, 0) 
-		If _hasScaleIndicator Then DrawScale() 
+		If hasScaleIndicator Then DrawScale() 
 	 
 		' draw the minimap title
 		SetAlpha(1)
@@ -266,7 +266,7 @@ Type TMiniMap
 
 	Method ResetZoomFactor() 
 		SetZoomFactor(_defaultZoom)
-		_isZooming = False
+		isZooming = False
 	End Method
 	
 	Method ZoomIn() 
@@ -274,8 +274,8 @@ Type TMiniMap
 		' When we're zooming, we have to switch off persistency so that the map gets updated
 		' Just remember to switch it back on when zooming is stopped if the map is meant to be persistent.
 		' Todo: create another field for "default persistency" so TMinimap handles switching persistency on/off itself.
-		_isPersistent = False
-		_isZooming = True
+		isPersistent = False
+		isZooming = True
 		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(False)  	' false in delta means zoom speed will not be affected by time compression
 		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False)  ' add to the zoom rate acceleration
 		If _maxZoom And _zoomFactor > _maxZoom Then 	' zoom limit reached
@@ -286,8 +286,8 @@ Type TMiniMap
 	
 	Method ZoomOut() 
 		If Not isVisible Then Return
-		_isPersistent = False
-		_isZooming = True
+		isPersistent = False
+		isZooming = True
 		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(False)  ' false in delta means zoom speed will not be affected by time compression
 		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False)  ' add to the zoom rate acceleration
 		If _minZoom And _zoomFactor < _minZoom Then 	' zoom limit reached
@@ -298,7 +298,7 @@ Type TMiniMap
 	
 	Method StopZoom() 
 		_zoomAmount = _zoomAmountReset
-		_isZooming = False
+		isZooming = False
 	End Method
 	
 	' initialize some minimap variables

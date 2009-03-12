@@ -45,6 +45,8 @@ Type TSystem Final
 	Field _mainStar:TStar
 	Field _L_SpaceObjects:TList	' a list to hold all TSpaceObjects in this System
 
+	Method GetSpaceObjects:TList() Return _L_SpaceObjects EndMethod
+		
 	' draw every space object in this system
 	Method DrawAllInSystem(vp:TViewport)
 		If Not _L_SpaceObjects Return							' Exit if a body list doesn't exist
@@ -53,7 +55,7 @@ Type TSystem Final
 			If vp.GetSystemMap() And obj.showsOnMap() Then	' draw a minimap blip if minimap is defined for the viewport
 				vp.GetSystemMap().AddSystemMapBlip(obj)
 			End If
-			obj._updated = False	' optimization to clear updated status during the drawing cycle
+			obj.isUpdated = False	' optimization to clear updated status during the drawing cycle
 			' reset strongest gravity source fields, they're no longer needed during this frame
 			obj._strongestGravSource = Null
 			obj._strongestGravity = 0
@@ -318,7 +320,7 @@ Type TSystem Final
 				SetColor 0,255,0					
 				DrawRect px,py,2,2
 				
-				If viewport.GetStarMap().getZoomFactor() > 4300
+				If G_viewport.GetStarMap().getZoomFactor() > 4300
 					SetColor 255,255,255
 					DrawText "planet "+i.getName(),px+20,py+2
 				EndIf
@@ -349,7 +351,7 @@ Type TSystem Final
 		Next		
 		
 		' now draw ships in that system
-		For Local i:TShip = EachIn Self._L_SpaceObjects
+		For Local i:TShip = EachIn Self.GetSpaceObjects()
 			Local d1:Float = Distance(sun.GetX(), sun.GetY(), i.GetX(), i.GetY()) / v
 			Local a1:Float = DirectionTo(sun.GetX(), sun.GetY(), i.GetX(), i.GetY())-180
 			Local px:Int = x+Cos(a1)*d1
@@ -374,7 +376,7 @@ Type TSystem Final
 		Local sun:TStar=Self.getMainStar()
 		Local far:TStellarObject
 		
-		For Local obj:TStellarObject = EachIn Self._L_SpaceObjects
+		For Local obj:TStellarObject = EachIn Self.GetSpaceObjects()
 			If obj<>sun
 				Local dist:Double = Distance(sun.GetX(), sun.GetY(), obj.GetX(), obj.GetY())
 				If dist > maxDist Then
@@ -441,6 +443,10 @@ Type TSystem Final
 		_mainStar=main
 	End Method
 
+	Method SetSize(s:Float)
+		_size = s
+	End Method
+	
 	Method setPlanetChance(m:String)
 		_PlanetChance=m
 	End Method
