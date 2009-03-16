@@ -60,6 +60,29 @@ Type TMiniMap
 
 	Field _title:String = "Map"
 	Field _titleYOffset:Float = 0 ' position of the title on the map
+
+	Method GetBlipCount:Int()
+		If _L_Blips Then Return _L_Blips.Count()
+		Return 0
+	End Method
+
+	Method SetCamera(x:Double,y:Double)
+		_cameraX = x
+		_cameraY = y
+	End Method
+	
+	Method getCamera(x:Double Var,y:Double Var)
+		x = _cameraX
+		y = _cameraY
+	End Method
+	
+	Method GetHeight:Int()
+		Return _height
+	End Method
+	Method GetWidth:Int()
+		Return _width
+	End Method
+
 		
 	' adds a blip to the minimap to the given coordinates
 	Method AddBlip:TMapBlip(x:Double, y:Double, size:Int) 
@@ -92,21 +115,6 @@ Type TMiniMap
 		_cameraY = _cameraY + (speedMultiplier:Double * speed:Double) * G_delta.GetDelta(False) 	' delta not affected by time compression 
 	End Method
 	
-	Method GetBlipCount:Int()
-		If _L_Blips Then Return _L_Blips.Count()
-		Return 0
-	End Method
-
-	Method SetCamera(x:Double,y:Double)
-		_cameraX = x
-		_cameraY = y
-	End Method
-	
-	Method getCamera(x:Double Var,y:Double Var)
-		x = _cameraX
-		y = _cameraY
-	End Method
-
 	Method getBlipUnderMouse:TMapBlip(within:Int=4)
 		Local mx:Int=MouseX()
 		Local my:Int=MouseY()
