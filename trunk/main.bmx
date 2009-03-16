@@ -120,6 +120,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 			G_debugWindow.AddText("(warpdrive on)") 
 		End If
 		G_debugWindow.AddText("Shields: " + G_Player.GetControlledShip().GetIntegrity()) 
+		'G_Player.GetControlledShip().CalcStopDistance()
 	EndIf
 	' ***************************************
 	
@@ -197,19 +198,30 @@ Function SetupTestEnvironment()
 	G_Player = TPlayer.Create("Da Playah") 
 	Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
 	s1.SetName("Player ship") 
-	s1.SetCoordinates(50000,50000)
+	s1.SetCoordinates(250000,250000)
 	s1.SetSystem(TSystem.GetActiveSystem()) 
-	s1._rotation = 90
+	s1.SetRot(90)
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
 
 	' attach a particle generator (this is to be integrated to TShip at a later stage)
-	Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
-	part1.SetRandomDir(2) 
-	s1.AddAttachment(part1, - 28, 0, 0, False) 	
-	
+	'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
+	'part1.SetRandomDir(2) 
+	's1.AddAttachment(part1, - 28, 0, 0, False) 	
 
-	G_viewport.CreateMsg("Total ship mass: " + s1.GetMass()) 
+	' create an AI ship for testing
+	Local ai:TAIPlayer = TAIPlayer.Create("AI")
+	Local a1:TShip = TShipModel.BuildShipFromModel("nadia")
+	a1.SetName("AI Ship")
+	a1.SetCoordinates(250500,250000)
+	a1.SetSystem(TSystem.GetActiveSystem())
+	a1.AssignPilot(ai)
+	a1.SetRot(45)
+	ai.SetTarget(G_Player.GetControlledShip())
+	'ai.SetTargetCoords(250000,250500)
 	
-	G_viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
+		
+	G_viewport.CreateMsg("Player ship mass: " + s1.GetMass()) 
+	
+	G_viewport.CenterCamera(a1)           		' select the player ship as the object for the camera to follow
 End Function

@@ -24,8 +24,8 @@ Type TDebugWindow
 	Field _fontScale:Float = 1			' font size used in the message window
 	Field _nrLines:Int					' current number of lines
 	Field _L_DebugLines:TList			' a list to hold this window's text lines
-	Field _x:Float = 10					' starting x-coordinate for the window
-	Field _y:Float = 10					' starting y-coordinate for the window
+	Field _x:Float = 100				' starting x-coordinate for the window
+	Field _y:Float = 1					' starting y-coordinate for the window
 	Field _defaultColor:TColor			' default font color
 	
 	' AddText() creates a new text line into the window

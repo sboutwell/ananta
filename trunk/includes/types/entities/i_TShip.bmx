@@ -39,6 +39,44 @@ Type TShip Extends TMovingObject
 	Field _fuel:Float						' on-board fuel for main engines (calculated by a routine)
 	Field _oxygen:Float						' on-board oxygen
 	
+	Method GetRotAccel:Float()
+		Return _rotAcceleration
+	End Method
+	
+	Method GetWarpRatio:Double()
+		Return _warpRatio
+	End Method
+	
+	Method GetForwardAcceleration:Float()
+		Return _forwardAcceleration
+	End Method
+	
+	Method GetReverseAcceleration:Float()
+		Return _reverseAcceleration
+	End Method
+	
+	Method GetPilot:TPilot()
+		Return _pilot
+	End Method
+	
+	Method SetThrottle(thr:Float)
+		_throttlePosition = thr
+	End Method
+
+	Method SetController(cnt:Float)
+		_controllerPosition = cnt
+	End Method
+	
+	Method SetSystem(sys:TSystem) 
+		_System = sys
+		sys.AddSpaceObject(Self) 		' add the ship to the System's space objects list		
+	End Method
+
+	Method SetCoordinates(x:Int, y:Int) 
+		_x = x
+		_y = y
+	End Method
+	
 	Method Update() 
 		' apply forward and reverse thrusts
 		If _throttlePosition > 0 Then
@@ -69,12 +107,31 @@ Type TShip Extends TMovingObject
 	EndMethod
 	
 	Method CalcWarpValue:Double()
-		Local gravityCoeff:Double = (_strongestGravity:Double^(1.0:Double/3.0:Double)^1.5:Double)
+		Local gravityCoeff:Double = (_strongestGravity:Double^(1.0:Double/4.0:Double)^2.0:Double)
 		If gravityCoeff < 0.00000000000000001:Double Then Return _maxWarpRatio
 		Local ratio:Double = _warpRatio:Double / gravityCoeff:Double
 		If ratio > _maxWarpRatio Then Return _maxWarpRatio
 		Return ratio
 	End Method
+	
+	Method CalcStopDistance:Double(useReverse:Int = False)
+		Local stopTime:Double
+		Local acceleration:Float
+		If useReverse Then 
+			acceleration = GetReverseAcceleration()
+		Else
+			acceleration = GetForwardAcceleration() 
+		EndIf
+		IF acceleration = 0 Then Return -1 ' can never stop with zero acceleration
+		
+		stopTime = GetVel() / acceleration
+		G_DebugWindow.AddText("decel: " + acceleration)
+		G_DebugWindow.AddText("stop time: " + stopTime)
+		G_DebugWindow.AddText("stop dist: " + CalcAccelerationDistance(GetVel(),stopTime,acceleration)/2)
+		
+		Return CalcAccelerationDistance(GetVel(),stopTime,acceleration)/2
+	End Method
+
 	
 	Method EmitEngineTrail(dir:String = "tail")
 		Local direct:Int = 1	
@@ -85,9 +142,9 @@ Type TShip Extends TMovingObject
 				_x + eng.GetSlot().GetYOffSet() * Cos(_rotation) + eng.GetSlot().GetXOffSet() * Sin(_rotation),  ..
 				_y + eng.GetSlot().GetYOffSet() * Sin(_rotation) - eng.GetSlot().GetXOffSet() * Cos(_rotation),  ..
 				0.1, 0.03, 0.5, _System) 
-				Local randDir:Float = Rand(- 2, 2) 
-				part._xVel = _xVel - 150*direct * Cos(_rotation + randDir) 
-				part._yVel = _yVel - 150*direct * Sin(_rotation + randDir) 
+				Local randDir:Float = Rnd(- 2.0, 2.0) 
+				part._xVel = _xVel - 150*direct * Cos(_rotation + randDir) * Abs(_throttlePosition)
+				part._yVel = _yVel - 150*direct * Sin(_rotation + randDir) * Abs(_throttlePosition)
 				part._rotation = _rotation
 				If dir = "nose" Then part._rotation:+180											
 			EndIf
@@ -130,22 +187,6 @@ Type TShip Extends TMovingObject
 			isTriggerDown = False
 		EndIf
 
-	End Method
-	
-	Method GetRotAccel:Float()
-		Return _rotAcceleration
-	End Method
-	
-	Method GetWarpRatio:Double()
-		Return _warpRatio
-	End Method
-	
-	Method SetThrottle(thr:Float)
-		_throttlePosition = thr
-	End Method
-
-	Method SetController(cnt:Float)
-		_controllerPosition = cnt
 	End Method
 	
 	' apply acceleration to x and y velocity vectors
@@ -217,13 +258,14 @@ Type TShip Extends TMovingObject
 	EndMethod
 	
 	' Precalcphysics calculates ship's performance based on the on-board equipment
+	' Do not call in the main loop.
 	Method PreCalcPhysics() 
 		_mass = 0
 		_engineThrust = 0
 		_reverseThrust = 0
 		_rotThrust = 0
 		
-		For Local slot:TSlot = EachIn _hull.GetSlotList() 
+		For Local slot:TSlot = EachIn _hull.GetSlotList() ' iterate through all equipment slots
 			If slot.GetComponentList() Then	' if this slot has components, iterate through all of them
 				For Local component:TComponent = EachIn slot.GetComponentList() 
 					If slot.isEngine() Then
@@ -256,7 +298,6 @@ Type TShip Extends TMovingObject
 
 	Method UpdatePerformance() 
 		_forwardAcceleration = (_engineThrust / _mass) 
-		'_reverseAcceleration = ((_engineThrust * _hull.GetReverserRatio()) / _mass) 
 		_reverseAcceleration = (_reverseThrust / _mass) 
 		_rotAcceleration = (RadToDeg(CalcRotAcceleration(_rotThrust, _size, _mass, _hull.GetThrusterPos()))) 
 		_maxRotationSpd = _hull.GetMaxRotationSpd() 
@@ -302,16 +343,6 @@ Type TShip Extends TMovingObject
 		Return result
 	End Method
 	
-	Method SetSystem(sys:TSystem) 
-		_System = sys
-		sys.AddSpaceObject(Self) 		' add the ship to the System's space objects list		
-	End Method
-
-	Method SetCoordinates(x:Int, y:Int) 
-		_x = x
-		_y = y
-	End Method
-	
 	Method Destroy() 
 		If _pilot Then _pilot.Kill() 
 		_pilot = Null
@@ -338,6 +369,8 @@ Type TShip Extends TMovingObject
 		s.populate() ' load it up		
 		Self.SetSystem(s) ' assign the ship's current system		
 		s.SetAsActive() ' set as active
+		
+		G_Viewport.CenterCamera(self)
 						
 		' position us by the star	
 		Local farthestDistance:Double = 0

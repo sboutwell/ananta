@@ -93,6 +93,8 @@ Type TViewport
 		_systemMap = TSystemMap.Create(g_ResolutionX - 195, 0, 195, 195) 
 		'_starMap = TStarMap.Create(g_ResolutionX - 195, 200, 195, 195)
 		_starMap = TStarMap.Create(_startX, _startY, _height, _width)
+		
+		 G_DebugWindow = TDebugWindow.Create(_width - 500, 10 + _marginalTop + _systemMap.GetHeight()) 
 
 		TScreenParticle.Init() ' populate screen particle array
 	EndMethod
@@ -142,7 +144,10 @@ Type TViewport
 
 	' CenterCamera sets an object for the camera to follow
 	Method CenterCamera(o:TSpaceObject) 
+		If o = Null Then Return
 		_centeredObject = o
+		ZoomToFit()
+		CreateMsg("Viewing: " + ProperCase(_centeredObject.getName()))
 	End Method
 	
 	' draws random "space dust" and velocity lines
@@ -163,6 +168,24 @@ Type TViewport
 		DrawOblong( _startX-w, _startY-w, _startX + _width, _startY+_height)
 	EndMethod
 
+	' draws a line into the world, useful for displaying targeting vectors etc
+	Method DrawLineToWorld(sx:Double,sy:Double,ex:Double,ey:Double)
+		Local x1:Double = (_cameraPosition_X  - sx) * _zoomFactor + _midX + _startX
+		Local y1:Double = (_cameraPosition_Y  - sy) * _zoomFactor + _midY + _startY
+		
+		Local x2:Double = (_cameraPosition_X  - ex) * _zoomFactor + _midX + _startX
+		Local y2:Double = (_cameraPosition_Y  - ey) * _zoomFactor + _midY + _startY
+		DrawLine(x1,y1,x2,y2)
+	End Method
+
+	' draws a circle into the world, useful for hilighting objects etc.
+	Method DrawCircleToWorld(x:Double,y:Double,r:Int)
+		Local sx:Double = (_cameraPosition_X  - x) * _zoomFactor + _midX + _startX
+		Local sy:Double = (_cameraPosition_Y  - y) * _zoomFactor + _midY + _startY
+		
+		DrawCircle(sx,sy,r)
+	End Method
+	
 	' add a message to the message window
 	Method CreateMsg(str:String,colString:String="")
 		_msgWindow.CreateMsg(str,colString)
@@ -188,6 +211,31 @@ Type TViewport
 		DrawText "Hold F1 for controls", G_viewport.GetResX() - 190, GetResY()-25
 	EndMethod
 
+	Method CycleCamera(dir:Int = 1)
+		Local actsyst:TSystem = TSystem.GetActiveSystem()
+		Local currCenteredObject:TSpaceObject = _centeredObject
+		Local foundcurrent:Int = False
+		Local newCenter:TSpaceObject
+		If Not actsyst Then Return
+		
+		For Local obj:TSpaceObject = EachIn actsyst.GetSpaceObjects()
+			If obj = currCenteredObject And dir = 0 Then 
+				CenterCamera(newCenter)
+				Return
+			EndIf
+			If obj = currCenteredObject And dir = 1 Then 
+				foundCurrent = True
+				If obj <> actsyst.GetSpaceObjects().Last() Then Continue
+			EndIf
+			If TStellarObject(obj) or TShip(obj) Then newCenter = obj ' only cycle ships and stellar objects
+			if foundCurrent Then
+				CenterCamera(newCenter)
+				Return
+			EndIf
+		Next
+	End Method
+	
+	
 	Method GetCenteredObject:TSpaceObject() 
 		Return _centeredObject
 	End Method
@@ -263,8 +311,25 @@ Type TViewport
 	End Method
 	
 	Method ResetZoomfactor() 
-		_zoomFactor = _defaultZoom
+		'_zoomFactor = _defaultZoom
+		ZoomToFit()
 	End Method
+	
+	' adjust zoom to fit the centered object on screen
+	Method ZoomToFit()
+		If NOT _centeredObject Then Return
+		Local hght:Float = _height
+		Local sz:Float = _centeredObject.GetSize()
+		
+		If TShip(_centeredObject) Then ' different zoom for ships
+			SetZoomFactor(hght/(sz*15))
+			Return
+		End If
+		
+		SetZoomFactor(hght/sz) ' exact fit
+	End Method
+	
+
 	
 	Method ZoomIn() 
 		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(False) 
@@ -303,6 +368,7 @@ Type TViewport
 		G_DebugWindow.AddText("alt+c                - center starmap")
 		G_debugWindow.AddText("alt+enter            - toggle fullscreen") 
 		G_debugWindow.AddText("h                    - hyperspace to system under mouse")
+		G_debugWindow.AddText("PGUP/PGDN            - cycle camera objects")
 		G_DebugWindow.AddText("ESC                  - exit")
 	End Method
 	

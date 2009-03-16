@@ -182,6 +182,11 @@ Type TMovingObject Extends TSpaceObject Abstract
 		Return Sqr(c_GravConstant * body.GetMass() / Distance(_x, _y, body.GetX(), body.GetY())) 
 	End Method
 	
+	' Returns the direction in degrees the object is moving to
+	Method CalcMovingDirection:Double()
+		Return DirectionTo(_x,_y, _x + _xVel, _y + _yVel)
+	End Method
+	
 	' SetOrbitalVelocity sets xVel and yVel to maintain a stable orbit around body
 	Method SetOrbitalVelocity(body:TSpaceObject, clockwise:Int = True) 
 		Local vel:Double = CalcOrbitalVelocity(body) 

@@ -82,6 +82,9 @@ Type TPlayer Extends TPilot
 		
 		If KeyHit(KEY_G) Then G_viewport.GetStarMap().ToggleVisibility()
 		
+		If KeyHit(KEY_PAGEUP) Then G_viewport.CycleCamera(0)
+		If KeyHit(KEY_PAGEDOWN) Then G_viewport.CycleCamera(1)
+		
 		If Not KeyDown(KEY_LSHIFT) And ..
 			Not KeyDown(KEY_RSHIFT) And ..
 			Not KeyDown(KEY_RALT) And ..
@@ -144,37 +147,148 @@ EndType
 ' TAIPlayer represents an AI pilot
 ' ------------------------------------
 Type TAIPlayer Extends TPilot
+	' flight action modes
+	Const fl_wait:Int = 0
+	Const fl_approach:Int = 1
+	Const fl_follow:Int = 2
+	Const fl_pursuit:Int = 3
+	Const fl_flee:Int = 4
+	' ---
+	
 	Global g_L_AIPilots:TList				' a list holding all AI pilots
-
-	Field _flyingSkill:Float					' 0 to 1		 	1 = perfect
+	Field _flyingSkill:Float				' 0 to 1		 	1 = perfect
 	Field _aggressiveness:Float				' 0 to 1			1 = most aggressive
 	Field _wimpyness:Float					' 0 to 1			1 = always fleeing, 0 = never fleeing
 	Field _accuracy:Float					' 0 to 1			1 = perfect
 	Field _destinationObject:TSpaceObject	' The destination for AI. Sector, planet, space station etc
-	Field _desiredRotation:Float				' planned rotation
-	Field _targetObject:TSpaceObject			' target object (for shooting, pursuing etc)
+	Field _desiredRotation:Float			' planned rotation
+	Field _targetObject:TSpaceObject		' target object (for following, pursuing etc)
+	Field _targetX:Double					' desired X-coord
+	Field _targetY:Double					' desired Y-coord
+	Field _actionMode:Int					' current action mode: 0 wait, 1 approach, 2 follow, etc
 	
-
-	Method Kill() 
-		SetControlledShip(Null) 
-		g_L_AIPilots.Remove(Self) 
+	Method SetTarget(obj:TSpaceObject) _targetObject = obj 
 	End Method
-
-	' "Think" is the main AI routine to be called
+	Method SetTargetCoords(x:Double,y:Double) 
+		_targetX = x 
+		_targetY = y
+	End Method
+	
+	Method GetTarget:TSpaceObject() Return _targetObject 
+	End Method
+	Method GetTargetX:Double() Return _targetX 
+	EndMethod		
+	Method GetTargetY:Double() Return _targetY 
+	EndMethod		
+	
+	' "Think" is the main AI routine to be called every frame
 	Method Think() 
 		If Not _controlledShip Return
-		If Not _targetObject Return
 		
-		FollowTarget()
+		If Not _targetObject And (_targetX = Null Or _targetY = Null) Then Return
+		
+		' temporary keybindings for testing AI navigation
+		If KeyHit(KEY_U) Then 
+			_targetY = _targetObject.GetY()
+			_targetX = _targetObject.GetX()
+		EndIf
+		
+		If _targetX AND _targetY Then FlyToTargetCoords()
+
 	EndMethod
 
-	Method FollowTarget()
-		_desiredRotation = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
-	End Method
+	Method FlyToTargetCoords()
+		Local maxSpeed:Float = 500
+		Local doStop:Int = FALSE
+		Local inProximity:Int = FALSE
+		
+		Local currentSpeed:Double = _controlledShip.GetVel()
+		Local dirTotarget:Double = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetX, _targetY) 
+		Local currentMovingDir:Double = _controlledShip.CalcMovingDirection()
+		Local distanceToTarget:Double = Distance(_controlledShip.GetX(),_controlledShip.GetY(),_targetX,_targetY)
+		' where we are currenlty drifting in relation to the target direction?
+		Local angleDiff:Double = GetAngleDiff(dirToTarget,currentMovingDir)		
+		
+		' check if we're close enough to stop
+		If distanceToTarget < _controlledShip.CalcStopDistance(True) + 100 Then
+			doStop = TRUE
+			inProximity = TRUE
+		EndIf
+		
+		G_DebugWindow.AddText("  dist to target: " + distanceToTarget)
+		G_DebugWindow.AddText("  my speed: " + currentSpeed)
+		G_DebugWindow.AddText("  angle diff: " + angleDiff)
+		
+		If angleDiff > -45.0 And angleDiff < 45.0 And currentSpeed > 200.0 Then 
+			_desiredRotation = DirAdd(currentMovingDir, -angleDiff/2)
+		ElseIf currentSpeed <= 200 Then
+			_desiredRotation = dirToTarget
+		Else
+			G_DebugWindow.AddText("  Need to slow down and think a bit.")
+			DoStop = TRUE
+		EndIf
+		
+		if NOT doStop Then RotateTo(_desiredRotation)
+		
+		' stop
+		If doStop Then 
+			G_DebugWindow.AddText("  Stopping")
+			Stop(TRUE) ' true = use reversers for stopping
+			Return
+		EndIf
 
+		' Calculate thrust lever position
+		Local thrust:Float = 1.0 
+		
+		' accelerate if pointed at the right direction
+		Local threshold:Int = 10  ' degrees
+		If Abs(GetAngleDiff(_desiredRotation,_controlledShip.GetRot())) < threshold Then
+			_controlledShip.SetThrottle(thrust)
+		Else
+			_controlledShip.SetThrottle(0)	' cut throttle
+		EndIf
+		
+	End Method
+	
+	
+	' Stop the ship using either main or reverse engines.
+	' Currently the decision which engines to use needs to be done outside this routine.
+	Method Stop(useReverse:Int = False)
+		If _controlledShip.GetVel() < 5 Then ' don't bother decelerating if we're slow enough
+			_controlledShip.SetThrottle(0)	' cut throttle
+			_controlledShip.SetController(0) ' center stick
+			Return	
+		EndIf
+				
+		If NOT useReverse Then 
+			_desiredRotation = DirAdd(_controlledShip.CalcMovingDirection(), 180) ' aim main engines backward
+		Else
+			_desiredRotation = _controlledShip.CalcMovingDirection()
+		EndIf
+		
+		'G_DebugWindow.AddText(_controlledShip.getName() + " desired Dir: " + _desiredRotation)
+		RotateTo(_desiredRotation)
+		
+		' Calculate thrust lever position (forward/back)
+		Local thrust:Float = 1.0 
+		If useReverse Then thrust = -1 * thrust
+		
+		' calculate the rotation sector in which engines can be fired
+		Local threshold:Int = 15  ' degrees
+		If _controlledShip.GetVel() < 100 Then threshold :- (200/_controlledShip.GetVel()) 'narrow down the sector at lower speeds
+		LimitInt(threshold,3,15) ' make sure threshold is between set limits
+		
+		' fire the engines when within desired heading
+		If Abs(GetAngleDiff(_desiredRotation,_controlledShip.GetRot())) < threshold Then 
+			_controlledShip.SetThrottle(thrust)
+		Else
+			_controlledShip.SetThrottle(0)	' cut throttle
+		EndIf
+
+	End Method
+	
 	Method AimTarget()
 		_desiredRotation = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
-		
 		Local tDist:Double = Distance(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
 		Local rotDiff:Float = Abs(_controlledShip.GetRot() - _desiredRotation) 
 		If tDist > 1000 Or rotDiff > 15 Then
@@ -186,9 +300,6 @@ Type TAIPlayer Extends TPilot
 		EndIf		
 	End Method
 		
-	Method SetTarget(obj:TSpaceObject)
-		_targetObject = obj
-	End Method
 	
 	Method RotateTo(heading:Float, aggressiveMode:Int = False) 
 		Local diff:Float = GetAngleDiff(_controlledShip.GetRot(),heading)  ' returns degrees between current and desired rotation
@@ -219,7 +330,35 @@ Type TAIPlayer Extends TPilot
 		EndIf
 		
 	EndMethod
+
+	' called from the main draw routine of TSpaceobject 
+	Method DrawAIVectors()
+		Local cShip:TShip = TShip(_controlledShip)
+		SetAlpha(0.3)
+		SetRotation(0)
+		SetScale(1,1)
+		' line to target
+		G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),_targetX,_targetY)
+		
+		' moving direction
+		SetColor(255,60,60)
+		G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),cShip.GetX() + 25 * Cos(cShip.CalcMovingDirection()), ..
+						cShip.GetY() + 25 * Sin(cShip.CalcMovingDirection()))
+		' planned rotation
+		SetColor(0,255,100)
+		G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),cShip.GetX() + 35 * Cos(_desiredRotation), ..
+						cShip.GetY() + 35 * Sin(_desiredRotation))
+		
+		G_Viewport.DrawCircleToWorld(_targetObject.GetX(),_targetObject.GetY(),10)
+	End Method
+		
+
 	
+	Method Kill() 
+		SetControlledShip(Null) 
+		g_L_AIPilots.Remove(Self) 
+	End Method
+
 	Function UpdateAllAI()
 		If Not g_L_AIPilots Return
 		For Local ai:TAIPlayer = EachIn g_L_AIPilots

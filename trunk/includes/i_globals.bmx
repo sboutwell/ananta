@@ -26,7 +26,7 @@ Global G_debug:Int = XMLGetSingleValue(c_SettingsFile,"settings/debug").ToInt()
 Global G_viewport:TViewport = TViewport.Create()
 
 ' The upper left debug info display
-Global G_debugWindow:TDebugWindow = TDebugWindow.Create(10, 25) 
+Global G_debugWindow:TDebugWindow
 
 ' global player instance
 Global G_player:TPlayer

@@ -163,15 +163,22 @@ Type TSpaceObject Abstract
 				a.DrawBody(vp, True) 
 			Next
 		EndIf
+		
+		
+		' ***** temp for AI test
+		If TShip(self) And ..
+			TAIPlayer(Tship(self).GetPilot()) Then ..
+			TAIPlayer(TShip(self).GetPilot()).DrawAIVectors()
+		' *****
 	EndMethod
-	
+
 	' this update method is currently mainly for attachment positioning purposes...
 	Method Update() 
 		If _parentObject Then	' is attached to another object...
 			Local pRot:Float = _parentObject.GetRot() 
 			Local pX:Double = _parentObject.GetX() 
 			Local pY:Double = _parentObject.GetY() 
-			_x = pX + _xOffset * Cos(pRot) + _yOffset * Sin(pRot) 
+			_x = pX + _xOffset * Cos(pRot) + _yOffset * Sin(pRot)
 			_y = pY + _xOffset * Sin(pRot) - _yOffset * Cos(pRot) 
 			_rotation = pRot + _rotationOffset
 		EndIf
@@ -237,6 +244,7 @@ Type TSpaceObject Abstract
 	End Method
 	
 	Method GetVel:Double() 
+		If (NOT _xVel or NOT _yVel) or (_xVel = 0 and _yVel = 0) Return 0
 		Return GetSpeed(_xVel, _yVel) 
 	End Method
 	
@@ -250,6 +258,10 @@ Type TSpaceObject Abstract
 	
 	Method GetRotSpd:Float()
 		Return _rotationSpd
+	End Method
+	
+	Method GetSize:Int()
+		Return _size
 	End Method
 	
 	Method SetXVel(x:Double) 
@@ -288,10 +300,6 @@ Type TSpaceObject Abstract
 		Return _rotation
 	End Method
 
-	Method GetSize:Int()
-		Return _size
-	End Method
-	
 	Method GetX:Double() 
 		Return _x
 	End Method
