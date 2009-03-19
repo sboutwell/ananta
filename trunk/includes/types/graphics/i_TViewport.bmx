@@ -208,7 +208,11 @@ Type TViewport
 		G_debugWindow.DrawAllLines() 
 		
 		' draw some miscellaneous information
-		DrawText "Hold F1 for controls", G_viewport.GetResX() - 190, GetResY()-25
+		DrawText "Hold F1 for controls", GetResX() - 190, GetResY()-25
+		If G_Delta.isPaused Then 
+			SetColor(255,128,50)
+			DrawText "*** Paused ***", GetMidX() - 120, _marginalTop + 5
+		End If
 	EndMethod
 
 	Method CycleCamera(dir:Int = 1)
@@ -369,6 +373,7 @@ Type TViewport
 		G_debugWindow.AddText("alt+enter            - toggle fullscreen") 
 		G_debugWindow.AddText("h                    - hyperspace to system under mouse")
 		G_debugWindow.AddText("PGUP/PGDN            - cycle camera objects")
+		G_debugWindow.AddText("p                    - toggle pause")
 		G_DebugWindow.AddText("ESC                  - exit")
 	End Method
 	

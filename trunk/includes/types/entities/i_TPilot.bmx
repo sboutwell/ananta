@@ -80,6 +80,8 @@ Type TPlayer Extends TPilot
 			G_viewport.ShowInstructions()
 		End If
 		
+		If KeyHit(KEY_P) Then G_Delta.TogglePause()
+		
 		If KeyHit(KEY_G) Then G_viewport.GetStarMap().ToggleVisibility()
 		
 		If KeyHit(KEY_PAGEUP) Then G_viewport.CycleCamera(0)
@@ -167,6 +169,8 @@ Type TAIPlayer Extends TPilot
 	Field _targetY:Double					' desired Y-coord
 	Field _actionMode:Int					' current action mode: 0 wait, 1 approach, 2 follow, etc
 	
+	Field _wantToStop:Int = False
+	
 	Method SetTarget(obj:TSpaceObject) _targetObject = obj 
 	End Method
 	Method SetTargetCoords(x:Double,y:Double) 
@@ -209,67 +213,47 @@ Type TAIPlayer Extends TPilot
 		' where we are currenlty drifting in relation to the target direction?
 		Local angleDiff:Double = GetAngleDiff(dirToTarget,currentMovingDir)		
 		
-		' check if we're close enough to stop
+		' check if we're close enough to start decelerating
 		If distanceToTarget < _controlledShip.CalcStopDistance(True) + 100 Then
 			doStop = TRUE
-			inProximity = TRUE
 		EndIf
 		
 		G_DebugWindow.AddText("  dist to target: " + distanceToTarget)
 		G_DebugWindow.AddText("  my speed: " + currentSpeed)
 		G_DebugWindow.AddText("  angle diff: " + angleDiff)
+		G_DebugWindow.AddText("  dir to target" + dirToTarget)
+		G_DebugWindow.AddText("  current rotation" + _controlledShip.GetRot())
 		
-		If angleDiff > -45.0 And angleDiff < 45.0 And currentSpeed > 200.0 Then 
-			_desiredRotation = DirAdd(currentMovingDir, -angleDiff/2)
-		ElseIf currentSpeed <= 200 Then
-			_desiredRotation = dirToTarget
-		Else
+		If Abs(angleDiff) < 80.0 And currentSpeed > 10.0 Then 
+			' if we're flying generally towards the target, point at the opposite angle between movingdir and dirToTarget
+			_desiredRotation = DirAdd(dirToTarget, -angleDiff)
+		'ElseIf (currentSpeed <= 30.0 and not _wantToStop) Or Abs(angleDiff) > 160 Then
+		ElseIf currentSpeed > 100 Then
 			G_DebugWindow.AddText("  Need to slow down and think a bit.")
 			DoStop = TRUE
+		Else
+			G_DebugWindow.AddText("  Wanna point at target")
+			_desiredRotation = dirToTarget
 		EndIf
 		
-		if NOT doStop Then RotateTo(_desiredRotation)
+		G_DebugWindow.AddText("  desired rot: " + _desiredRotation)
 		
 		' stop
 		If doStop Then 
 			G_DebugWindow.AddText("  Stopping")
-			Stop(TRUE) ' true = use reversers for stopping
+			_wantToStop = True
+			DecelerateOnApproach(TRUE) ' true = use reversers for stopping
 			Return
 		EndIf
 
-		' Calculate thrust lever position
-		Local thrust:Float = 1.0 
-		
-		' accelerate if pointed at the right direction
-		Local threshold:Int = 10  ' degrees
-		If Abs(GetAngleDiff(_desiredRotation,_controlledShip.GetRot())) < threshold Then
-			_controlledShip.SetThrottle(thrust)
-		Else
-			_controlledShip.SetThrottle(0)	' cut throttle
-		EndIf
-		
+		AccelerateToDesiredDir()
+	
 	End Method
 	
-	
-	' Stop the ship using either main or reverse engines.
-	' Currently the decision which engines to use needs to be done outside this routine.
-	Method Stop(useReverse:Int = False)
-		If _controlledShip.GetVel() < 5 Then ' don't bother decelerating if we're slow enough
-			_controlledShip.SetThrottle(0)	' cut throttle
-			_controlledShip.SetController(0) ' center stick
-			Return	
-		EndIf
-				
-		If NOT useReverse Then 
-			_desiredRotation = DirAdd(_controlledShip.CalcMovingDirection(), 180) ' aim main engines backward
-		Else
-			_desiredRotation = _controlledShip.CalcMovingDirection()
-		EndIf
-		
-		'G_DebugWindow.AddText(_controlledShip.getName() + " desired Dir: " + _desiredRotation)
+	Method AccelerateToDesiredDir(useReverse:Int = False)
 		RotateTo(_desiredRotation)
 		
-		' Calculate thrust lever position (forward/back)
+		' Thrust lever position (forward/back)
 		Local thrust:Float = 1.0 
 		If useReverse Then thrust = -1 * thrust
 		
@@ -285,6 +269,56 @@ Type TAIPlayer Extends TPilot
 			_controlledShip.SetThrottle(0)	' cut throttle
 		EndIf
 
+	End Method
+	
+	Method DecelerateOnApproach(useReverse:Int = False)
+		If Not _targetX Or Not _targetY Then 
+			_wantToStop = False
+			Return
+		EndIf
+		
+		If _controlledShip.GetVel() < 5 Then ' don't bother decelerating if we're slow enough
+			_controlledShip.SetThrottle(0)	' cut throttle
+			_controlledShip.SetController(0) ' center stick
+			_wantToStop = False
+			Return	
+		EndIf
+		
+		Local dirTotarget:Double = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetX, _targetY) 
+		Local currentMovingDir:Double = _controlledShip.CalcMovingDirection()
+		Local angleDiff:Double = GetAngleDiff(dirToTarget,currentMovingDir)		
+		
+		If useReverse Then 
+			_desiredRotation = DirAdd(dirToTarget, angleDiff)
+		Else
+			_desiredRotation = DirAdd(dirToTarget, 180 + angleDiff)
+		EndIf
+
+		'overshoot check
+		If useReverse And Abs(GetAngleDiff(currentMovingDir,_desiredRotation)) > 160 Then _desiredRotation:+180
+		If NOt useReverse And Abs(GetAngleDiff(currentMovingDir,_desiredRotation)) < 20 Then _desiredRotation:+180
+		
+				
+		AccelerateToDesiredDir(useReverse)
+	End Method
+	
+	' Stop the ship using either main or reverse engines.
+	' Currently the decision which engines to use needs to be done outside this routine.
+	Method Stop(useReverse:Int = False)
+		If _controlledShip.GetVel() < 5 Then ' don't bother decelerating if we're slow enough
+			_controlledShip.SetThrottle(0)	' cut throttle
+			_controlledShip.SetController(0) ' center stick
+			_wantToStop = False
+			Return	
+		EndIf
+		
+		If NOT useReverse Then 
+			_desiredRotation = DirAdd(_controlledShip.CalcMovingDirection(), 180) ' aim main engines backward
+		Else
+			_desiredRotation = _controlledShip.CalcMovingDirection()
+		EndIf
+		
+		AccelerateToDesiredDir(useReverse)
 	End Method
 	
 	Method AimTarget()
@@ -349,7 +383,7 @@ Type TAIPlayer Extends TPilot
 		G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),cShip.GetX() + 35 * Cos(_desiredRotation), ..
 						cShip.GetY() + 35 * Sin(_desiredRotation))
 		
-		G_Viewport.DrawCircleToWorld(_targetObject.GetX(),_targetObject.GetY(),10)
+		If _targetObject Then G_Viewport.DrawCircleToWorld(_targetObject.GetX(),_targetObject.GetY(),10)
 	End Method
 		
 

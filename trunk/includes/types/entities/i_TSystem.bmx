@@ -469,6 +469,10 @@ Type TSystem Final
 		' remove all the objects from this system
 		For Local i:TSpaceObject = EachIn Self._L_SpaceObjects
 			RemoveSpaceObject(i)
+			If i = G_Player.GetControlledShip() Then Continue
+			
+			i.Destroy()
+			i.SetSystem(Null)
 		Next
 		Self._L_SpaceObjects.clear()		
 		_systemHasBeenPopulated=0
