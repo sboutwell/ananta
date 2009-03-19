@@ -161,7 +161,7 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- hull name -->
         <unit>piece</unit>
         <!-- unit of measurement (piece or kg) -->
-        <mass>7000</mass>
+        <mass>16000</mass>
         <!-- empty hull mass in kg -->
         <avgprice>15000</avgprice>
         <!-- average price -->
@@ -173,7 +173,7 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- the scale of the visual image (1 = full resolution of the image) -->
         <size>70</size>
         <!-- the diameter of the hull in meters (for radar blip size, rotational physics and rough collision detection) -->
-        <thrusterpos>25</thrusterpos>
+        <thrusterpos>85</thrusterpos>
         <!-- distance (in meters) of the rotation thrusters from the center of the mass -->
         <maxspeed>800</maxspeed>
         <!-- the maximum speed allowed for this hull in m/s (1 standard pixel equals 1m) -->
@@ -230,6 +230,15 @@ Copyright 2007, 2008 Jussi Pakkanen
             <location>external</location>
             <!-- internal/external, affects received damage -->
           </engineslot1>
+          <reverseengineslot1>
+            <!-- slot ID -->
+            <type>engine</type>
+            <volume>5</volume>
+            <!-- the volume of the slot in m^3 -->
+            <exposure>nose</exposure>
+            <location>external</location>
+            <!-- internal/external, affects received damage -->
+          </reverseengineslot1>
           <weaponslot1>
             <!-- slot ID -->
             <type>weapon</type>

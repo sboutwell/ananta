@@ -69,7 +69,7 @@ Type TShip Extends TMovingObject
 	
 	Method SetSystem(sys:TSystem) 
 		_System = sys
-		sys.AddSpaceObject(Self) 		' add the ship to the System's space objects list		
+		If sys <> Null Then sys.AddSpaceObject(Self) 		' add the ship to the System's space objects list		
 	End Method
 
 	Method SetCoordinates(x:Int, y:Int) 

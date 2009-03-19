@@ -91,10 +91,10 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	TAIPlayer.UpdateAllAI() 
 
 	' update the positions of every moving object (except ships)
-	TMovingObject.UpdateAll() 
+	if Not G_delta.isPaused Then TMovingObject.UpdateAll() 
 
 	' update the positions of every ship and calculate fuel and oxygen consumption
-	TShip.UpdateAll()
+	if Not G_delta.isPaused Then TShip.UpdateAll()
 
 	' draw the level
 	G_viewport.DrawLevel()
@@ -211,15 +211,14 @@ Function SetupTestEnvironment()
 
 	' create an AI ship for testing
 	Local ai:TAIPlayer = TAIPlayer.Create("AI")
-	Local a1:TShip = TShipModel.BuildShipFromModel("nadia")
+	Local a1:TShip = TShipModel.BuildShipFromModel("olympus")
 	a1.SetName("AI Ship")
 	a1.SetCoordinates(250500,250000)
 	a1.SetSystem(TSystem.GetActiveSystem())
 	a1.AssignPilot(ai)
 	a1.SetRot(45)
 	ai.SetTarget(G_Player.GetControlledShip())
-	'ai.SetTargetCoords(250000,250500)
-	
+	ai.SetTargetCoords(a1.GetX(),a1.GetY())
 		
 	G_viewport.CreateMsg("Player ship mass: " + s1.GetMass()) 
 	

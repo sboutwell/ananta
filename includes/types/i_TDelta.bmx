@@ -31,6 +31,7 @@ Type TDelta
 	Field _currentDelta:Double
 	Field _isFirstRound:Int = True
 	Field _timeCompression:Double = 1
+	Field isPaused:Int = False
 	
 	Method GetFPS:Int() Return _currentFPS End Method
 	Method GetTimeCompression:Double() Return _timeCompression EndMethod
@@ -42,6 +43,10 @@ Type TDelta
 		If compression = True Then Return _currentDelta * _timeCompression
 		Return _currentDelta
 	EndMethod
+	
+	Method TogglePause()
+		ToggleBoolean(isPaused)
+	End Method
 	
 	' calculates the new delta value based on the timestamp recorded on the previous frame
 	Method Calc() 
@@ -61,7 +66,11 @@ Type TDelta
 			_FrameCounter = 0
 			_FPSTime = _time + 1000	'Update once per second
 		EndIf
-						
+
+		If isPaused Then 
+			_time = Millisecs()
+			Return
+		End If						
 	End Method
 	
 	Method LimitFPS() 
