@@ -322,15 +322,25 @@ Type TViewport
 	' adjust zoom to fit the centered object on screen
 	Method ZoomToFit()
 		If NOT _centeredObject Then Return
-		Local hght:Float = _height
-		Local sz:Float = _centeredObject.GetSize()
+		Local minSize:Float = 50
+		Local hght:Float = _height	' viewport height
+		Local sz:Float = _centeredObject.GetSize()	' centered object size
 		
-		If TShip(_centeredObject) Then ' different zoom for ships
-			SetZoomFactor(hght/(sz*15))
+		Local objectsApparentSize:Float = GetZoomFactor() * (sz)
+		Local doesFitOnScreen:Int = ((hght/sz) >= GetZoomFactor())
+		
+		
+		' if object's apparent size on screen is between allowed limits, return without adjusting zoom
+		If objectsApparentSize => (hght/minSize) And doesFitOnScreen Then 
 			Return
-		End If
+		ElseIf doesFitOnScreen ' If object appears too small on screen, adjust zoom accordingly
+		   SetZoomFactor(hght/minSize/sz)
+		   return
+		EndIf
 		
-		SetZoomFactor(hght/sz) ' exact fit
+		'If (hght/sz) >= GetZoomFactor() Then Return ' object fits on screen at the current zoom level, return
+		
+		SetZoomFactor(hght/sz) ' exact fit 
 	End Method
 	
 
