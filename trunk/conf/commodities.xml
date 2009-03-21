@@ -99,6 +99,7 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- internal/external, affects received damage -->
 	    <xoffset>-2</xoffset>
 	    <yoffset>-27</yoffset>
+	    <!-- x and y offsets mark the engine exhaust points -->
           </mainengineslot1>
           <mainengineslot2>
             <!-- slot ID -->
@@ -110,6 +111,7 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- internal/external, affects received damage -->
 	    <xoffset>2</xoffset>
 	    <yoffset>-27</yoffset>	    
+	    <!-- x and y offsets mark the engine exhaust points -->
           </mainengineslot2>
 
           <reverseengineslot1>
@@ -122,6 +124,7 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- internal/external, affects received damage -->
 	    <xoffset>7</xoffset>
 	    <yoffset>7</yoffset>	    
+	    <!-- x and y offsets mark the engine exhaust points -->
           </reverseengineslot1>
           <reverseengineslot2>
             <!-- slot ID -->
@@ -133,8 +136,8 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- internal/external, affects received damage -->
 	    <xoffset>-7</xoffset>
 	    <yoffset>7</yoffset>	    
+	    <!-- x and y offsets mark the engine exhaust points -->
           </reverseengineslot2>
-
           <weaponslot1>
             <!-- slot ID -->
             <type>weapon</type>
@@ -229,7 +232,21 @@ Copyright 2007, 2008 Jussi Pakkanen
             <!-- main engines always point behind... other directions have no effect -->
             <location>external</location>
             <!-- internal/external, affects received damage -->
+	    <yoffset>-33</yoffset>
+	    <xoffset>-25</xoffset>
           </engineslot1>
+          <engineslot2>
+            <!-- slot ID -->
+            <type>engine</type>
+            <volume>5</volume>
+            <!-- the volume of the slot in m^3 -->
+            <exposure>tail</exposure>
+            <!-- main engines always point behind... other directions have no effect -->
+            <location>external</location>
+            <!-- internal/external, affects received damage -->
+	    <yoffset>-33</yoffset>
+	    <xoffset>25</xoffset>
+          </engineslot2>
           <reverseengineslot1>
             <!-- slot ID -->
             <type>engine</type>
@@ -238,7 +255,20 @@ Copyright 2007, 2008 Jussi Pakkanen
             <exposure>nose</exposure>
             <location>external</location>
             <!-- internal/external, affects received damage -->
+	    <yoffset>13</yoffset>
+	    <xoffset>25</xoffset>
           </reverseengineslot1>
+          <reverseengineslot2>
+            <!-- slot ID -->
+            <type>engine</type>
+            <volume>5</volume>
+            <!-- the volume of the slot in m^3 -->
+            <exposure>nose</exposure>
+            <location>external</location>
+            <!-- internal/external, affects received damage -->
+	    <yoffset>13</yoffset>
+	    <xoffset>-25</xoffset>
+          </reverseengineslot2>
           <weaponslot1>
             <!-- slot ID -->
             <type>weapon</type>

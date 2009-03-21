@@ -40,7 +40,9 @@ Type TDebugWindow
 	
 	Method DrawAllLines()
 		If Not _L_DebugLines Then Return
-
+		'_L_DebugLines.Clear()
+		'Return
+	
 		AutoMidHandle False
 		SetBlend AlphaBlend
 		SetRotation(0)

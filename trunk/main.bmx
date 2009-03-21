@@ -196,18 +196,13 @@ Function SetupTestEnvironment()
 	
 	' generate the player and player's ship
 	G_Player = TPlayer.Create("Da Playah") 
-	Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
+	Local s1:TShip = TShipModel.BuildShipFromModel("olympus") 
 	s1.SetName("Player ship") 
 	s1.SetCoordinates(250000,250000)
 	s1.SetSystem(TSystem.GetActiveSystem()) 
 	s1.SetRot(90)
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
-
-	' attach a particle generator (this is to be integrated to TShip at a later stage)
-	'Local part1:TParticleGenerator = TParticleGenerator.Create("trail.png", 0, 0, TSystem.GetActiveSystem(), 0.1, 0.3, 400, 0.07) 
-	'part1.SetRandomDir(2) 
-	's1.AddAttachment(part1, - 28, 0, 0, False) 	
 
 	' create an AI ship for testing
 	Local ai:TAIPlayer = TAIPlayer.Create("AI")
