@@ -85,7 +85,7 @@ Type TProtoBody
 	' this function will find the prototype body and use it
 	' to populate the target stellar object, be it planet or sun.
 	
-	Function populateBodyFromName(target:TStellarObject, name:String)
+	Function populateBodyFromName(target:TStellarObject Var, name:String)
 		Local found:TProtoBody=TProtoBody.findProtoBodyFromName(name)
 		If Not found 
 			If G_Debug Print "Could not prototype from "+name+". Please check "+c_celestialTypes

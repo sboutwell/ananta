@@ -13,7 +13,7 @@ Type TPlanet Extends TStellarObject
 		
 	End Method
 
-	Function createFromProto:TPlanet(x:Int,y:Int,System:TSystem,name:String,planetType:String)
+	Function createFromProto:TPlanet(x:Long,y:Long,System:TSystem,name:String,planetType:String)
 		Local pl:TPlanet = New TPlanet					' create an instance
 		pl._name = name										' give a name
 		pl._x = x; pl._y = y									' coordinates
