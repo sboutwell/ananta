@@ -161,7 +161,7 @@ Type TUni
 		Local s2:Int = Rand(0,syllable2Count -1)
 		Local s3:Int = Rand(0,syllable3Count -1)
 		
-		Return syllable1[s1] + syllable2[s2] + syllable3[s3]
+		Return ProperCase(syllable1[s1] + syllable2[s2] + syllable3[s3])
 	End Method
 
 	' function to semi-randomize base seeds using bit shifts
@@ -224,8 +224,10 @@ Type TSector
 			mult:Int = G_Universe.StarChance_Multiples[Rand(0, G_Universe.StarChance_Multiples.Length - 1)]
 			typ:Int = G_Universe.StarChance_Type[Rand(0, G_Universe.StarChance_Type.Length - 1)]
 			name:String = G_Universe.GetSystemName() ' generate system name with the current SFMT seed
-			Local system:TSystem = TSystem.Create(_x, _y, x, y, name, typ, mult)
+			Local system:TSystem = TSystem.Create(_x, _y, x, y, name, typ, mult, i)
 			system.SetSize((G_Universe.StarSize[typ] + mult * 100) / 200.0)
+			
+			
 			_L_systems.AddLast(system) 
 		Next
 		_isPopulated = True	' switch the flag on to indicate this sector is populated

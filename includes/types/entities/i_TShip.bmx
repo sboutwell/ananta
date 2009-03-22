@@ -114,6 +114,7 @@ Type TShip Extends TMovingObject
 		Return ratio
 	End Method
 	
+	' calculate the distance it takes for this ship to come to a full stop
 	Method CalcStopDistance:Double(useReverse:Int = False)
 		Local stopTime:Double
 		Local acceleration:Float
@@ -125,9 +126,6 @@ Type TShip Extends TMovingObject
 		IF acceleration = 0 Then Return -1 ' can never stop with zero acceleration
 		
 		stopTime = GetVel() / acceleration
-		G_DebugWindow.AddText("decel: " + acceleration)
-		G_DebugWindow.AddText("stop time: " + stopTime)
-		G_DebugWindow.AddText("stop dist: " + CalcAccelerationDistance(GetVel(),stopTime,acceleration)/2)
 		
 		Return CalcAccelerationDistance(GetVel(),stopTime,acceleration)/2
 	End Method
@@ -360,13 +358,13 @@ Type TShip Extends TMovingObject
 	EndFunction
 
 	Method HyperspaceToSystem(s:TSystem)
-		If s=_system Return ' can't hyperspace to the system you're already in
+		If s.GetUniqueID() = _system.GetUniqueID() Return ' can't hyperspace to the system you're already in
 		
 		' we are going to immediately jump to this system
 		Local currentlyActiveSystem:TSystem = TSystem._g_ActiveSystem
 		If currentlyActiveSystem currentlyActiveSystem.forget();TSystem._g_ActiveSystem=Null
 						
-		s.populate() ' load it up		
+		If Not s.isPopulated() Then s.populate() ' load it up		
 		Self.SetSystem(s) ' assign the ship's current system		
 		s.SetAsActive() ' set as active
 		

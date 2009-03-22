@@ -164,18 +164,19 @@ Type TStarMap Extends TMiniMap
 			Next
 		Next			
 		
+		TSystem._g_ViewingSystem = getClosestSystemToScreenCentre()
+		
+		If getClosestSystemToScreenCentre().GetUniqueID() = TSystem.GetActiveSystem().GetUniqueID() Then
+			TSystem._g_ViewingSystem = TSystem.GetActiveSystem()
+			setClosestSystemToScreenCentre(TSystem.GetActiveSystem())
+		End If
+		
 		' hmmm, as we're working with system objects that get re-created every refresh, we'll have to re-populate the system everytime
 		' So here we'll load our target system into TSystem._g_ViewingSystem and populate() it.
-		
-		TSystem._g_ViewingSystem = getClosestSystemToScreenCentre()
 		If TSystem._g_ViewingSystem<>Null
 			If TSystem._g_ViewingSystem.isPopulated()=0 TSystem._g_ViewingSystem.populate() 		
 		EndIf
 				
-		' set closest blip alpha here, seeing as it's created every refresh
-		'If _zoomFactor > 200
-		'	_ClosestSystemBlip.setBlipAlpha(0)
-		'EndIf							
 	End Method
 	
 	' updates arrays holding the galaxy sector X and Y-coordinates that should be visible in the starmap

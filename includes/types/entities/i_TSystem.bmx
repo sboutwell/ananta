@@ -23,6 +23,8 @@ Type TSystem Final
 	Global _g_ActiveSystem:TSystem				' the System the player is in
 	Global _g_ViewingSystem:TSystem 		' player can view one system at a time.
 	
+	Field _uniqueID:Long  ' a unique ID of a generated system
+	Field _starNr:Int		' number of the star within the sector
 	Field _name:String	' Name of the System
 	Field _sectorX:Int, _sectorY:Int ' coordinates of the sector this system's in (0 - 7192)
 	Field _x:Int,_y:Int	' System's x-y-coordinates in the galaxy (0 - ~1.8 million)
@@ -211,7 +213,10 @@ Type TSystem Final
 					
 					' hack for testing...
 					' make it smaller than its parent.
-					newMoon.setScaleX(newPlanet.getScaleX()*0.3)
+					'   This is a good hack and might as well stay  /Jussi
+					Local newScale:Double = Rnd(newMoon.GetScaleX() * 0.1,newMoon.GetScaleY() * 0.3)
+					newMoon.SetMass((newMoon.GetMass()/newMoon.GetScaleX()) * newScale) ' scale affects mass as well
+					newMoon.setScaleX(newScale)
 					newMoon.setScaleY(newMoon.getScaleX())
 					
 					newMoon.setSize(CalcImageSize(newMoon._image, False) * newMoon.GetScaleX())
@@ -282,7 +287,6 @@ Type TSystem Final
 	End Method
 	
 	Method drawSystemQuickly(x:Int, y:Int, width:Float, drawBackground:Int=0)
-	
 		' draw a background box
 		If drawBackground
 			SetColor 0,255,0
@@ -350,6 +354,8 @@ Type TSystem Final
 			EndIf
 		Next		
 		
+		SetScale(1,1)
+		SetRotation(0)
 		' now draw ships in that system
 		For Local i:TShip = EachIn Self.GetSpaceObjects()
 			Local d1:Float = Distance(sun.GetX(), sun.GetY(), i.GetX(), i.GetY()) / v
@@ -361,13 +367,14 @@ Type TSystem Final
 			
 			DrawRect(px, py, 2, 2)
 			
-			SetRotation 0
-			SetColor 255,255,255								
 		Next		
 		
 		SetRotation 0	
 		SetScale 1,1	
 		SetColor 255,255,255
+		
+		G_DebugWindow.AddText("Nr of objects in " + self._name + ": " + GetSpaceObjects().Count())
+		
 	End Method	
 	
 	Method getFarthestObjectInSystem:TStellarObject(dis:Double Var)
@@ -434,6 +441,10 @@ Type TSystem Final
 		Return _planets
 	End Method	
 	
+	Method GetUniqueID:Long()
+		Return _uniqueID 
+	End Method
+	
 	' returns the main star of the system
 	Method GetMainStar:TStar()
 		Return _mainStar
@@ -458,6 +469,7 @@ Type TSystem Final
 	Method setComfortZone(s:String)
 		_comfortZone = s
 	End Method
+	
 
 	' returns the system that is currently "active"
 	Function GetActiveSystem:TSystem()
@@ -465,11 +477,11 @@ Type TSystem Final
 	End Function
 	
 	Method Forget()		
-		If Self._L_SpaceObjects = Null _systemHasBeenPopulated=0;Return
+		If _L_SpaceObjects = Null _systemHasBeenPopulated=0;Return
 		' remove all the objects from this system
 		For Local i:TSpaceObject = EachIn Self._L_SpaceObjects
-			RemoveSpaceObject(i)
 			If i = G_Player.GetControlledShip() Then Continue
+			RemoveSpaceObject(i)
 			
 			i.Destroy()
 			i.SetSystem(Null)
@@ -479,7 +491,7 @@ Type TSystem Final
 		'DebugLog "forgetting "+Self.getName()
 	End Method
 	
-	Function Create:TSystem(sectX:Int, sectY:Int,x:Int,y:Int,name:String,typ:Int,mult:Int)
+	Function Create:TSystem(sectX:Int, sectY:Int,x:Int,y:Int,name:String,typ:Int,mult:Int,nr:Int)
 		Local se:TSystem = New TSystem								' create an instance of the System
 		se._name = name	
 		se._sectorX = sectX
@@ -487,6 +499,9 @@ Type TSystem Final
 		se._x = x	; se._y = y	
 		se._type = typ
 		se._multiple = mult
+		se._starNr = nr
+		se._uniqueID = nr Shl(26) + sectY Shl(13) + SectY
+			
 		Return se										' return the pointer to this specific object instance
 	EndFunction
 EndType
