@@ -325,36 +325,39 @@ Type TAIPlayer Extends TPilot
 	End Method
 	
 	Method CalculateAimVector()
+		' x and yOffsets show the position of the weapon barrel on the ship
 		Local xOff:Float = _controlledShip.GetSelectedWeaponSlot().GetXOffSet()
 		Local yOff:Float = _controlledShip.GetSelectedWeaponSlot().GetYOffSet()
+		Local myRot:Float = _controlledShip.GetRot()
 		' dx and dy represent bullet direction
-		Local dx:Double = _targetObject.GetX() - _controlledShip.GetX() + xOff
-		Local dy:Double = _targetObject.GetY() - _controlledShip.GetY() + yOff
-		
+		Local dx:Double = _targetObject.GetX() - _controlledShip.GetX() - yOff * Cos(myRot) - xOff * Sin(myRot)
+		Local dy:Double = _targetObject.GetY() - _controlledShip.GetY() - yOff * Sin(myRot) + xOff * Cos(myRot)
+		   
 		Local enemy:TSpaceObject = _targetObject
 		Local relXVel:Double = enemy.GetXVel() - _controlledShip.GetXVel()
 		Local relYVel:Double = enemy.GetYVel() - _controlledShip.GetYVel()
 		
 		' quadratic equation
 		Local a:Double = dx * dx + dy * dy
-		Local b:Double = 2 * (relXVel * dx + relYVel * dy)
+		Local b:Double = 2.0 * (relXVel * dx + relYVel * dy)
 		Local v:Double = _controlledShip.GetSelectedWeapon().GetVelocity()	' v = bullet velocity
 		Local c:Double = relXVel * relXVel + relYVel * relYVel - v * v
-		Local tInv:Double = (- b + Sqr(b * b - 4 * a * c)) / (2 * a)
+		Local tInv:Double = (- b + Sqr(b * b - 4.0 * a * c)) / (2.0 * a)
 		dx = dx * tInv + relXVel
 		dy = dy * tInv + relYVel
 		
-		_desiredRotation = DirectionTo(0, 0, dx, dy)
+		_desiredRotation = ATan2(dy, dx)
+
 	End Method
 	
 	Method AimTarget()
 		CalculateAimVector()
-		RotateTo(_desiredRotation)
+		RotateTo(_desiredRotation,false,true)
 	End Method
 	
 	Method ShootTarget()
 		Local tDist:Double = Distance(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
-		Local rotDiff:Float = Abs(_controlledShip.GetRot() - _desiredRotation)
+		Local rotDiff:Float = Abs(GetAngleDiff(_controlledShip.GetRot(),_desiredRotation))
 		If tDist > 1000 Or rotDiff > 15 Then
 			_controlledShip.isTriggerDown = False
 		Else
@@ -363,10 +366,10 @@ Type TAIPlayer Extends TPilot
 	End Method
 		
 	
-	Method RotateTo(heading:Float, aggressiveMode:Int = False) 
+	Method RotateTo(heading:Float, aggressiveMode:Int = False, accurateMode:Int = False) 
 		Local diff:Float = GetAngleDiff(_controlledShip.GetRot(),heading)  ' returns degrees between current and desired rotation
 		' if we're "close enough" to the desired rotation (take the rot thrust performance into account)...
-		If Not aggressiveMode And Abs(diff) < 1 + _controlledShip.GetRotAccel() * G_delta.GetDelta() * 2 Then
+		If (Not aggressiveMode and Not accurateMode) And Abs(diff) < 1 + _controlledShip.GetRotAccel() * G_delta.GetDelta() * 2 Then
 			_controlledShip.SetController(0)  	 					'... center the joystick...
 			Return  												' ... and return with no further action
 		EndIf
