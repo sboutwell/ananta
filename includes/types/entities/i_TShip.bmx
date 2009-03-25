@@ -149,6 +149,13 @@ Type TShip Extends TMovingObject
 		Next
 	End Method
 	
+	Method GetSelectedWeapon:TWeapon()
+		Return _selectedWeapon
+	End Method
+	
+	Method GetSelectedWeaponSlot:TSlot()
+		Return _selectedWeaponSlot
+	End Method
 	
 	Method FireWeapon() 
 		If Not _selectedWeaponSlot Or Not _selectedWeapon Then Return
