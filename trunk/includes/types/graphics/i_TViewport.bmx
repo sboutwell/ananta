@@ -94,7 +94,7 @@ Type TViewport
 		'_starMap = TStarMap.Create(g_ResolutionX - 195, 200, 195, 195)
 		_starMap = TStarMap.Create(_startX, _startY, _height, _width)
 		
-		 G_DebugWindow = TDebugWindow.Create(_width - 500, 10 + _marginalTop + _systemMap.GetHeight()) 
+		 G_debugWindow = TDebugWindow.Create(250, 10 + _marginalTop)
 
 		TScreenParticle.Init() ' populate screen particle array
 	EndMethod

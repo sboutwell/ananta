@@ -192,12 +192,15 @@ Type TAIPlayer Extends TPilot
 		If Not _targetObject And (_targetX = Null Or _targetY = Null) Then Return
 		
 		' temporary keybindings for testing AI navigation
-		If KeyHit(KEY_U) Then 
-			_targetY = _targetObject.GetY()
-			_targetX = _targetObject.GetX()
-		EndIf
+		'If KeyHit(KEY_U) Then 
+		'	_targetY = _targetObject.GetY()
+		'	_targetX = _targetObject.GetX()
+		'EndIf
 		
-		If _targetX AND _targetY Then FlyToTargetCoords()
+		
+		'If _targetX AND _targetY Then FlyToTargetCoords()
+		AimTarget()
+		ShootTarget()
 
 	EndMethod
 
@@ -321,17 +324,42 @@ Type TAIPlayer Extends TPilot
 		AccelerateToDesiredDir(useReverse)
 	End Method
 	
+	Method CalculateAimVector()
+		Local xOff:Float = _controlledShip.GetSelectedWeaponSlot().GetXOffSet()
+		Local yOff:Float = _controlledShip.GetSelectedWeaponSlot().GetYOffSet()
+		' dx and dy represent bullet direction
+		Local dx:Double = _targetObject.GetX() - _controlledShip.GetX() + xOff
+		Local dy:Double = _targetObject.GetY() - _controlledShip.GetY() + yOff
+		
+		Local enemy:TSpaceObject = _targetObject
+		Local relXVel:Double = enemy.GetXVel() - _controlledShip.GetXVel()
+		Local relYVel:Double = enemy.GetYVel() - _controlledShip.GetYVel()
+		
+		' quadratic equation
+		Local a:Double = dx * dx + dy * dy
+		Local b:Double = 2 * (relXVel * dx + relYVel * dy)
+		Local v:Double = _controlledShip.GetSelectedWeapon().GetVelocity()	' v = bullet velocity
+		Local c:Double = relXVel * relXVel + relYVel * relYVel - v * v
+		Local tInv:Double = (- b + Sqr(b * b - 4 * a * c)) / (2 * a)
+		dx = dx * tInv + relXVel
+		dy = dy * tInv + relYVel
+		
+		_desiredRotation = DirectionTo(0, 0, dx, dy)
+	End Method
+	
 	Method AimTarget()
-		_desiredRotation = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
+		CalculateAimVector()
+		RotateTo(_desiredRotation)
+	End Method
+	
+	Method ShootTarget()
 		Local tDist:Double = Distance(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
-		Local rotDiff:Float = Abs(_controlledShip.GetRot() - _desiredRotation) 
+		Local rotDiff:Float = Abs(_controlledShip.GetRot() - _desiredRotation)
 		If tDist > 1000 Or rotDiff > 15 Then
-			RotateTo(_desiredRotation)     	' use the AI logic to turn to the desired rotation
 			_controlledShip.isTriggerDown = False
 		Else
-			RotateTo(_desiredRotation, True)      	' use the AI logic to turn to the desired rotation
 			_controlledShip.isTriggerDown = True		' fire
-		EndIf		
+		EndIf
 	End Method
 		
 	

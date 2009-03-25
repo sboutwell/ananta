@@ -19,19 +19,19 @@ vilumax (_a t_) gmail (_d o t_) com
 
 
 Credits:
-======
+========
 * Bruce A. Henderson for LibXML, Cairo, SFMT and Fontconfig libraries
 * Jongware (www.jongware.com) and David Braben/Frontier Developments 
 for procedural universe generator fundamentals
 * Darren A. Sexton for BSG ship sprites
 * Jim Stevenson for B5 ship sprites (shipschematics.net)
-* Pyramid from the Vega Strike team for Pov-Ray planet generator script
+* Pyramid (http://space3d.no.sapo.pt) for Pov-Ray planet generator scripts
 (licensed under Creative Commons)
 
 
 
-Ananta pre-alpha preview version 2
-================================
+Ananta pre-alpha preview
+========================
 
 Unzip all files to a folder of your choosing and run main.exe.
 XML files in "conf" folder should be self explanatory.
@@ -41,22 +41,23 @@ You may also want to adjust <resolution> to a more comfortable setting.
 
 
 Controls:
-	Left arrow	- rotate ship left
-	Right arrow	- rotate ship right
-	Up arrow		- forward thrust
-	Down arrow	- reverse thrust
-	Ctrl		- fire weapon
-	j		- jump drive on/off
-	z		- viewport zoom in
-	x		- viewport zoom out
-	shift+z		- system map zoom in
-	shift+x		- system map zoom out
-	alt+z		- reset viewport zoom
-	alt+x		- reset system map zoom
-	g		- toggle starmap on/off
-	(shift+)wasd	- scroll starmap
-	c/v		- starmap zoom in/out
-	alt+c		- center starmap
-	alt+enter		- toggle fullscreen mode
-	ESC		- exit game
-	F1		- show the control help
+	Left arrow      - rotate ship left
+	Right arrow     - rotate ship right
+	Up arrow        - forward thrust
+	Down arrow      - reverse thrust
+	Ctrl            - fire weapon
+	j               - jump drive on/off
+	z               - viewport zoom in
+	x               - viewport zoom out
+	shift+z         - system map zoom in
+	shift+x         - system map zoom out
+	alt+z           - reset viewport zoom
+	alt+x           - reset system map zoom
+	g               - starmap show/hide
+	h               - hyperspace
+	(shift+)wasd    - scroll starmap
+	c/v             - starmap zoom in/out
+	alt+c           - center starmap
+	alt+enter       - toggle fullscreen mode
+	ESC             - exit game
+	F1              - show the control help
