@@ -100,7 +100,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	G_viewport.DrawLevel()
 	
 	' update and draw particles 
-	TParticle.UpdateAndDrawAll()
+	if not G_delta.isPaused Then TParticle.UpdateAndDrawAll()
 	 
 	' draw each object in the currently active System
 	TSystem.GetActiveSystem().DrawAllInSystem(G_viewport) ' seeing as G_viewport is a global, do we really need to pass it?
@@ -203,6 +203,7 @@ Function SetupTestEnvironment()
 	s1.SetRot(90)
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
+	s1._integrity = -1
 
 	' create an AI ship for testing
 	Local ai:TAIPlayer = TAIPlayer.Create("AI")
@@ -217,5 +218,5 @@ Function SetupTestEnvironment()
 		
 	G_viewport.CreateMsg("Player ship mass: " + s1.GetMass()) 
 	
-	G_viewport.CenterCamera(a1)           		' select the player ship as the object for the camera to follow
+	G_viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow
 End Function
