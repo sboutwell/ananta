@@ -191,6 +191,7 @@ Type TAIPlayer Extends TPilot
 		
 		If Not _targetObject And (_targetX = Null Or _targetY = Null) Then Return
 		
+		ChaseTarget()
 		' temporary keybindings for testing AI navigation
 		'If KeyHit(KEY_U) Then 
 		'	_targetY = _targetObject.GetY()
@@ -198,9 +199,8 @@ Type TAIPlayer Extends TPilot
 		'EndIf
 		
 		
-		'If _targetX AND _targetY Then FlyToTargetCoords()
-		AimTarget()
-		ShootTarget()
+		'AimTarget()
+		'ShootTarget()
 
 	EndMethod
 
@@ -253,6 +253,35 @@ Type TAIPlayer Extends TPilot
 	
 	End Method
 	
+	' Chases the target ship
+	' Courtesy of Swiftcoder (http://www.gamedev.net/community/forums/topic.asp?topic_id=512372)
+	Method ChaseTarget()
+		Local distToTgt:Double = Distance(_controlledShip.GetX(),_controlledShip.GetY(), ..
+									_targetObject.GetX(),_targetObject.GetY())
+		'Local relVelX:Double = _controlledShip.GetXVel() - _targetObject.GetXVel()
+		'Local relVelY:Double = _controlledShip.GetYVel() - _targetObject.GetYVel()
+		
+		Local predT:Float = 3.0 * distToTgt/200' number of seconds to predict positions
+		If predT < .5 Then predT = .5
+		
+		' target's predicted position after predT seconds
+		Local tgtPredX:Double = _targetObject.GetX() + (_targetObject.GetXVel() * predT)
+		Local tgtPredY:Double = _targetObject.GetY() + (_targetObject.GetYVel() * predT)
+		' my predicted position
+		Local myPredX:Double = _controlledShip.GetX() + (_controlledShip.GetXVel() * predT)
+		Local myPredY:Double = _controlledShip.GetY() + (_controlledShip.GetYVel() * predT)
+		
+		
+		G_DebugWindow.AddText("CurrX: " + _targetObject.GetX() + " PredX: " + tgtPredX)
+		G_DebugWindow.AddText("CurrY: " + _targetObject.GetY() + " PredY: " + tgtPredY)
+			
+		' vector between predicted coordinates
+		_desiredRotation = DirectionTo(myPredX,myPredY,tgtPredX,tgtPredY)
+		
+		AccelerateToDesiredDir()
+
+	End Method
+	
 	Method AccelerateToDesiredDir(useReverse:Int = False)
 		RotateTo(_desiredRotation)
 		
@@ -261,7 +290,7 @@ Type TAIPlayer Extends TPilot
 		If useReverse Then thrust = -1 * thrust
 		
 		' calculate the rotation sector in which engines can be fired
-		Local threshold:Int = 15  ' degrees
+		Local threshold:Int = 90  ' degrees
 		If _controlledShip.GetVel() < 100 Then threshold :- (200/_controlledShip.GetVel()) 'narrow down the sector at lower speeds
 		LimitInt(threshold,3,15) ' make sure threshold is between set limits
 		
@@ -324,6 +353,10 @@ Type TAIPlayer Extends TPilot
 		AccelerateToDesiredDir(useReverse)
 	End Method
 	
+	' Calculates the correct aiming angle for shooting at a moving target
+	' Math help courtesy of Warpy (http://www.blitzbasic.com/Community/posts.php?topic=83782#945701)
+	' TODO: add variable aiming accuracy based on AI skill.
+	' TODO2: take target acceleration into consideration
 	Method CalculateAimVector()
 		' x and yOffsets show the position of the weapon barrel on the ship
 		Local xOff:Float = _controlledShip.GetSelectedWeaponSlot().GetXOffSet()
@@ -346,6 +379,7 @@ Type TAIPlayer Extends TPilot
 		dx = dx * tInv + relXVel
 		dy = dy * tInv + relYVel
 		
+		' resultant angle
 		_desiredRotation = ATan2(dy, dx)
 
 	End Method
