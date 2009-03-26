@@ -77,6 +77,14 @@ Type TShip Extends TMovingObject
 		_y = y
 	End Method
 	
+	' returns current forward (+) or reverse (-) acceleration depending on throttle position
+	Method GetCurrentAcceleration:Float()
+		Local acc:Float = 0
+		If _throttlePosition < 0 Then acc = _reverseAcceleration
+		If _throttlePosition > 0 Then acc = _forwardAcceleration
+		Return _throttlePosition * acc
+	End Method
+	
 	Method Update() 
 		' apply forward and reverse thrusts
 		If _throttlePosition > 0 Then
