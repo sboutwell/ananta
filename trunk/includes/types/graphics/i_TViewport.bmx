@@ -215,6 +215,7 @@ Type TViewport
 		End If
 	EndMethod
 
+	' CycleCamera selects the next/previous SpaceObject in the active system as the object for the camera to follow
 	Method CycleCamera(dir:Int = 1)
 		Local actsyst:TSystem = TSystem.GetActiveSystem()
 		Local currCenteredObject:TSpaceObject = _centeredObject
@@ -237,6 +238,15 @@ Type TViewport
 				Return
 			EndIf
 		Next
+		
+		' Ok, if we're here, we did not find the current camera object when iterating through the list
+		' This may happen when the centered object is destroyed. So, let's reset the camera now:
+		If g_player.GetControlledShip() Then 
+			CenterCamera(G_player.GetControlledShip())
+		Else ' if we don't have the player ship either, let's center the central star
+			CenterCamera(TSpaceObject(actsyst.GetMainStar()))
+		EndIf
+		
 	End Method
 	
 	

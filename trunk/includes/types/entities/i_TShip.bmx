@@ -124,18 +124,14 @@ Type TShip Extends TMovingObject
 	
 	' calculate the distance it takes for this ship to come to a full stop
 	Method CalcStopDistance:Double(useReverse:Int = False)
-		Local stopTime:Double
 		Local acceleration:Float
 		If useReverse Then 
 			acceleration = GetReverseAcceleration()
 		Else
 			acceleration = GetForwardAcceleration() 
 		EndIf
-		IF acceleration = 0 Then Return -1 ' can never stop with zero acceleration
 		
-		stopTime = GetVel() / acceleration
-		
-		Return CalcAccelerationDistance(GetVel(),stopTime,acceleration)/2
+		Return CalcAccelerationDistance(GetVel(),CalcStopTime(GetVel(), acceleration),acceleration)
 	End Method
 
 	

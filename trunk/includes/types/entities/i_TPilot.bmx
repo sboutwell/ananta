@@ -191,7 +191,7 @@ Type TAIPlayer Extends TPilot
 		
 		If Not _targetObject And (_targetX = Null Or _targetY = Null) Then Return
 		
-		ChaseTarget()
+		FollowTarget()
 		' temporary keybindings for testing AI navigation
 		'If KeyHit(KEY_U) Then 
 		'	_targetY = _targetObject.GetY()
@@ -253,16 +253,54 @@ Type TAIPlayer Extends TPilot
 	
 	End Method
 	
-	' Chases the target ship
-	' Courtesy of Swiftcoder (http://www.gamedev.net/community/forums/topic.asp?topic_id=512372)
-	Method ChaseTarget()
-		Local distToTgt:Double = Distance(_controlledShip.GetX(),_controlledShip.GetY(), ..
-									_targetObject.GetX(),_targetObject.GetY())
-		'Local relVelX:Double = _controlledShip.GetXVel() - _targetObject.GetXVel()
-		'Local relVelY:Double = _controlledShip.GetYVel() - _targetObject.GetYVel()
+	' relative velocity to target object
+	Method CalcVelocityToTarget(velX:Double var, velY:Double var)
+		If Not _targetObject Then 
+			velX = _controlledShip.GetXVel()
+			velY = _controlledShip.GetYVel()
+			Return
+		End If
 		
-		Local predT:Float = 3.0 * distToTgt/200' number of seconds to predict positions
-		If predT < .5 Then predT = .5
+		velX = _controlledShip.GetXVel() - _targetObject.GetXVel()
+		velY = _controlledShip.GetYVel() - _targetObject.GetYVel()
+	End Method
+	
+	' Follows/chases the target ship
+	' Credit to Swiftcoder for the brilliant idea of trajectory prediction:
+	' http://www.gamedev.net/community/forums/topic.asp?topic_id=512372
+	Method FollowTarget()
+		Local desiredDistance:Double = 500
+		Local tgtX:Double = _targetObject.GetX()
+		Local tgtY:Double = _targetObject.GetY()
+		Local tgtXVel:Double = _targetObject.GetXVel()
+		Local tgtYVel:Double = _targetObject.GetYVel()
+		
+		Local distToTgt:Double = Distance(_controlledShip.GetX(),_controlledShip.GetY(), tgtX, tgtY)
+		
+		Local relVelX:Double 
+		Local relVelY:Double 
+		CalcVelocityToTarget(relVelX,relVelY)
+				
+		Local relVel:Double = GetSpeed(relVelX,relVelY)
+		
+		' if we're close enough to the target and coasting to the same direction, cut throttle
+		If distToTgt <= desiredDistance Then 
+			If Abs(relVelX) + Abs(relVelY) <= Sqr(distToTgt) + 5 Then 
+				_controlledShip.SetThrottle(0)	' cut throttle
+				_desiredRotation = _targetObject.GetRot()
+				RotateTo(_desiredRotation)
+				Return
+			EndIf
+		End if
+		
+		Local tgt:TShip = TShip(_targetObject)
+		Local tgtStopTime:Float = 0
+		If tgt Then tgtStopTime = CalcStopTime(relVel,Abs(tgt.GetCurrentAcceleration()))
+		If tgtStopTime >= $ffffffff:Double Then tgtStopTime = 0
+		
+		' predT is the time in seconds we want to predict the trajectories
+		Local predT:Float = CalcStopTime(relVel,_controlledShip.GetForwardAcceleration()) / 1.5 + tgtStopTime
+		If predT < 3 Then predT = 3 ' minimum of 3 seconds, good for close combat
 		
 		' target's predicted position after predT seconds
 		Local tgtPredX:Double = _targetObject.GetX() + (_targetObject.GetXVel() * predT)
@@ -271,15 +309,10 @@ Type TAIPlayer Extends TPilot
 		Local myPredX:Double = _controlledShip.GetX() + (_controlledShip.GetXVel() * predT)
 		Local myPredY:Double = _controlledShip.GetY() + (_controlledShip.GetYVel() * predT)
 		
-		
-		G_DebugWindow.AddText("CurrX: " + _targetObject.GetX() + " PredX: " + tgtPredX)
-		G_DebugWindow.AddText("CurrY: " + _targetObject.GetY() + " PredY: " + tgtPredY)
-			
 		' vector between predicted coordinates
 		_desiredRotation = DirectionTo(myPredX,myPredY,tgtPredX,tgtPredY)
 		
 		AccelerateToDesiredDir()
-
 	End Method
 	
 	Method AccelerateToDesiredDir(useReverse:Int = False)
@@ -437,7 +470,7 @@ Type TAIPlayer Extends TPilot
 		SetRotation(0)
 		SetScale(1,1)
 		' line to target
-		G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),_targetX,_targetY)
+		'G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),_targetX,_targetY)
 		
 		' moving direction
 		SetColor(255,60,60)
