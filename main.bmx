@@ -196,7 +196,7 @@ Function SetupTestEnvironment()
 	
 	' generate the player and player's ship
 	G_Player = TPlayer.Create("Da Playah") 
-	Local s1:TShip = TShipModel.BuildShipFromModel("olympus") 
+	Local s1:TShip = TShipModel.BuildShipFromModel("nadia") 
 	s1.SetName("Player ship") 
 	s1.SetCoordinates(250000,250000)
 	s1.SetSystem(TSystem.GetActiveSystem()) 
@@ -207,7 +207,7 @@ Function SetupTestEnvironment()
 
 	' create an AI ship for testing
 	Local ai:TAIPlayer = TAIPlayer.Create("AI")
-	Local a1:TShip = TShipModel.BuildShipFromModel("olympus")
+	Local a1:TShip = TShipModel.BuildShipFromModel("nadia")
 	a1.SetName("AI Ship")
 	a1.SetCoordinates(250500,250000)
 	a1.SetSystem(TSystem.GetActiveSystem())
