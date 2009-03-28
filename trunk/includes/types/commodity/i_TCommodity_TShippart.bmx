@@ -36,7 +36,7 @@ Type TShippart Extends TCommodity
 			If part.getID() = idString Then Return part
 		Next
 
-		Print "FindShipPart: no part matching the ID '" + idString + " found"
+		Print "FindShipPart: no part matching the ID '" + idString + "' found"
 		Return Null
 
 	End Function
@@ -49,11 +49,14 @@ Type TShippart Extends TCommodity
 		searchnode = xmlGetNode(rootnode, "propulsion") 			' find and return the "propulsion" node
 		If searchnode <> Null Then TPropulsion.LoadAll(searchnode) 	' pass the node as a parameter to the LoadAll function
 
-		searchnode = xmlGetNode(rootnode, "fueltanks")  				' find and return the "fueltanks" node
-		If searchnode <> Null Then TFueltank.LoadAll(searchnode)  	' pass the node as a parameter to the LoadAll function
+		searchnode = xmlGetNode(rootnode, "fueltanks")  			
+		If searchnode <> Null Then TFueltank.LoadAll(searchnode)  	
 		
-		searchnode = xmlGetNode(rootnode, "weapons")   				' find and return the "weapons" node
-		If searchnode <> Null Then TWeapon.LoadAll(searchnode)    	' pass the node as a parameter to the LoadAll function	
+		searchnode = xmlGetNode(rootnode, "weapons")   				
+		If searchnode <> Null Then TWeapon.LoadAll(searchnode)    	
+		
+		searchnode = xmlGetNode(rootnode, "warpdrives") 			
+		If searchnode <> Null Then TWarpdrive.LoadAll(searchnode)    	
 		
 	EndFunction
 EndType
@@ -473,7 +476,7 @@ Type TFueltank Extends TShippart Final
 '			Next
 
 			' Load all values common to all commodities and save them to corresponding fields of the object.
-			Super.LoadValues(tankChildren, tank) ' Pass the node list and the newly created engine object as parameters
+			Super.LoadValues(tankChildren, tank) ' Pass the node list and the newly created object as parameters
 		Next
 		
 		Return
@@ -493,6 +496,37 @@ Type TFueltank Extends TShippart Final
 	EndFunction
 EndType
 
+Type TWarpdrive Extends TShippart Final
+	Global g_L_Warpdrives:TList
+	
+	Function LoadAll(rootnode:TxmlNode)
+		If G_Debug Print "    Loading warp drive info..."
+		
+		Local children:TList = rootnode.getChildren() 			
+		For rootnode = EachIn children							
+			If G_Debug Print "      Warp drive found: " + rootnode.GetName()
+			Local wd:TWarpdrive = TWarpDrive.Create(rootnode.GetName())	
+			
+			Local children:TList = rootnode.getChildren()
+
+			' Load all values common to all commodities and save them to corresponding fields of the object.
+			Super.LoadValues(children, wd) ' Pass the node list and the newly created object as parameters
+		Next
+	End Function
+	
+	Function Create:TWarpdrive(idString:String)
+		Local t:TWarpdrive = New TWarpdrive	' create an instance
+		t._id = idString						' give an ID
+
+		If Not g_L_Warpdrives Then g_L_Warpdrives = CreateList()	' create a list if necessary
+		g_L_Warpdrives.AddLast t		' add the newly created object to the end of the list
+		If Not g_L_ShipParts Then g_L_ShipParts = CreateList() 
+		g_L_ShipParts.AddLast t
+		
+		Return t	' return the pointer to this specific object instance
+	EndFunction
+	
+End Type
 
 ' types directly related to TShippart
 Include "i_TSlot.bmx"

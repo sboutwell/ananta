@@ -21,7 +21,7 @@ Copyright 2007, 2008 Jussi Pakkanen
 -->
 
 <settings>
-  <debug>0</debug>
+  <debug>1</debug>
   <!-- debug mode on = 1 / off = 0 -->
   <graphics>
     <!-- graphics-related settings -->

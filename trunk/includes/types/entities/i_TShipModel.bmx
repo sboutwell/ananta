@@ -94,6 +94,7 @@ Type TShipModel
 		If Not _L_parts Then Return Null
 		Local smp:TShipModelPart = TShipModelPart.Create(slotID, partID) 
 		_L_parts.AddLast(smp) 
+		If G_Debug then Print "AddPart: added " + partID + " to slot " + slotID
 		Return True		' success
 	End Method
 	

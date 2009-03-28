@@ -27,7 +27,6 @@ Type TShip Extends TMovingObject
 	
 	Field _lastShot:Int						' milliseconds since last shot
 	Field isTriggerDown:Int = False			' is weapon trigger down
-	' todo: integrate weapon-related fields to TWeapon
 	
 	Field isWarpDriveOn:Int = False
 	Field _warpRatio:Double = 10:Double			' base warp ratio for warp travel 	
@@ -86,21 +85,27 @@ Type TShip Extends TMovingObject
 	End Method
 	
 	Method Update() 
+		If isWarpDriveOn Then
+			SetThrottle(0)
+			SetController(0)
+			isTriggerDown = False
+		End If
+
 		' apply forward and reverse thrusts
 		If _throttlePosition > 0 Then
 			ApplyImpulse(_throttlePosition * _forwardAcceleration) 
 			' add the engine trail effect
-			If _L_Engines And Not isWarpDriveOn Then EmitEngineTrail("tail")		
+			If _L_Engines Then EmitEngineTrail("tail")		
 		EndIf
 		
 		If _throttlePosition < 0 Then
 			ApplyImpulse(_throttlePosition * _reverseAcceleration) 
 			' add the engine trail effect
-			If _L_Engines And Not isWarpDriveOn Then EmitEngineTrail("nose")		
+			If _L_Engines Then EmitEngineTrail("nose")		
 		EndIf
 		
 		' firing
-		If isTriggerDown And Not isWarpDriveOn Then FireWeapon() 
+		If isTriggerDown Then FireWeapon() 
 		
 		' apply rotation thrusters
 		ApplyRotation(_controllerPosition * _rotAcceleration)
@@ -110,7 +115,10 @@ Type TShip Extends TMovingObject
 		' call update method of TMovingObject
 		Super.Update()
 		
-		If isWarpDriveOn Then UpdatePosition(CalcWarpValue())  
+		If isWarpDriveOn Then
+			UpdatePosition(CalcWarpValue())
+		EndIf
+
 		If Self._pilot = G_player Then G_DebugWindow.AddText("Max warp ratio: " + CalcWarpValue())
 	EndMethod
 	
@@ -186,16 +194,10 @@ Type TShip Extends TMovingObject
 		_lastShot = MilliSecs() 
 	End Method
 
-	' set the warp drive status		
-	Method SetWarpDrive(isOn:Int)
-		isWarpDriveOn = isOn
+	Method ToggleWarpDrive()
 		
-		If isWarpDriveOn Then
-			SetThrottle(0)
-			SetController(0)
-			isTriggerDown = False
-		EndIf
-
+	
+		ToggleBoolean(isWarpDriveOn)
 	End Method
 	
 	' apply acceleration to x and y velocity vectors
@@ -293,7 +295,10 @@ Type TShip Extends TMovingObject
 					If slot.isWeapon() Then
 						If component.getType() = "weapon" Then AddWeapon(component, slot) 
 					End If
+					
 					' add the mass of the component to the ship's total mass
+					If G_Debug Then Print "Adding component mass: " + component.GetShipPart().GetID()
+					If G_Debug Then Print "  mass: " + component.GetShipPart().GetMass()
 					_mass = _mass + component.GetShipPartMass() 
 				Next
 			EndIf
@@ -328,7 +333,10 @@ Type TShip Extends TMovingObject
 	' AddComponentToSlotID installs a component into a ship's slot. The slot is given as ID string.
 	Method AddComponentToSlotID:Int(comp:TComponent, slotID:String) 
 		Local slot:TSlot = _hull.FindSlot(slotID) 
-		If Not slot Return Null
+		If Not slot Then
+			If G_Debug Then Print "AddComponentToSlotID error: slot " + slotID + " not found for hull " + _hull.GetID()
+			Return Null
+		End If
 		Local result:Int = AddComponentToSlot(comp, slot) 
 		Return result
 	End Method

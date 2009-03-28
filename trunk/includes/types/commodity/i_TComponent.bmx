@@ -19,9 +19,12 @@ Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
 ' TComponent is an actual created ship part. It has additional fields for upgrades and damage.
+
+' Notice that TShippart itself is never instantiated when a ship component is created. 
+' It is only a prototype which is referenced through TComponent
 Type TComponent
 	Field _ShipPart:TShippart 	' the ship part prototype this Component is based on
-	Field _L_Upgrades:TList		' a list holding possible upgrades (no used yet)
+	Field _L_Upgrades:TList		' a list holding possible upgrades (not used yet)
 	Field _damage:Float			' damage sustained by this component
 	Field _slot:TSlot			' the slot the component is installed in (if any)
 
@@ -45,6 +48,8 @@ Type TComponent
 	Method getType:String() 
 		If TPropulsion(_shipPart) Then Return "engine"
 		If TWeapon(_shipPart) Then Return "weapon"
+		If TFueltank(_shipPart) Then Return "equipment"
+		If TWarpdrive(_shipPart) Then Return "equipment"
 		Return Null
 	End Method
 	
