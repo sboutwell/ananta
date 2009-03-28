@@ -52,9 +52,12 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- slot ID -->
         <part1>trilliumthruster1</part1>
       </rightrotthruster>
-	<weaponslot1>
-	  <part1>blaster1</part1>
-	</weaponslot1>      
+      <weaponslot1>
+         <part1>blaster1</part1>
+      </weaponslot1>      
+      <equipmentslot1>
+         <part1>basicwarpdrive</part1>
+      </equipmentslot1>
     </components>
   </nadia>
   <olympus>
