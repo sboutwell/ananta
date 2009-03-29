@@ -36,8 +36,8 @@ Copyright 2007, 2008 Jussi Pakkanen
     <!-- meaning the simulation will actually pause after maxdelta amount of time has passed since the last physics iteration -->
     <maxdelta>500</maxdelta>
     <resolution>
-      <x>1024</x>
-      <y>768</y>
+      <x>1600</x>
+      <y>1200</y>
     </resolution>
     <!-- 16 or 32 for fullscreen, 0 for windowed -->
     <bitdepth>0</bitdepth>    
