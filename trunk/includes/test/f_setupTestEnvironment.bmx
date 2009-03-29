@@ -44,7 +44,8 @@ Function SetupTestEnvironment()
 	a1.SetRot(45)
 	ai.SetTarget(G_Player.GetControlledShip())
 	ai.SetTargetCoords(a1.GetX(),a1.GetY())
-		
+	ai.SetActionMode(TAIPlayer.fl_pursuit)	
+	
 	G_viewport.CreateMsg("Player ship mass: " + s1.GetMass()) 
 	
 	G_viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow

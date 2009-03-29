@@ -169,11 +169,17 @@ Type TAIPlayer Extends TPilot
 	
 	Field _wantToStop:Int = False
 	
+	' fields used for predicted ship positions during chase logic calculations
+	Field _tgtPredXPos:Double
+	Field _tgtPredYPos:Double
+	Field _PredXPos:Double
+	Field _PredYPos:Double
+	
 	' offsets for formation flying. Pixels compared to the formation lead.
 	Field _formationXOff:Float = -200
 	Field _formationYOff:Float = 250
 	
-	
+	' setters
 	Method SetTarget(obj:TSpaceObject) 
 		_targetObject = obj 
 	End Method
@@ -181,7 +187,11 @@ Type TAIPlayer Extends TPilot
 		_targetX = x 
 		_targetY = y
 	End Method
+	Method SetActionMode(mode:Int)
+		_actionMode = mode
+	End Method
 	
+	' getters
 	Method GetTarget:TSpaceObject() Return _targetObject 
 	End Method
 	Method GetTargetX:Double() Return _targetX 
@@ -189,22 +199,23 @@ Type TAIPlayer Extends TPilot
 	Method GetTargetY:Double() Return _targetY 
 	EndMethod		
 	
+	
 	' "Think" is the main AI routine to be called every frame
 	Method Think() 
 		If Not _controlledShip Return
 		
-		If Not _targetObject And (_targetX = Null Or _targetY = Null) Then Return
+		If Not _targetObject And (_targetX = Null Or _targetY = Null) Then 
+			Stop()
+			Return
+		EndIf
 		
-		FollowTarget()
-		' temporary keybindings for testing AI navigation
-		'If KeyHit(KEY_U) Then 
-		'	_targetY = _targetObject.GetY()
-		'	_targetX = _targetObject.GetX()
-		'EndIf
+		If _actionMode = fl_approach or _actionmode = fl_follow Then
+			FollowTarget()
+		EndIf
 		
-		
-		'AimTarget()
-		'ShootTarget()
+		If _actionmode = fl_pursuit Then
+			PursueTarget()
+		End If
 
 	EndMethod
 
@@ -224,7 +235,10 @@ Type TAIPlayer Extends TPilot
 	' Credit to Swiftcoder for the brilliant idea of trajectory prediction:
 	' http://www.gamedev.net/community/forums/topic.asp?topic_id=512372
 	Method FollowTarget()
+		
 		Local maximumDistance:Double = 200
+		
+		' fl_follow and fl_approach have formation flight behaviour:
 		_targetX = _targetObject.GetX() - _formationYOff * Cos(_targetObject.GetRot()) ..
 							- _formationXOff * Sin(_targetObject.GetRot())
 		_targetY = _targetObject.GetY() - _formationYOff * Sin(_targetObject.GetRot()) ..
@@ -236,7 +250,7 @@ Type TAIPlayer Extends TPilot
 		Local relVelY:Double 
 		CalcVelocityToTarget(relVelX,relVelY)
 		Local relVel:Double = GetSpeed(relVelX,relVelY)
-		' if we're close enough to the target and coasting to the same direction, cut throttle
+		' if we're close enough to the target and coasting to the same direction, cut the throttle
 		If distToTgt <= maximumDistance Then 
 			If GetSpeed(Abs(relVelX),Abs(relVelY)) <= Sqr(distToTgt) + 5 Then 
 				_controlledShip.SetThrottle(0)	' cut throttle
@@ -246,40 +260,36 @@ Type TAIPlayer Extends TPilot
 			EndIf
 		End if
 		
-
-		Local vectorLength:Double = 0
-
+		Local vectorLength:Double = 0	' length of the calculated thrust vector
 		Local useReverse:Int = False
 		Local recalc:Int = False
 		Local recalcDone:Int = False
+		Local reverserTreshold:Float = 90
 		
-		Repeat
+		' this loop is repeated if the decision to use reversers is done within the routine
+		Repeat	
 			If recalc = True Then 
 				recalc = False
 				recalcDone = True
 			EndIf
-			Local predT:Float = CalcPredictionTime(useReverse)		
-			' target's predicted position after predT seconds
-			Local tgtPredX:Double = _targetX + (_targetObject.GetXVel() * predT)
-			Local tgtPredY:Double = _targetY + (_targetObject.GetYVel() * predT)
-			' my predicted position
-			Local myPredX:Double = _controlledShip.GetX() + (_controlledShip.GetXVel() * predT)
-			Local myPredY:Double = _controlledShip.GetY() + (_controlledShip.GetYVel() * predT)
-			
+	
+			UpdatePredictedPositions(useReverse)
 			
 			' vector between predicted coordinates
-			_desiredRotation = DirectionTo(myPredX,myPredY,tgtPredX,tgtPredY)
+			_desiredRotation = DirectionTo(_PredXPos,_PredYPos,_tgtPredXPos,_tgtPredYPos)
 			
-			If Abs(GetAngleDiff(_controlledShip.GetRot(),_desiredRotation)) > 90 And ..
-					distToTgt < maximumDistance * 2 And ..
+			' should reversers be used instead of main engines?
+			If Abs(GetAngleDiff(_controlledShip.GetRot(),_desiredRotation)) > reverserTreshold And ..
+					distToTgt < maximumDistance * 3 And ..
 					recalcDone = False Then
 				useReverse = True
 				recalc = True
 			End If
-			vectorLength = Distance(myPredX,myPredY,tgtPredX,tgtPredY)
+			vectorLength = Distance(_PredXPos,_PredYPos,_tgtPredXPos,_tgtPredYPos)
 		Until recalc = False
 			
 		if useReverse then _desiredRotation = DirAdd(_desiredRotation,180)
+		' only thrust if we're too far from the optimal position
 		if vectorLength > 15 Then 
 			AccelerateToDesiredDir(useReverse)
 		Else
@@ -288,6 +298,90 @@ Type TAIPlayer Extends TPilot
 		EndIf
 	End Method
 	
+	' same as follow, except with combat logic
+	Method PursueTarget()
+		Local maximumDistance:Double = _controlledShip.GetSelectedWeapon().GetRange() / 2
+		
+		Local yLead:Float = -200
+		Local xLead:Float = 100
+		
+		_targetX = _targetObject.GetX() - yLead * Cos(_targetObject.GetRot()) ..
+							- xLead * Sin(_targetObject.GetRot())
+		_targetY = _targetObject.GetY() - yLead * Sin(_targetObject.GetRot()) ..
+							+ xLead * Cos(_targetObject.GetRot())
+
+		
+		Local distToTgt:Double = Distance(_controlledShip.GetX(),_controlledShip.GetY(), _targetX, _targetY)
+		
+		Local relVelX:Double 
+		Local relVelY:Double 
+		CalcVelocityToTarget(relVelX,relVelY)
+		Local relVel:Double = GetSpeed(relVelX,relVelY)
+		' if we're close enough to the target and relative velocity within limits, fire
+		If distToTgt <= maximumDistance Then 
+			If GetSpeed(Abs(relVelX),Abs(relVelY)) <= Sqr(distToTgt) + 300 Then 
+				'_controlledShip.SetThrottle(0)	' cut throttle
+				AimTarget()
+				ShootTarget()
+				Return
+			EndIf
+		End if
+		
+		Local vectorLength:Double = 0	' length of the calculated thrust vector
+		Local useReverse:Int = False
+		Local recalc:Int = False
+		Local recalcDone:Int = False
+		Local reverserTreshold:Float = 45
+		
+		' this loop is repeated if the decision to use reversers is done within the routine
+		Repeat	
+			If recalc = True Then 
+				recalc = False
+				recalcDone = True
+			EndIf
+	
+			UpdatePredictedPositions(useReverse)
+			
+			' vector between predicted coordinates
+			_desiredRotation = DirectionTo(_PredXPos,_PredYPos,_tgtPredXPos,_tgtPredYPos)
+			
+			' should reversers be used instead of main engines?
+			If Abs(GetAngleDiff(_controlledShip.GetRot(),_desiredRotation)) > reverserTreshold And ..
+					distToTgt < maximumDistance * 3 And ..
+					recalcDone = False Then
+				useReverse = True
+				recalc = True
+			End If
+			vectorLength = Distance(_PredXPos,_PredYPos,_tgtPredXPos,_tgtPredYPos)
+		Until recalc = False
+			
+		if useReverse then _desiredRotation = DirAdd(_desiredRotation,180)
+		' only thrust if we're too far from the optimal position
+		if vectorLength > 15 Then 
+			AccelerateToDesiredDir(useReverse)
+		Else
+			_controlledShip.SetThrottle(0)
+			_controlledShip.SetController(0)
+		EndIf
+		
+		self.CalculateAimVector()
+		ShootTarget() ' take a shot at any opportunity
+
+	End Method
+	
+	
+	' predicts positions of own ship and target during chase maneuvers
+	Method UpdatePredictedPositions(useReverse:Int = False)
+			Local predT:Float = CalcPredictionTime(useReverse)		
+			' target's predicted position after predT seconds
+			_tgtPredXPos = _targetX + (_targetObject.GetXVel() * predT)
+			_tgtPredYPos = _targetY + (_targetObject.GetYVel() * predT)
+			' my predicted position
+			_PredXPos = _controlledShip.GetX() + (_controlledShip.GetXVel() * predT)
+			_PredYPos = _controlledShip.GetY() + (_controlledShip.GetYVel() * predT)
+	End Method
+	
+	' Returns the time in seconds used for moving target position prediction
 	Method CalcPredictionTime:Float(useReverse:Int = False)
 		Local relVelX:Double 
 		Local relVelY:Double 
