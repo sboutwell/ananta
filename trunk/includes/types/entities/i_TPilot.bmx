@@ -169,7 +169,13 @@ Type TAIPlayer Extends TPilot
 	
 	Field _wantToStop:Int = False
 	
-	Method SetTarget(obj:TSpaceObject) _targetObject = obj 
+	' offsets for formation flying. Pixels compared to the formation lead.
+	Field _formationXOff:Float = -200
+	Field _formationYOff:Float = 250
+	
+	
+	Method SetTarget(obj:TSpaceObject) 
+		_targetObject = obj 
 	End Method
 	Method SetTargetCoords(x:Double,y:Double) 
 		_targetX = x 
@@ -202,55 +208,6 @@ Type TAIPlayer Extends TPilot
 
 	EndMethod
 
-	Method FlyToTargetCoords()
-		Local maxSpeed:Float = 500
-		Local doStop:Int = FALSE
-		Local inProximity:Int = FALSE
-		
-		Local currentSpeed:Double = _controlledShip.GetVel()
-		Local dirTotarget:Double = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetX, _targetY) 
-		Local currentMovingDir:Double = _controlledShip.CalcMovingDirection()
-		Local distanceToTarget:Double = Distance(_controlledShip.GetX(),_controlledShip.GetY(),_targetX,_targetY)
-		' where we are currenlty drifting in relation to the target direction?
-		Local angleDiff:Double = GetAngleDiff(dirToTarget,currentMovingDir)		
-		
-		' check if we're close enough to start decelerating
-		If distanceToTarget < _controlledShip.CalcStopDistance(True) + 100 Then
-			doStop = TRUE
-		EndIf
-		
-		G_DebugWindow.AddText("  dist to target: " + distanceToTarget)
-		G_DebugWindow.AddText("  my speed: " + currentSpeed)
-		G_DebugWindow.AddText("  angle diff: " + angleDiff)
-		G_DebugWindow.AddText("  dir to target" + dirToTarget)
-		G_DebugWindow.AddText("  current rotation" + _controlledShip.GetRot())
-		
-		If Abs(angleDiff) < 80.0 And currentSpeed > 10.0 Then 
-			' if we're flying generally towards the target, point at the opposite angle between movingdir and dirToTarget
-			_desiredRotation = DirAdd(dirToTarget, -angleDiff)
-		'ElseIf (currentSpeed <= 30.0 and not _wantToStop) Or Abs(angleDiff) > 160 Then
-		ElseIf currentSpeed > 100 Then
-			G_DebugWindow.AddText("  Need to slow down and think a bit.")
-			DoStop = TRUE
-		Else
-			G_DebugWindow.AddText("  Wanna point at target")
-			_desiredRotation = dirToTarget
-		EndIf
-		
-		G_DebugWindow.AddText("  desired rot: " + _desiredRotation)
-		
-		' stop
-		If doStop Then 
-			G_DebugWindow.AddText("  Stopping")
-			_wantToStop = True
-			DecelerateOnApproach(TRUE) ' true = use reversers for stopping
-			Return
-		EndIf
-
-		AccelerateToDesiredDir()
-	
-	End Method
-	
 	' relative velocity to target object
 	Method CalcVelocityToTarget(velX:Double var, velY:Double var)
 		If Not _targetObject Then 
@@ -263,27 +220,25 @@ Type TAIPlayer Extends TPilot
 		velY = _controlledShip.GetYVel() - _targetObject.GetYVel()
 	End Method
 	
-	' Follows/chases the target ship
+	' Follows/chases the target ship. Works for stationary targets as well.
 	' Credit to Swiftcoder for the brilliant idea of trajectory prediction:
 	' http://www.gamedev.net/community/forums/topic.asp?topic_id=512372
 	Method FollowTarget()
-		Local desiredDistance:Double = 500
-		Local tgtX:Double = _targetObject.GetX()
-		Local tgtY:Double = _targetObject.GetY()
-		Local tgtXVel:Double = _targetObject.GetXVel()
-		Local tgtYVel:Double = _targetObject.GetYVel()
+		Local maximumDistance:Double = 200
+		_targetX = _targetObject.GetX() - _formationYOff * Cos(_targetObject.GetRot()) ..
+							- _formationXOff * Sin(_targetObject.GetRot())
+		_targetY = _targetObject.GetY() - _formationYOff * Sin(_targetObject.GetRot()) ..
+							+ _formationXOff * Cos(_targetObject.GetRot())
 		
-		Local distToTgt:Double = Distance(_controlledShip.GetX(),_controlledShip.GetY(), tgtX, tgtY)
+		Local distToTgt:Double = Distance(_controlledShip.GetX(),_controlledShip.GetY(), _targetX, _targetY)
 		
 		Local relVelX:Double 
 		Local relVelY:Double 
 		CalcVelocityToTarget(relVelX,relVelY)
-				
 		Local relVel:Double = GetSpeed(relVelX,relVelY)
-		
 		' if we're close enough to the target and coasting to the same direction, cut throttle
-		If distToTgt <= desiredDistance Then 
-			If Abs(relVelX) + Abs(relVelY) <= Sqr(distToTgt) + 5 Then 
+		If distToTgt <= maximumDistance Then 
+			If GetSpeed(Abs(relVelX),Abs(relVelY)) <= Sqr(distToTgt) + 5 Then 
 				_controlledShip.SetThrottle(0)	' cut throttle
 				_desiredRotation = _targetObject.GetRot()
 				RotateTo(_desiredRotation)
@@ -291,26 +246,66 @@ Type TAIPlayer Extends TPilot
 			EndIf
 		End if
 		
+
+		Local vectorLength:Double = 0
+
+		Local useReverse:Int = False
+		Local recalc:Int = False
+		Local recalcDone:Int = False
+		
+		Repeat
+			If recalc = True Then 
+				recalc = False
+				recalcDone = True
+			EndIf
+			Local predT:Float = CalcPredictionTime(useReverse)		
+			' target's predicted position after predT seconds
+			Local tgtPredX:Double = _targetX + (_targetObject.GetXVel() * predT)
+			Local tgtPredY:Double = _targetY + (_targetObject.GetYVel() * predT)
+			' my predicted position
+			Local myPredX:Double = _controlledShip.GetX() + (_controlledShip.GetXVel() * predT)
+			Local myPredY:Double = _controlledShip.GetY() + (_controlledShip.GetYVel() * predT)
+			
+			
+			' vector between predicted coordinates
+			_desiredRotation = DirectionTo(myPredX,myPredY,tgtPredX,tgtPredY)
+			
+			If Abs(GetAngleDiff(_controlledShip.GetRot(),_desiredRotation)) > 90 And ..
+					distToTgt < maximumDistance * 2 And ..
+					recalcDone = False Then
+				useReverse = True
+				recalc = True
+			End If
+			vectorLength = Distance(myPredX,myPredY,tgtPredX,tgtPredY)
+		Until recalc = False
+			
+		if useReverse then _desiredRotation = DirAdd(_desiredRotation,180)
+		if vectorLength > 15 Then 
+			AccelerateToDesiredDir(useReverse)
+		Else
+			_controlledShip.SetThrottle(0)
+			_controlledShip.SetController(0)
+		EndIf
+	End Method
+	
+	Method CalcPredictionTime:Float(useReverse:Int = False)
+		Local relVelX:Double 
+		Local relVelY:Double 
+		CalcVelocityToTarget(relVelX,relVelY)
+		Local relVel:Double = GetSpeed(relVelX,relVelY)
+
+		Local myAccel:Float = _controlledShip.GetForwardAcceleration()
+		if useReverse Then myAccel = _controlledShip.GetReverseAcceleration()
+
 		Local tgt:TShip = TShip(_targetObject)
 		Local tgtStopTime:Float = 0
 		If tgt Then tgtStopTime = CalcStopTime(relVel,Abs(tgt.GetCurrentAcceleration()))
 		If tgtStopTime >= $ffffffff:Double Then tgtStopTime = 0
-		
+
 		' predT is the time in seconds we want to predict the trajectories
-		Local predT:Float = CalcStopTime(relVel,_controlledShip.GetForwardAcceleration()) / 1.5 + tgtStopTime
-		If predT < 3 Then predT = 3 ' minimum of 3 seconds, good for close combat
-		
-		' target's predicted position after predT seconds
-		Local tgtPredX:Double = _targetObject.GetX() + (_targetObject.GetXVel() * predT)
-		Local tgtPredY:Double = _targetObject.GetY() + (_targetObject.GetYVel() * predT)
-		' my predicted position
-		Local myPredX:Double = _controlledShip.GetX() + (_controlledShip.GetXVel() * predT)
-		Local myPredY:Double = _controlledShip.GetY() + (_controlledShip.GetYVel() * predT)
-		
-		' vector between predicted coordinates
-		_desiredRotation = DirectionTo(myPredX,myPredY,tgtPredX,tgtPredY)
-		
-		AccelerateToDesiredDir()
+		Local predT:Float = CalcStopTime(relVel,myAccel) / 1.5 + tgtStopTime
+		If predT < 3 Then predT = 3 ' minimum of 3 seconds, good for close combat	
+		Return predT	
 	End Method
 	
 	Method AccelerateToDesiredDir(useReverse:Int = False)
@@ -321,8 +316,15 @@ Type TAIPlayer Extends TPilot
 		If useReverse Then thrust = -1 * thrust
 		
 		' calculate the rotation sector in which engines can be fired
-		Local threshold:Int = 90  ' degrees
-		If _controlledShip.GetVel() < 100 Then threshold :- (200/_controlledShip.GetVel()) 'narrow down the sector at lower speeds
+		Local threshold:Int = 15  ' degrees
+		
+		Local relVelX:Double = _controlledShip.GetXVel()
+		Local relVelY:Double = _controlledShip.GetYVel()
+		Local relVel:Double = GetSpeed(relVelX,relVelY)
+		
+		If self._targetObject Then CalcVelocityToTarget(relVelX,relVelY)
+		
+		If relVel < 100 Then threshold :- (200/relVel) 'narrow down the sector at lower speeds
 		LimitInt(threshold,3,15) ' make sure threshold is between set limits
 		
 		' fire the engines when within desired heading
@@ -332,37 +334,6 @@ Type TAIPlayer Extends TPilot
 			_controlledShip.SetThrottle(0)	' cut throttle
 		EndIf
 
-	End Method
-	
-	Method DecelerateOnApproach(useReverse:Int = False)
-		If Not _targetX Or Not _targetY Then 
-			_wantToStop = False
-			Return
-		EndIf
-		
-		If _controlledShip.GetVel() < 5 Then ' don't bother decelerating if we're slow enough
-			_controlledShip.SetThrottle(0)	' cut throttle
-			_controlledShip.SetController(0) ' center stick
-			_wantToStop = False
-			Return	
-		EndIf
-		
-		Local dirTotarget:Double = DirectionTo(_controlledShip.GetX(), _controlledShip.GetY(), _targetX, _targetY) 
-		Local currentMovingDir:Double = _controlledShip.CalcMovingDirection()
-		Local angleDiff:Double = GetAngleDiff(dirToTarget,currentMovingDir)		
-		
-		If useReverse Then 
-			_desiredRotation = DirAdd(dirToTarget, angleDiff)
-		Else
-			_desiredRotation = DirAdd(dirToTarget, 180 + angleDiff)
-		EndIf
-
-		'overshoot check
-		If useReverse And Abs(GetAngleDiff(currentMovingDir,_desiredRotation)) > 160 Then _desiredRotation:+180
-		If NOt useReverse And Abs(GetAngleDiff(currentMovingDir,_desiredRotation)) < 20 Then _desiredRotation:+180
-		
-				
-		AccelerateToDesiredDir(useReverse)
 	End Method
 	
 	' Stop the ship using either main or reverse engines.
@@ -421,7 +392,8 @@ Type TAIPlayer Extends TPilot
 	End Method
 	
 	Method ShootTarget()
-		Local tDist:Double = Distance(_controlledShip.GetX(), _controlledShip.GetY(), _targetObject.GetX(), _targetObject.GetY()) 
+		Local tDist:Double = Distance(_controlledShip.GetX(), _controlledShip.GetY(), ..
+										_targetObject.GetX(), _targetObject.GetY()) 
 		Local rotDiff:Float = Abs(GetAngleDiff(_controlledShip.GetRot(),_desiredRotation))
 		If tDist > 1000 Or rotDiff > 15 Then
 			_controlledShip.isTriggerDown = False
@@ -468,7 +440,7 @@ Type TAIPlayer Extends TPilot
 		SetRotation(0)
 		SetScale(1,1)
 		' line to target
-		'G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),_targetX,_targetY)
+		G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),_targetX,_targetY)
 		
 		' moving direction
 		SetColor(255,60,60)
@@ -482,8 +454,6 @@ Type TAIPlayer Extends TPilot
 		If _targetObject Then G_Viewport.DrawCircleToWorld(_targetObject.GetX(),_targetObject.GetY(),10)
 	End Method
 		
-
-	
 	Method Kill() 
 		SetControlledShip(Null) 
 		g_L_AIPilots.Remove(Self) 
