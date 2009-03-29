@@ -274,7 +274,7 @@ Copyright 2007, 2008 Jussi Pakkanen
         <volume>10</volume>
         <type>projectile</type>
         <damage>500</damage>
-        <velocity>800</velocity>
+        <velocity>1280</velocity>
         <rof>200</rof>
         <range>3000</range>
       </blaster1>

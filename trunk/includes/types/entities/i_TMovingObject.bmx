@@ -12,7 +12,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		'If squaredDist > 500000000 Then Return	' don't apply gravity if the source is "too far"
 
 		' apply gravity
-		If gs.hasGravity Then
+		If gs.hasGravity And isAffectedByGravity Then
 			'g = (G * M) / d^2
 			Local a:Double = (c_GravConstant * gs.GetMass()) / dist ^ 2
 			
@@ -48,7 +48,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 	End Method
 
 	Method ApplyGravityAndCollision() 
-		' don't bother iterating if gravity and collisions have no effect to this object
+		' don't bother iterating if gravity and collisions have no effect on this object
 		If Not isAffectedByGravity And Not canCollide Then Return
 		
 		' iterate through all objects in the active System
