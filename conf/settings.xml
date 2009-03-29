@@ -30,7 +30,7 @@ Copyright 2007, 2008 Jussi Pakkanen
     <!-- framerate limited yes = 1 / no = 0 -->
     <limitframerate>0</limitframerate>
     <!--Max framerate if limited-->
-    <framerate>34</framerate>
+    <framerate>60</framerate>
     <!-- max deltatime in milliseconds -->
     <!-- Affects the "jumpiness" of the physics simulation when the game is incapable of updating itself, during alt-tabbing etc. -->
     <!-- meaning the simulation will actually pause after maxdelta amount of time has passed since the last physics iteration -->

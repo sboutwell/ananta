@@ -21,13 +21,14 @@ endrem
 
 Type TParticle Extends TMovingObject
 	Global g_L_Particles:TList	' list holding all particles
+	Global _maxParticles:Int = 85
 	Field _life:Float			' life of the particle in seconds
 	Field _alphaDelta:Float		' alpha change per second
 	
 	Method SetLife(l:Float) _life = l End Method
 	
 	Method Update() 
-		_life:-1 * G_delta.GetDelta()      			 ' decrement life by 1 frame worth of seconds
+		_life:-1:Float * G_delta.GetDelta()      			 ' decrement life by 1 frame worth of seconds
 		_alpha:-_alphaDelta * G_delta.GetDelta()     ' decrement alpha by alphaDelta
 		Super.Update()   ' call Update() of TMovingObject
 		If _life <= 0 Then Destroy() 
@@ -42,11 +43,15 @@ Type TParticle Extends TMovingObject
 		If Not g_L_Particles Then Return
 		For Local p:TParticle = EachIn g_L_Particles
 			p.Update() 
-			'p.DrawBody(viewport) 
 		Next
+		G_DebugWindow.AddText("Particles: " + g_L_Particles.Count())
 	End Function
 	
 	Function Create:TParticle(img:TImage, x:Double, y:Double, life:Float, scale:Float, alpha:Float = 0.8, System:TSystem) 
+		If g_L_Particles And g_L_Particles.Count() >= _maxParticles Then
+			If Not TProjectile(g_L_Particles.First()) Then TParticle(g_L_Particles.First()).Destroy()
+			If Not TProjectile(g_L_Particles.Last()) Then TParticle(g_L_Particles.Last()).Destroy()
+		End If
 		Local part:TParticle = New TParticle
 		part.SetX(x)
 		part.SetY(y)

@@ -452,16 +452,24 @@ Type TAIPlayer Extends TPilot
 	' Calculates the correct aiming angle for shooting at a moving target
 	' Math help courtesy of Warpy (http://www.blitzbasic.com/Community/posts.php?topic=83782#945701)
 	' TODO: add variable aiming accuracy based on AI skill.
-	' TODO2: take target acceleration into consideration
 	Method CalculateAimVector()
 		' x and yOffsets show the position of the weapon barrel on the ship
 		Local xOff:Float = _controlledShip.GetSelectedWeaponSlot().GetXOffSet()
 		Local yOff:Float = _controlledShip.GetSelectedWeaponSlot().GetYOffSet()
 		Local myRot:Float = _controlledShip.GetRot()
+		
+		' target acceleration
+		Local tAccl:Float = TShip(_targetObject).GetCurrentAcceleration()
+		Local tXimpulse:Float = tAccl * Cos(_targetObject.GetRot()) 
+		Local tYimpulse:Float = taccl * Sin(_targetObject.GetRot()) 
+		
+		' bullet info
+		Local bulletVel:Float = _controlledShip.GetSelectedWeapon().GetVelocity()
+				
 		' dx and dy represent bullet direction
 		Local dx:Double = _targetObject.GetX() - _controlledShip.GetX() - yOff * Cos(myRot) - xOff * Sin(myRot)
 		Local dy:Double = _targetObject.GetY() - _controlledShip.GetY() - yOff * Sin(myRot) + xOff * Cos(myRot)
-		   
+		
 		Local enemy:TSpaceObject = _targetObject
 		Local relXVel:Double = enemy.GetXVel() - _controlledShip.GetXVel()
 		Local relYVel:Double = enemy.GetYVel() - _controlledShip.GetYVel()
@@ -469,14 +477,20 @@ Type TAIPlayer Extends TPilot
 		' quadratic equation
 		Local a:Double = dx * dx + dy * dy
 		Local b:Double = 2.0 * (relXVel * dx + relYVel * dy)
-		Local v:Double = _controlledShip.GetSelectedWeapon().GetVelocity()	' v = bullet velocity
+		Local v:Double = bulletVel	
 		Local c:Double = relXVel * relXVel + relYVel * relYVel - v * v
 		Local tInv:Double = (- b + Sqr(b * b - 4.0 * a * c)) / (2.0 * a)
-		dx = dx * tInv + relXVel
-		dy = dy * tInv + relYVel
+		
+		dx = dx * tInv + relXVel + tXimpulse/2
+		dy = dy * tInv + relYVel + tYimpulse/2
 		
 		' resultant angle
-		_desiredRotation = ATan2(dy, dx)
+		Local aimDir:Double = ATan2(dy, dx) 
+		If aimDir Then 
+			_desiredRotation = aimDir
+		Else ' if ATan2 fails, bullet will never reach the target so let's just point at the target and shoot away
+			_desiredRotation = DirectionTo(_controlledShip.GetX(),_controlledShip.GetY(),_targetObject.GetX(),_targetObject.GetY())
+		EndIf
 
 	End Method
 	
@@ -489,7 +503,7 @@ Type TAIPlayer Extends TPilot
 		Local tDist:Double = Distance(_controlledShip.GetX(), _controlledShip.GetY(), ..
 										_targetObject.GetX(), _targetObject.GetY()) 
 		Local rotDiff:Float = Abs(GetAngleDiff(_controlledShip.GetRot(),_desiredRotation))
-		If tDist > 1000 Or rotDiff > 15 Then
+		If tDist > _controlledShip.GetSelectedWeapon().GetRange() * 0.8  Or rotDiff > 25 Then
 			_controlledShip.isTriggerDown = False
 		Else
 			_controlledShip.isTriggerDown = True		' fire
