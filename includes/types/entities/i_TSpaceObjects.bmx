@@ -65,7 +65,7 @@ Type TSpaceObject Abstract
 	Field _yVel:Double						' velocity vector y-component
 	Field _rotationSpd:Float				' rotation speed in degrees per second
 	Field isAffectedByGravity:Int = True		' does gravity affect the object?
-	Field canCollide:Int = False			' flag to indicate if this object can collide with other objects with the same flag set
+	Field canCollide:Int = False			' flag to indicate if this object can collide with any other object
 	Field isUpdated:Int = False			' a flag to indicate if this object has been updated during the frame
 	Field _integrity:Float = -1			' the amount of damage the object can handle, -1 for indestructible
 	Field _description:String			' a description of the body (planet with high winds, asteroidal body, etc)
@@ -90,6 +90,7 @@ Type TSpaceObject Abstract
 	Field _strongestGravSource:TSpaceObject	' strongest gravity source is updated for warp drive purposes
 	Field _strongestGravity:Double = 0		' the gravitational acceleration exerted by the strongest gravsource
 
+	Field _collisionLevels:Int[] ' array of integers showing the object levels this object can collide with
 	
 	Method Destroy() Abstract
 	

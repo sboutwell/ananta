@@ -32,19 +32,23 @@ Function SetupTestEnvironment()
 	s1.SetRot(90)
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
-	s1._integrity = -1
+	's1._integrity = -1
 
-	' create an AI ship for testing
-	Local ai:TAIPlayer = TAIPlayer.Create("AI")
-	Local a1:TShip = TShipModel.BuildShipFromModel("nadia")
-	a1.SetName("AI Ship")
-	a1.SetCoordinates(250500,250000)
-	a1.SetSystem(TSystem.GetActiveSystem())
-	a1.AssignPilot(ai)
-	a1.SetRot(45)
-	ai.SetTarget(G_Player.GetControlledShip())
-	ai.SetTargetCoords(a1.GetX(),a1.GetY())
-	ai.SetActionMode(TAIPlayer.fl_pursuit)	
+	SeedRnd(millisecs())
+	For local i:Int = 1 To 20
+		' create an AI ship for testing
+		Local ai:TAIPlayer = TAIPlayer.Create("AI")
+		Local a1:TShip = TShipModel.BuildShipFromModel("nadia")
+		a1.SetName("AI Ship")
+		a1.SetCoordinates(250500 + Rand(-44000,44000),250000 + Rand(-44000,44000))
+		a1.SetSystem(TSystem.GetActiveSystem())
+		a1.AssignPilot(ai)
+		a1.SetRot(45)
+		'ai.SetTarget(G_Player.GetControlledShip())
+		'ai.SetTargetCoords(a1.GetX(),a1.GetY())
+		ai.SetActionMode(TAIPlayer.fl_pursuit)	
+		ai.SetAccuracy(Rnd(0,1))
+	Next
 	
 	G_viewport.CreateMsg("Player ship mass: " + s1.GetMass()) 
 	

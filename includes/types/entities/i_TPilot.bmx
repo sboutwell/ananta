@@ -156,10 +156,12 @@ Type TAIPlayer Extends TPilot
 	' ---
 	
 	Global g_L_AIPilots:TList				' a list holding all AI pilots
-	Field _flyingSkill:Float				' 0 to 1		 	1 = perfect
-	Field _aggressiveness:Float				' 0 to 1			1 = most aggressive
-	Field _wimpyness:Float					' 0 to 1			1 = always fleeing, 0 = never fleeing
-	Field _accuracy:Float					' 0 to 1			1 = perfect
+	Field _flyingSkill:Float = 1			' 0 to 1		 	1 = perfect
+	Field _aggressiveness:Float	= 1			' 0 to 1			1 = most aggressive
+	Field _wimpyness:Float = 0				' 0 to 1			1 = always fleeing, 0 = never fleeing
+	Field _accuracy:Float = 1				' 0 to 1			1 = perfect
+	Field _reactions:Float = 1.5			' 0 to 9			0 = fast, 9 = VERY slow
+	Field _currentAimDeviation:Float = 0
 	Field _destinationObject:TSpaceObject	' The destination for AI. Sector, planet, space station etc
 	Field _desiredRotation:Float			' planned rotation
 	Field _targetObject:TSpaceObject		' target object (for following, pursuing etc)
@@ -168,6 +170,7 @@ Type TAIPlayer Extends TPilot
 	Field _actionMode:Int					' current action mode: 0 wait, 1 approach, 2 follow, etc
 	
 	Field _wantToStop:Int = False
+	Field _reactionTimer:Float = 0
 	
 	' fields used for predicted ship positions during chase logic calculations
 	Field _tgtPredXPos:Double
@@ -190,6 +193,9 @@ Type TAIPlayer Extends TPilot
 	Method SetActionMode(mode:Int)
 		_actionMode = mode
 	End Method
+	Method SetAccuracy(a:Float)
+		_accuracy = a
+	End Method
 	
 	' getters
 	Method GetTarget:TSpaceObject() Return _targetObject 
@@ -204,9 +210,16 @@ Type TAIPlayer Extends TPilot
 	Method Think() 
 		If Not _controlledShip Return
 		
-		If Not _targetObject And (_targetX = Null Or _targetY = Null) Then 
-			Stop()
-			Return
+		If Not G_Delta.isPaused Then CalcReactionTimer()
+		G_DebugWindow.AddText("Timer: " + _reactionTimer)
+		
+		If Not _targetObject Or _targetObject.GetIntegrity() <= 0 Then 
+			SetTarget(Null)
+			RandomizeTarget()
+			If Not _targetObject Then
+				_controlledShip.isTriggerDown = False
+				Stop()
+			End If
 		EndIf
 		
 		If _actionMode = fl_approach or _actionmode = fl_follow Then
@@ -219,6 +232,43 @@ Type TAIPlayer Extends TPilot
 
 	EndMethod
 
+	Method RandomizeTarget()
+		Local iShips:Int = 0
+	
+		For Local sh:TShip = EachIn _controlledShip._system.GetSpaceObjects()
+			If sh <> _controlledShip And sh <> G_Player.GetControlledShip() Then iShips = iShips + 1
+		Next
+		
+		Local selectedShip:Int = Rand(1,iShips)
+		Local sShip:Int = 0
+		
+		For Local sh:TShip = EachIn _controlledShip._system.GetSpaceObjects()
+			If sh <> _controlledShip And sh <> G_Player.GetControlledShip() Then 
+				sShip = sShip + 1
+				If sShip = selectedShip Then SetTarget(sh)
+			End If
+		Next
+		
+
+	End Method
+	
+	Method CalcReactionTimer()
+		_reactionTimer :- G_Delta.GetDelta()
+		If _reactionTimer <= 0 Then 
+			_reactionTimer = Rnd(_reactions/2,1.0+_reactions)
+			RandomizeDeviations()
+		EndIf
+		G_DebugWindow.AddText("Deviation: " + _currentAimDeviation)
+	End Method
+	
+	Method RandomizeDeviations()
+		' Aim deviation can range from -15 to 15 degrees
+		' With accuracy of 1, it will always be 0
+		_currentAimDeviation = Rnd((1.0 - _accuracy)* 5.0, (1.0 - _accuracy) * 15)
+		
+		If Rand(0) = 1 Then _currentAimDeviation :* -1 ' randomize sign
+	End Method
+	
 	' relative velocity to target object
 	Method CalcVelocityToTarget(velX:Double var, velY:Double var)
 		If Not _targetObject Then 
@@ -298,8 +348,14 @@ Type TAIPlayer Extends TPilot
 		EndIf
 	End Method
 	
-	' same as follow, except with combat logic
+	' Same as follow, except with combat logic
+	' TODO: Combine with FollowTarget()
 	Method PursueTarget()
+		If not _targetObject Or _targetObject.GetIntegrity() <= 0 Then 
+			_targetObject = Null
+			Return
+		End If
+		
 		Local maximumDistance:Double = _controlledShip.GetSelectedWeapon().GetRange() / 2
 		
 		Local yLead:Float = -200
@@ -372,17 +428,27 @@ Type TAIPlayer Extends TPilot
 	
 	' predicts positions of own ship and target during chase maneuvers
 	Method UpdatePredictedPositions(useReverse:Int = False)
-			Local predT:Float = CalcPredictionTime(useReverse)		
-			' target's predicted position after predT seconds
-			_tgtPredXPos = _targetX + (_targetObject.GetXVel() * predT)
-			_tgtPredYPos = _targetY + (_targetObject.GetYVel() * predT)
-			' my predicted position
-			_PredXPos = _controlledShip.GetX() + (_controlledShip.GetXVel() * predT)
-			_PredYPos = _controlledShip.GetY() + (_controlledShip.GetYVel() * predT)
+		If not _targetObject Or _targetObject.GetIntegrity() <= 0 Then 
+			_targetObject = Null
+			Return
+		End If
+
+		Local predT:Float = CalcPredictionTime(useReverse)		
+		' target's predicted position after predT seconds
+		_tgtPredXPos = _targetX + (_targetObject.GetXVel() * predT)
+		_tgtPredYPos = _targetY + (_targetObject.GetYVel() * predT)
+		' my predicted position
+		_PredXPos = _controlledShip.GetX() + (_controlledShip.GetXVel() * predT)
+		_PredYPos = _controlledShip.GetY() + (_controlledShip.GetYVel() * predT)
 	End Method
 	
 	' Returns the time in seconds used for moving target position prediction
 	Method CalcPredictionTime:Float(useReverse:Int = False)
+		If not _targetObject Or _targetObject.GetIntegrity() <= 0 Then 
+			_targetObject = Null
+			Return 1
+		End If
+
 		Local relVelX:Double 
 		Local relVelY:Double 
 		CalcVelocityToTarget(relVelX,relVelY)
@@ -433,7 +499,7 @@ Type TAIPlayer Extends TPilot
 	' Stop the ship using either main or reverse engines.
 	' Currently the decision which engines to use needs to be done outside this routine.
 	Method Stop(useReverse:Int = False)
-		If _controlledShip.GetVel() < 5 Then ' don't bother decelerating if we're slow enough
+		If _controlledShip.GetVel() < 2 Then ' don't bother decelerating if we're slow enough
 			_controlledShip.SetThrottle(0)	' cut throttle
 			_controlledShip.SetController(0) ' center stick
 			_wantToStop = False
@@ -453,6 +519,11 @@ Type TAIPlayer Extends TPilot
 	' Math help courtesy of Warpy (http://www.blitzbasic.com/Community/posts.php?topic=83782#945701)
 	' TODO: add variable aiming accuracy based on AI skill.
 	Method CalculateAimVector()
+		If not _targetObject Or _targetObject.GetIntegrity() <= 0 Then 
+			_targetObject = Null
+			Return
+		End If
+
 		' x and yOffsets show the position of the weapon barrel on the ship
 		Local xOff:Float = _controlledShip.GetSelectedWeaponSlot().GetXOffSet()
 		Local yOff:Float = _controlledShip.GetSelectedWeaponSlot().GetYOffSet()
@@ -477,17 +548,17 @@ Type TAIPlayer Extends TPilot
 		' quadratic equation
 		Local a:Double = dx * dx + dy * dy
 		Local b:Double = 2.0 * (relXVel * dx + relYVel * dy)
-		Local v:Double = bulletVel	
+		Local v:Double = bulletVel
 		Local c:Double = relXVel * relXVel + relYVel * relYVel - v * v
 		Local tInv:Double = (- b + Sqr(b * b - 4.0 * a * c)) / (2.0 * a)
 		
-		dx = dx * tInv + relXVel + tXimpulse/2
-		dy = dy * tInv + relYVel + tYimpulse/2
+		dx = dx * tInv + relXVel + (tXimpulse/2) + _currentAimDeviation*4
+		dy = dy * tInv + relYVel + (tYimpulse/2) + _currentAimDeviation*4
 		
 		' resultant angle
 		Local aimDir:Double = ATan2(dy, dx) 
 		If aimDir Then 
-			_desiredRotation = aimDir
+			_desiredRotation = aimDir + _currentAimDeviation
 		Else ' if ATan2 fails, bullet will never reach the target so let's just point at the target and shoot away
 			_desiredRotation = DirectionTo(_controlledShip.GetX(),_controlledShip.GetY(),_targetObject.GetX(),_targetObject.GetY())
 		EndIf
@@ -495,11 +566,21 @@ Type TAIPlayer Extends TPilot
 	End Method
 	
 	Method AimTarget()
+		If not _targetObject Or _targetObject.GetIntegrity() <= 0 Then 
+			_targetObject = Null
+			Return
+		End If
+
 		CalculateAimVector()
 		RotateTo(_desiredRotation,false,true)
 	End Method
 	
 	Method ShootTarget()
+		If not _targetObject Or _targetObject.GetIntegrity() <= 0 Then 
+			_targetObject = Null
+			Return
+		End If
+
 		Local tDist:Double = Distance(_controlledShip.GetX(), _controlledShip.GetY(), ..
 										_targetObject.GetX(), _targetObject.GetY()) 
 		Local rotDiff:Float = Abs(GetAngleDiff(_controlledShip.GetRot(),_desiredRotation))
@@ -548,7 +629,7 @@ Type TAIPlayer Extends TPilot
 		SetRotation(0)
 		SetScale(1,1)
 		' line to target
-		G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),_targetX,_targetY)
+		'G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),_targetX,_targetY)
 		
 		' moving direction
 		SetColor(255,60,60)
@@ -559,7 +640,7 @@ Type TAIPlayer Extends TPilot
 		G_Viewport.DrawLineToWorld(cShip.GetX(),cShip.GetY(),cShip.GetX() + 35 * Cos(_desiredRotation), ..
 						cShip.GetY() + 35 * Sin(_desiredRotation))
 		
-		If _targetObject Then G_Viewport.DrawCircleToWorld(_targetObject.GetX(),_targetObject.GetY(),10)
+		'If _targetObject Then G_Viewport.DrawCircleToWorld(_targetObject.GetX(),_targetObject.GetY(),10)
 	End Method
 		
 	Method Kill() 
