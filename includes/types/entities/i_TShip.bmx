@@ -12,6 +12,7 @@ Type TShip Extends TMovingObject
 	Field _rotThrust:Float					' thrust (in newtons) given by the ship's rotation thrusters
 	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per second)
 	Field _rotKillPercentage:Float = 0.8		' the magnitude of the rotation damper. Values 0 to 1. 1 means max efficiency.
+	Field _maxSpeed:Double = 600
 	Field _isSpeedLimited:Int = True			' a flag to indicate if speed limiter is functional
 	Field _isRotationLimited:Int = True		' a flag to indicate if rotation limiter is functional
 	Field _isLimiterOverrided:Int = False	' flag to indicate if speed and rotation limiters are overrided
@@ -112,6 +113,8 @@ Type TShip Extends TMovingObject
 
 		If _controllerPosition = 0 Then ApplyRotKill() 		' if the "joystick" is centered, fire the rotKill thrusters
 
+		If _isSpeedLimited AND Not _isLimiterOverrided Then LimitSpeed()
+		
 		' call update method of TMovingObject
 		Super.Update()
 		
@@ -142,6 +145,19 @@ Type TShip Extends TMovingObject
 		Return CalcAccelerationDistance(GetVel(),CalcStopTime(GetVel(), acceleration),acceleration)
 	End Method
 
+	Method LimitSpeed()
+		If GetVel() <= _maxSpeed Then Return
+		Local overSpeed:Double = GetVel() - _maxSpeed
+		Local moveDir:Double = CalcMovingDirection()
+		Local oppDir:Double = DirAdd(moveDir,180)
+		
+		Local oppositeXimpulse:Double = overSpeed * Cos(oppDir)
+		Local oppositeYimpulse:Double = overSpeed * Sin(oppDir)
+	
+		
+		_xVel =	_xVel + oppositeXimpulse
+		_yVel =	_yVel + oppositeYimpulse
+	End Method
 	
 	Method EmitEngineTrail(dir:String = "tail")
 		Local direct:Int = 1	
@@ -195,8 +211,6 @@ Type TShip Extends TMovingObject
 	End Method
 
 	Method ToggleWarpDrive()
-		
-	
 		ToggleBoolean(isWarpDriveOn)
 	End Method
 	

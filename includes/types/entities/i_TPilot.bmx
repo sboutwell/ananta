@@ -211,7 +211,7 @@ Type TAIPlayer Extends TPilot
 		If Not _controlledShip Return
 		
 		If Not G_Delta.isPaused Then CalcReactionTimer()
-		G_DebugWindow.AddText("Timer: " + _reactionTimer)
+		'G_DebugWindow.AddText("Timer: " + _reactionTimer)
 		
 		If Not _targetObject Or _targetObject.GetIntegrity() <= 0 Then 
 			SetTarget(Null)
@@ -233,8 +233,10 @@ Type TAIPlayer Extends TPilot
 	EndMethod
 
 	Method RandomizeTarget()
+		' picks a next target for AI. Testing only.
 		Local iShips:Int = 0
-	
+		If _actionMode <> fl_pursuit Then Return
+		
 		For Local sh:TShip = EachIn _controlledShip._system.GetSpaceObjects()
 			If sh <> _controlledShip And sh <> G_Player.GetControlledShip() Then iShips = iShips + 1
 		Next
@@ -258,7 +260,7 @@ Type TAIPlayer Extends TPilot
 			_reactionTimer = Rnd(_reactions/2,1.0+_reactions)
 			RandomizeDeviations()
 		EndIf
-		G_DebugWindow.AddText("Deviation: " + _currentAimDeviation)
+		'G_DebugWindow.AddText("Deviation: " + _currentAimDeviation)
 	End Method
 	
 	Method RandomizeDeviations()
@@ -285,6 +287,7 @@ Type TAIPlayer Extends TPilot
 	' Credit to Swiftcoder for the brilliant idea of trajectory prediction:
 	' http://www.gamedev.net/community/forums/topic.asp?topic_id=512372
 	Method FollowTarget()
+		If Not _targetObject Then Return
 		
 		Local maximumDistance:Double = 200
 		
@@ -299,7 +302,7 @@ Type TAIPlayer Extends TPilot
 		Local relVelX:Double 
 		Local relVelY:Double 
 		CalcVelocityToTarget(relVelX,relVelY)
-		Local relVel:Double = GetSpeed(relVelX,relVelY)
+		'Local relVel:Double = GetSpeed(relVelX,relVelY)
 		' if we're close enough to the target and coasting to the same direction, cut the throttle
 		If distToTgt <= maximumDistance Then 
 			If GetSpeed(Abs(relVelX),Abs(relVelY)) <= Sqr(distToTgt) + 5 Then 

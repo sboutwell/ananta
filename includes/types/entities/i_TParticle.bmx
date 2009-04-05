@@ -21,7 +21,7 @@ endrem
 
 Type TParticle Extends TMovingObject
 	Global g_L_Particles:TList	' list holding all particles
-	Global _maxParticles:Int = 85
+	Global _maxParticles:Int = 145
 	Field _life:Float			' life of the particle in seconds
 	Field _alphaDelta:Float		' alpha change per second
 	
