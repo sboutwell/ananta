@@ -176,6 +176,7 @@ Type TSpaceObject Abstract
 	' this update method is currently mainly for attachment positioning purposes...
 	Method Update() 
 		If _parentObject Then	' is attached to another object...
+			_system = _parentObject.GetSystem() ' update TSystem in case the ship with attachements has hyperspaced
 			Local pRot:Float = _parentObject.GetRot() 
 			Local pX:Double = _parentObject.GetX() 
 			Local pY:Double = _parentObject.GetY() 
@@ -263,6 +264,10 @@ Type TSpaceObject Abstract
 	
 	Method GetSize:Int()
 		Return _size
+	End Method
+	
+	Method GetSystem:TSystem()
+		Return _system
 	End Method
 	
 	Method SetXVel(x:Double) 

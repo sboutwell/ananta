@@ -7,9 +7,13 @@ Type TShip Extends TMovingObject
 	Field _forwardAcceleration:Float			' maximum forward acceleration (calculated by a routine)
 	Field _reverseAcceleration:Float			' maximum reverse acceleration (calculated by a routine)
 	Field _rotAcceleration:Float				' maximum rotation acceleration (calculated by a routine)
+	Field _leftAcceleration:Float
+	Field _rightAcceleration:Float
 	Field _engineThrust:Float				' thrust (in newtons) given by the ship's main engines
 	Field _reverseThrust:Float				' thrust (in newtons) given by the ship's reverse engines
 	Field _rotThrust:Float					' thrust (in newtons) given by the ship's rotation thrusters
+	Field _leftThrust:Float
+	Field _rightThrust:Float
 	Field _maxRotationSpd:Float				' maximum rotation speed (degrees per second)
 	Field _rotKillPercentage:Float = 0.8		' the magnitude of the rotation damper. Values 0 to 1. 1 means max efficiency.
 	Field _maxSpeed:Double = 600
@@ -19,7 +23,8 @@ Type TShip Extends TMovingObject
 	
 	Field _throttlePosition:Float = 0		' -1 = full back, +1 = full forward
 	Field _controllerPosition:Float = 0		' -1 = full left, +1 = full right
-
+	Field _transPosition:Float = 0			' translation thruster position (left/right)
+	
 	Field _L_Engines:TList					' all ship's engines as TComponent
 	
 	Field _L_Weapons:TList					' list holding all weapons as TComponent
@@ -55,6 +60,14 @@ Type TShip Extends TMovingObject
 		Return _reverseAcceleration
 	End Method
 	
+	Method GetLeftAcceleration:Float()
+		Return _leftAcceleration
+	End Method
+	
+	Method GetRightAcceleration:Float()
+		Return _rightAcceleration
+	End Method
+	
 	Method GetPilot:TPilot()
 		Return _pilot
 	End Method
@@ -65,6 +78,10 @@ Type TShip Extends TMovingObject
 
 	Method SetController(cnt:Float)
 		_controllerPosition = cnt
+	End Method
+	
+	Method SetTrans(trn:Float)
+		_transPosition = trn
 	End Method
 	
 	Method SetSystem(sys:TSystem) 
@@ -94,16 +111,25 @@ Type TShip Extends TMovingObject
 
 		' apply forward and reverse thrusts
 		If _throttlePosition > 0 Then
-			ApplyImpulse(_throttlePosition * _forwardAcceleration) 
+			ApplyVerticalImpulse(_throttlePosition * _forwardAcceleration) 
 			' add the engine trail effect
 			If _L_Engines Then EmitEngineTrail("tail")		
 		EndIf
 		
 		If _throttlePosition < 0 Then
-			ApplyImpulse(_throttlePosition * _reverseAcceleration) 
+			ApplyVerticalImpulse(_throttlePosition * _reverseAcceleration) 
 			' add the engine trail effect
 			If _L_Engines Then EmitEngineTrail("nose")		
 		EndIf
+		
+		If _transPosition < 0 Then
+			ApplyHorizontalImpulse(_transPosition * self._leftAcceleration)
+			If _L_Engines Then EmitEngineTrail("left")		
+		End If
+		If _transPosition > 0 Then
+			ApplyHorizontalImpulse(_transPosition * self._rightAcceleration)
+			If _L_Engines Then EmitEngineTrail("right")		
+		End If
 		
 		' firing
 		If isTriggerDown Then FireWeapon() 
@@ -161,7 +187,12 @@ Type TShip Extends TMovingObject
 	
 	Method EmitEngineTrail(dir:String = "tail")
 		Local direct:Int = 1	
-		If dir = "nose" Then direct = -1
+		Local rot:Float = 0
+		If dir = "left" Then rot = -90
+		If dir = "right" Then rot = 90											
+
+		If dir = "nose" Then direct = -1 And rot = 180
+		
 		For Local eng:TComponent = EachIn _L_Engines
 			If eng.GetSlot().GetExposedDir() = dir Then
 				Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"),  ..
@@ -215,13 +246,24 @@ Type TShip Extends TMovingObject
 	End Method
 	
 	' apply acceleration to x and y velocity vectors
-	Method ApplyImpulse(accel:Float) 
+	Method ApplyVerticalImpulse(accel:Float) 
 		Local Ximpulse:Float = accel * (Cos(_rotation)) 
 		Local Yimpulse:Float = accel * (Sin(_rotation)) 
 
 		_Xvel:+Ximpulse * G_delta.GetDelta() 
 		_Yvel:+Yimpulse * G_delta.GetDelta()
 	EndMethod
+	
+	Method ApplyHorizontalImpulse(accel:Float) 
+		Local Ximpulse:Float = accel * (Cos(_rotation + 90)) 
+		Local Yimpulse:Float = accel * (Sin(_rotation + 90)) 
+
+		_Xvel:+Ximpulse * G_delta.GetDelta() 
+		_Yvel:+Yimpulse * G_delta.GetDelta()
+		G_DebugWindow.AddText(accel)
+	EndMethod
+	
+	
 	
 	Method ApplyRotation(rotAcceleration:Float)
 		_rotationSpd:+rotAcceleration * G_delta.GetDelta() 
@@ -298,6 +340,8 @@ Type TShip Extends TMovingObject
 							Local prop:TPropulsion = TPropulsion(component.GetShipPart()) 
 							If slot.GetExposedDir() = "tail" Then _engineThrust = _engineThrust + prop.GetThrust() 
 							If slot.GetExposedDir() = "nose" Then _reverseThrust = _reverseThrust + prop.GetThrust() 
+							If slot.GetExposedDir() = "left" Then _rightThrust = _rightThrust + prop.GetThrust()
+							If slot.GetExposedDir() = "right" Then _leftThrust = _leftThrust + prop.GetThrust()
 						EndIf
 					EndIf
 					If slot.isRotThruster() Then
@@ -311,8 +355,6 @@ Type TShip Extends TMovingObject
 					End If
 					
 					' add the mass of the component to the ship's total mass
-					If G_Debug Then Print "Adding component mass: " + component.GetShipPart().GetID()
-					If G_Debug Then Print "  mass: " + component.GetShipPart().GetMass()
 					_mass = _mass + component.GetShipPartMass() 
 				Next
 			EndIf
@@ -327,6 +369,8 @@ Type TShip Extends TMovingObject
 	Method UpdatePerformance() 
 		_forwardAcceleration = (_engineThrust / _mass) 
 		_reverseAcceleration = (_reverseThrust / _mass) 
+		_leftAcceleration  = (_leftThrust / _mass)
+		_rightAcceleration  = (_rightThrust / _mass)
 		_rotAcceleration = (RadToDeg(CalcRotAcceleration(_rotThrust, _size, _mass, _hull.GetThrusterPos()))) 
 		_maxRotationSpd = _hull.GetMaxRotationSpd() 
 	End Method
@@ -398,7 +442,7 @@ Type TShip Extends TMovingObject
 		If currentlyActiveSystem currentlyActiveSystem.forget();TSystem._g_ActiveSystem=Null
 						
 		If Not s.isPopulated() Then s.populate() ' load it up		
-		Self.SetSystem(s) ' assign the ship's current system		
+		SetSystem(s) ' assign the ship's current system
 		s.SetAsActive() ' set as active
 		
 		G_Viewport.CenterCamera(self)

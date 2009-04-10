@@ -38,10 +38,6 @@ Type TSlot
 		If _slottype = "engine" Then Return True
 		Return False
 	End Method
-	Method isThruster:Int() 
-		If _slottype = "thruster" Then Return True
-		Return False
-	End Method
 	Method isRotThruster:Int() 
 		If _slottype = "rotthruster" Then Return True
 		Return False

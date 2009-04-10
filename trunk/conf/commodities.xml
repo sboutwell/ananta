@@ -67,16 +67,20 @@ Copyright 2007, 2008 Jussi Pakkanen
             <location>external</location>
           </rightrotthruster>
           <transright>
-            <type>thruster</type>
+            <type>engine</type>
             <volume>1</volume>
             <exposure>right</exposure>
             <location>external</location>
+	  <xoffset>10</xoffset>
+	  <yoffset>0</yoffset>
           </transright>
           <transleft>
-            <type>thruster</type>
+            <type>engine</type>
             <volume>1</volume>
             <exposure>left</exposure>
             <location>external</location>
+	  <xoffset>-10</xoffset>
+	  <yoffset>0</yoffset>
           </transleft>
           <mainengineslot1>
             <type>engine</type>
