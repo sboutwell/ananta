@@ -92,7 +92,29 @@ Type TSpaceObject Abstract
 
 	Field _collisionLevels:Int[] ' array of integers showing the object levels this object can collide with
 	
-	Method Destroy() Abstract
+	Method Destroy() 
+		If _L_TopAttachments Then
+			For local o:TSpaceObject = Eachin _L_TopAttachments
+				o.Destroy()
+			Next
+			_L_TopAttachments.Clear()
+		End If
+	
+		If _L_BottomAttachments Then
+			For local o:TSpaceObject = Eachin _L_BottomAttachments
+				o.Destroy()
+			Next
+			_L_BottomAttachments.Clear()			
+		End If
+		
+		If _system Then _system.RemoveSpaceObject(self)
+		_image = Null
+		_system = Null
+		_parent = Null
+		_parentObject = Null
+		_strongestGravSource = Null
+	End Method
+	
 	
 	' make the object take some damage
 	Method SustainDamage(dam:Float) 

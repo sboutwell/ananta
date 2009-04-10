@@ -44,6 +44,33 @@ Type TShip Extends TMovingObject
 	Field _fuel:Float						' on-board fuel for main engines (calculated by a routine)
 	Field _oxygen:Float						' on-board oxygen
 	
+	Method Destroy() 
+		If _pilot Then _pilot.Kill() 
+		_pilot = Null
+		_hull = Null
+		_selectedWeaponSlot = Null
+		_selectedWeapon = Null
+		If _L_Engines Then
+			For Local e:TComponent = EachIn _L_Engines
+				e.Destroy()
+			Next
+			_L_Engines.Clear()
+		End If
+		
+		If _L_Weapons Then
+			For Local w:TComponent = EachIn _L_Weapons
+				w.Destroy()
+			Next
+			_L_Weapons.Clear()
+		End If
+		
+		If _System Then _System.RemoveSpaceObject(Self)
+		g_L_Ships.Remove(Self) 
+		g_nrShips:-1
+		Super.Destroy()
+	End Method
+
+	
 	Method GetRotAccel:Float()
 		Return _rotAcceleration
 	End Method
@@ -416,15 +443,6 @@ Type TShip Extends TMovingObject
 		Local result:Int = _hull.RemoveComponent(comp, slot) 
 		Self.PreCalcPhysics() 	' updates the ship performance after component removal
 		Return result
-	End Method
-	
-	Method Destroy() 
-		If _pilot Then _pilot.Kill() 
-		_pilot = Null
-		
-		If _System Then _System.RemoveSpaceObject(Self)
-		g_L_Ships.Remove(Self) 
-		g_nrShips:-1
 	End Method
 	
 	Function UpdateAll() 

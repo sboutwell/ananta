@@ -34,6 +34,16 @@ Type TSlot
 	Field _xOffSet:Float		' in ase of a visual representation of a component, offset defines the position...
 	Field _yOffSet:Float		' ... relative to the object center
 	
+	Method Destroy()
+		If _L_Components Then
+			for Local c:TComponent = EachIn _L_Components
+				c.AssignSlot(Null)
+				c.Destroy()
+			Next
+			_L_Components.Clear()
+		End If
+	End Method
+	
 	Method isEngine:Int() 
 		If _slottype = "engine" Then Return True
 		Return False

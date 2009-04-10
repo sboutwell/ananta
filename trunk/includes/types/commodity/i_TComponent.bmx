@@ -28,6 +28,13 @@ Type TComponent
 	Field _damage:Float			' damage sustained by this component
 	Field _slot:TSlot			' the slot the component is installed in (if any)
 
+	Method Destroy()
+		_ShipPart = Null
+		If GetSlot() Then GetSlot().Destroy()
+		_slot = Null
+		If _L_Upgrades Then _L_UPgrades.Clear()
+	End Method
+	
 	Method GetSlot:TSlot() 
 		If _slot Then Return _slot
 		Return Null

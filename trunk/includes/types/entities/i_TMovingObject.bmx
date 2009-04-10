@@ -2,6 +2,11 @@
 Type TMovingObject Extends TSpaceObject Abstract
 	Global g_L_MovingObjects:TList			' a list to hold all moving objects
 
+	Method Destroy()
+		if g_L_MovingObjects Then g_L_MovingObjects.Remove(self)
+		Super.Destroy() ' call destroy of TSpaceObject
+	End Method
+	
 	' This method combines collision detection with gravity for speed optimization
 	' (distance between each object must be checked in both operations)
 	Method DoGravityAndCollisions(gs:TSpaceObject) 

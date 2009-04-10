@@ -38,6 +38,7 @@ Type TParticle Extends TMovingObject
 	Method Destroy() 
 		If _System Then _System.RemoveSpaceObject(Self) 
 		If g_L_Particles Then g_L_Particles.Remove(Self) 
+		Super.Destroy()
 	End Method
 			
 	Function UpdateAndDrawAll() 
@@ -87,8 +88,11 @@ Type TParticleGenerator Extends TMovingObject
 	Field _lastEmit:Int			' last emit in MilliSecs()
 	
 	Method Emit(vel:Float = Null) 
-		' discard loose particle generators that are not in the active system
-		'If NOT _parentObject AND _system <> TSystem.GetActiveSystem() Then Destroy()	
+		' discard loose particle generators
+		If NOT _system Or _system = Null Then Destroy()
+		If _parentObject Then ' if attached...
+			'If _parentObject.
+		End If
 		
 		If MilliSecs() < _lastEmit + _interval Then Return
 		If Not vel Then vel = _meanVel
@@ -111,8 +115,8 @@ Type TParticleGenerator Extends TMovingObject
 	End Method
 	
 	Method Destroy() 
-		'TMovingObject.g_L_MovingObjects.Remove(self)
 		TParticleGenerator._g_L_ParticleGenerators.Remove(self)
+		Super.Destroy()
 	End Method
 	
 	Function UpdateAll()
