@@ -21,13 +21,14 @@ endrem
 
 Type TParticle Extends TMovingObject
 	Global g_L_Particles:TList	' list holding all particles
-	Global _maxParticles:Int = 145
+	Global _maxParticles:Int = 180
 	Field _life:Float			' life of the particle in seconds
 	Field _alphaDelta:Float		' alpha change per second
 	
 	Method SetLife(l:Float) _life = l End Method
 	
 	Method Update() 
+		If _system <> TSystem.GetActiveSystem() Then Destroy() ' discard particles in another systems
 		_life:-1:Float * G_delta.GetDelta()      			 ' decrement life by 1 frame worth of seconds
 		_alpha:-_alphaDelta * G_delta.GetDelta()     ' decrement alpha by alphaDelta
 		Super.Update()   ' call Update() of TMovingObject
@@ -40,6 +41,7 @@ Type TParticle Extends TMovingObject
 	End Method
 			
 	Function UpdateAndDrawAll() 
+		TParticleGenerator.UpdateAll()
 		If Not g_L_Particles Then Return
 		For Local p:TParticle = EachIn g_L_Particles
 			p.Update() 
@@ -75,6 +77,7 @@ Type TParticle Extends TMovingObject
 EndType
 
 Type TParticleGenerator Extends TMovingObject
+	Global _g_L_ParticleGenerators:TList
 	Field _life:Float			' life of the particle in seconds
 	Field _meanVel:Float 		' base velocity of an emitted particle
 	Field _randomDir:Float = 0	' amount of randomness to the direction of the particle
@@ -84,14 +87,19 @@ Type TParticleGenerator Extends TMovingObject
 	Field _lastEmit:Int			' last emit in MilliSecs()
 	
 	Method Emit(vel:Float = Null) 
-		If Not vel Then vel = _meanVel
+		' discard loose particle generators that are not in the active system
+		'If NOT _parentObject AND _system <> TSystem.GetActiveSystem() Then Destroy()	
 		
+		If MilliSecs() < _lastEmit + _interval Then Return
+		If Not vel Then vel = _meanVel
+				
 		Local part:TParticle = TParticle.Create(_particleImg, _x, _y, _life, _scaleX, _alpha, _System) 
 		Local randDir:Float = Rand(- _randomDir, _randomDir) 
 		Local randVel:Float = Rand(- _randomVel, _randomVel) 
 		part.SetXVel(_xVel - (vel + randVel) * Cos(_rotation + randDir)) 
 		part.SetYVel(_yVel - (vel + randVel) * Sin(_rotation + randDir)) 
 		part._rotation = _rotation
+		_lastEmit = MilliSecs()
 	End Method
 	
 	Method SetRandomDir(dir:Float) 
@@ -103,10 +111,18 @@ Type TParticleGenerator Extends TMovingObject
 	End Method
 	
 	Method Destroy() 
-		
+		'TMovingObject.g_L_MovingObjects.Remove(self)
+		TParticleGenerator._g_L_ParticleGenerators.Remove(self)
 	End Method
 	
-	Function Create:TParticleGenerator(img:String, x:Float, y:Float, System:TSystem, life:Float = 0.5, alpha:Float = 0.8, vel:Float = 4, scale:Float = 1, rot:Float = 90) 
+	Function UpdateAll()
+		If Not _g_L_ParticleGenerators Then Return
+		For Local pg:TParticleGenerator = EachIn _g_L_ParticleGenerators
+			pg.Emit()
+		Next
+	End Function
+	
+	Function Create:TParticleGenerator(img:String, x:Float, y:Float, System:TSystem, life:Float = 0.8, alpha:Float = 0.8, vel:Float = 40, scale:Float = 0.05, rot:Float = 90, interval:Float = 150) 
 		Local pg:TParticleGenerator = New TParticleGenerator
 		pg._particleImg = TImg.LoadImg(img) 
 		pg._x = x
@@ -118,8 +134,11 @@ Type TParticleGenerator Extends TMovingObject
 		pg._scaleX = scale
 		pg._scaleY = scale
 		pg._rotation = rot
-		If Not TMovingObject.g_L_MovingObjects Then TMovingObject.g_L_MovingObjects = CreateList() 
-		TMovingObject.g_L_MovingObjects.AddLast(pg) 
+		pg._interval = interval
+		'If Not TMovingObject.g_L_MovingObjects Then TMovingObject.g_L_MovingObjects = CreateList() 
+		'TMovingObject.g_L_MovingObjects.AddLast(pg) 
+		If Not TParticleGenerator._g_L_ParticleGenerators Then TParticleGenerator._g_L_ParticleGenerators =  CreateList() 
+		TParticleGenerator._g_L_ParticleGenerators.AddLast(pg)
 		Return pg
 	End Function
 EndType

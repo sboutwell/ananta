@@ -52,6 +52,12 @@ Copyright 2007, 2008 Jussi Pakkanen
         <!-- slot ID -->
         <part1>trilliumthruster1</part1>
       </rightrotthruster>
+      <transright>
+	<part1>trilliumthruster1</part1>
+      </transright>
+      <transleft>
+	<part1>trilliumthruster1</part1>
+      </transleft>
       <weaponslot1>
          <part1>blaster1</part1>
       </weaponslot1>      
