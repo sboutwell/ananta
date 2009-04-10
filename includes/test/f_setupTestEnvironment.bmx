@@ -32,7 +32,7 @@ Function SetupTestEnvironment()
 	s1.SetRot(90)
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
-	s1._integrity = 22000
+	s1._integrity = 2000
 	Local part1:TParticleGenerator = TParticleGenerator.Create("smoke.png",0,0, TSystem.GetActiveSystem())
 	s1.AddAttachment(part1)
 	
