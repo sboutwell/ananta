@@ -149,12 +149,12 @@ Type TShip Extends TMovingObject
 			If _L_Engines Then EmitEngineTrail("nose")		
 		EndIf
 		
-		If _transPosition < 0 Then
-			ApplyHorizontalImpulse(_transPosition * self._leftAcceleration)
+		If _transPosition < 0 and _leftAcceleration > 0 Then
+			ApplyHorizontalImpulse(_transPosition * _leftAcceleration)
 			If _L_Engines Then EmitEngineTrail("left")		
 		End If
-		If _transPosition > 0 Then
-			ApplyHorizontalImpulse(_transPosition * self._rightAcceleration)
+		If _transPosition > 0 and _rightAcceleration > 0 Then
+			ApplyHorizontalImpulse(_transPosition * _rightAcceleration)
 			If _L_Engines Then EmitEngineTrail("right")		
 		End If
 		
@@ -354,11 +354,15 @@ Type TShip Extends TMovingObject
 	' Precalcphysics calculates ship's performance based on the on-board equipment
 	' Do not call in the main loop.
 	Method PreCalcPhysics() 
+		' reset performance values
 		_mass = 0
 		_engineThrust = 0
 		_reverseThrust = 0
 		_rotThrust = 0
-		
+		_rightThrust = 0
+		_leftThrust = 0
+		'
+				
 		For Local slot:TSlot = EachIn _hull.GetSlotList() ' iterate through all equipment slots
 			If slot.GetComponentList() Then	' if this slot has components, iterate through all of them
 				For Local component:TComponent = EachIn slot.GetComponentList() 
@@ -394,6 +398,7 @@ Type TShip Extends TMovingObject
 	EndMethod
 
 	Method UpdatePerformance() 
+		If _mass = 0 Then Return
 		_forwardAcceleration = (_engineThrust / _mass) 
 		_reverseAcceleration = (_reverseThrust / _mass) 
 		_leftAcceleration  = (_leftThrust / _mass)
