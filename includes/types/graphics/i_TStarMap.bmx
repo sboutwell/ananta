@@ -143,17 +143,27 @@ Type TStarMap Extends TMiniMap
 		
 		Local minDis:Float = 99999999999999
 		
-		For Local line:Int = EachIn _visibleLines
-			For Local column:Int = EachIn _visibleColumns
-				Local sect:TSector = TSector.Create(column,line)
+		'*** temp variables outside the loop for performance
+		Local line:Int
+		Local column:Int
+		Local sect:Tsector
+		Local sys:TSystem
+		Local blip:TMapBlip
+		Local screenX:Int
+		Local screenY:Int
+		Local d:Float
+		'***
+		For line = EachIn _visibleLines
+			For column = EachIn _visibleColumns
+				sect = TSector.Create(column,line)
 				sect.Populate()
 												
-				For Local sys:TSystem = EachIn sect.GetSystemList()
-					Local blip:TMapBlip = AddStarMapBlip(sys)
+				For sys = EachIn sect.GetSystemList()
+					blip = AddStarMapBlip(sys)
 								
-					Local screenX:Int = blip.getX()
-					Local screenY:Int = blip.getY()
-					Local d:Float = Distance(screenX,screenY,GraphicsWidth()/2,GraphicsHeight()/2)
+					screenX = blip.getX()
+					screenY = blip.getY()
+					d = Distance(screenX,screenY,GraphicsWidth()/2,GraphicsHeight()/2)
 					If d < minDis
 						minDis = d
 						setClosestSystemToScreenCentre(sys)

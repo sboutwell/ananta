@@ -202,12 +202,16 @@ Type TSector
 	    
 		SeedRnd((_x Shl 16) + _y) 	' seed the Mersenne Twister with the sector coordinates
 		
-		' create the stars
 		If Not _L_systems Then _L_systems = CreateList()
-	    For Local i:Int = 0 To _getNrSystems() - 1
-	        Local coordsOk:Int = True	' flag to indicate if this star overlaps with another star
-			Local y:Int, x:Int, mult:Int, typ:Int
-			Local name:String
+		
+		' --- create the stars
+		' *** temp variables out of the loop for performance
+		Local sys:TSystem	
+		Local i:Int, y:Int, x:Int, mult:Int, typ:Int
+		Local coordsOk:Int, name:String
+		' ***
+	    For i:Int = 0 To _getNrSystems() - 1
+	        coordsOk = True	' flag to indicate if this star overlaps with another star
 			Repeat
 				' (semi-)randomize the star's in-sector coordinates
 				coordsOk = True
@@ -215,7 +219,7 @@ Type TSector
 				x = _x * _g_sectorSize
 				y = y + Rand(0,_g_sectorSize)
 				x = x + Rand(0,_g_sectorSize)
-				For Local sys:TSystem = EachIn _L_systems	' iterate through the star list to see if this star overlaps with others
+				For sys = EachIn _L_systems	' iterate through the star list to see if this star overlaps with others
 					If sys.GetX() = x And sys.GetY() = y Then coordsOk = False		' overlapping coordinates
 				Next
 			Until coordsOk	' rinse and repeat until the coordinates do not overlap
@@ -224,11 +228,11 @@ Type TSector
 			mult:Int = G_Universe.StarChance_Multiples[Rand(0, G_Universe.StarChance_Multiples.Length - 1)]
 			typ:Int = G_Universe.StarChance_Type[Rand(0, G_Universe.StarChance_Type.Length - 1)]
 			name:String = G_Universe.GetSystemName() ' generate system name with the current SFMT seed
-			Local system:TSystem = TSystem.Create(_x, _y, x, y, name, typ, mult, i)
-			system.SetSize((G_Universe.StarSize[typ] + mult * 100) / 200.0)
+			sys = TSystem.Create(_x, _y, x, y, name, typ, mult, i)
+			sys.SetSize((G_Universe.StarSize[typ] + mult * 100) / 200.0)
 			
 			
-			_L_systems.AddLast(system) 
+			_L_systems.AddLast(sys) 
 		Next
 		_isPopulated = True	' switch the flag on to indicate this sector is populated
 	End Method

@@ -151,9 +151,9 @@ Type TProjectile Extends TParticle	' projectile is a special type of particle
 	Field _damage:Float = 500	' damage this particle will do on impact
 	Field _shotBy:TShip = Null	' the ship that shot this projectile
 	
-	Method GetDamage:Float() Return _damage * _alpha End Method
+	Method GetDamage:Float() Return _damage * _alpha EndMethod
 	Method GetShooter:TShip() Return _shotBy EndMethod
-	Method SetShooter(sh:TShip) _shotBy = sh End Method
+	Method SetShooter(sh:TShip) _shotBy = sh EndMethod
 	
 	Method Destroy() 
 		_shotBy = Null
