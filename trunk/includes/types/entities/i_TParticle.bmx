@@ -86,6 +86,8 @@ Type TParticleGenerator Extends TMovingObject
 	Field _particleImg:TImage	' the image that is drawn in place of this particle
 	Field _interval:Int			' particles emitting interval in ms
 	Field _lastEmit:Int			' last emit in MilliSecs()
+	Field _isPersistent:Int = False ' non-persistent turn themselves off after each emit
+	Field isOn:Int = TRUE		' emitter on/off
 	
 	Method Emit(vel:Float = Null) 
 		' discard loose particle generators
@@ -93,7 +95,9 @@ Type TParticleGenerator Extends TMovingObject
 		If _parentObject Then ' if attached...
 			'If _parentObject.
 		End If
-		
+
+		if not isOn Then Return	
+	
 		If MilliSecs() < _lastEmit + _interval Then Return
 		If Not vel Then vel = _meanVel
 				
@@ -104,6 +108,7 @@ Type TParticleGenerator Extends TMovingObject
 		part.SetYVel(_yVel - (vel + randVel) * Sin(_rotation + randDir)) 
 		part._rotation = _rotation
 		_lastEmit = MilliSecs()
+		if NOT _isPersistent Then isOn = False 	' turn off
 	End Method
 	
 	Method SetRandomDir(dir:Float) 

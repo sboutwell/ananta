@@ -87,7 +87,7 @@ Copyright 2007, 2008 Jussi Pakkanen
             <volume>5</volume>
             <exposure>tail</exposure>
 	  <location>external</location>
-	  <xoffset>-2</xoffset>
+	  <xoffset>2</xoffset>
 	  <yoffset>-27</yoffset>
 	  <!-- x and y offsets mark the engine exhaust points -->
           </mainengineslot1>
@@ -96,7 +96,7 @@ Copyright 2007, 2008 Jussi Pakkanen
             <volume>5</volume>
             <exposure>tail</exposure>
             <location>external</location>
-	    <xoffset>2</xoffset>
+	    <xoffset>-2</xoffset>
 	    <yoffset>-27</yoffset>	    
 	    <!-- x and y offsets mark the engine exhaust points -->
           </mainengineslot2>

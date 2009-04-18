@@ -114,7 +114,118 @@ Type TSpaceObject Abstract
 		_parentObject = Null
 		_strongestGravSource = Null
 	End Method
+
+	' ****** Getters/Setters *******
+	Method GetScaleX:Float()
+		Return _scaleX
+	End Method
+	Method GetScaleY:Float()
+		Return _scaleY
+	End Method
+	Method GetXVel:Double() 
+		Return _xVel
+	End Method
+	Method GetYVel:Double() 
+		Return _yVel
+	End Method
+	Method GetRotSpd:Float()
+		Return _rotationSpd
+	End Method
+	Method GetSize:Int()
+		Return _size
+	End Method
+	Method GetSystem:TSystem()
+		Return _system
+	End Method
+	Method GetOAlpha:Float()
+		Return _alpha
+	End Method
+	Method GetMass:Long() 
+		Return _mass
+	End Method
+	Method GetRot:Float()
+		Return _rotation
+	End Method
+	Method GetX:Double() 
+		Return _x
+	End Method
+	Method GetY:Double() 
+		Return _y
+	End Method
+	Method GetIntegrity:Float() 
+		Return _integrity
+	End Method
+	Method GetParent:TStellarObject()
+		Return _parent
+	End Method	
+	Method GetParentObject:TSpaceObject()
+		Return _parentObject
+	End Method
+	Method getImage:TImage()
+		Return _image
+	End Method
+	Method getName:String()
+		Return _name
+	End Method
+	Method getXOffset:Float()
+		return _xOffset 
+	End Method
+	Method getYOffset:Float()
+		return _yOffset 
+	End Method
+	Method getRotOffset:Float()
+		return _rotationOffset 
+	End Method
 	
+	'setters
+	Method SetXVel(x:Double) 
+		_xVel = x
+	End Method
+	Method SetYVel(y:Double) 
+		_yVel = y
+	End Method
+	Method SetRotationSpd(r:Float) 
+		_rotationSpd = r
+	End Method
+	Method SetRot(r:Float) 
+		_rotation = r
+	End Method
+	Method SetSystem(s:TSystem)
+		_system = s
+	End Method
+	Method SetOAlpha(a:Float)
+		_alpha = a
+	End Method
+	Method setDescription(m:String)
+		_description = m
+	End Method	
+	Method SetX(coord:Double) 
+		_x = coord
+	End Method
+	Method SetY(coord:Double) 
+		_y = coord
+	End Method
+	Method SetScaleX(s:Float)
+		_scaleX = s
+	End Method
+	Method SetScaleY(s:Float)
+		_scaleY = s
+	End Method
+	Method SetName(s:String) 
+		_name = s
+	End Method
+	Method SetMass(m:Long)
+		_mass = m
+	End Method
+	Method SetParentObject(p:TSpaceObject)
+		_parentObject = p
+	End Method
+	Method setParent(p:TStellarObject)
+		_parent = p
+	End Method
+	Method SetSize(s:Int)
+		_size=s
+	End Method	
 	
 	' make the object take some damage
 	Method SustainDamage(dam:Float) 
@@ -197,13 +308,13 @@ Type TSpaceObject Abstract
 
 	' this update method is currently mainly for attachment positioning purposes...
 	Method Update() 
-		If _parentObject Then	' is attached to another object...
+		If _parentObject Then	' is attached to another object, position us in relation the the parent
 			_system = _parentObject.GetSystem() ' update TSystem in case the ship with attachements has hyperspaced
 			Local pRot:Float = _parentObject.GetRot() 
 			Local pX:Double = _parentObject.GetX() 
 			Local pY:Double = _parentObject.GetY() 
-			_x = pX + _xOffset * Cos(pRot) + _yOffset * Sin(pRot)
-			_y = pY + _xOffset * Sin(pRot) - _yOffset * Cos(pRot) 
+			_x = pX + _yOffset * Cos(pRot) + _xOffset * Sin(pRot)
+			_y = pY + _yOffset * Sin(pRot) - _xOffset * Cos(pRot) 
 			_rotation = pRot + _rotationOffset
 		EndIf
 		isUpdated = True
@@ -231,157 +342,9 @@ Type TSpaceObject Abstract
 		End If
 	End Method
 	
-	' this method will populate this types from an XML file
-	' eg: newPlanet.getInfoFromXML(c_celestialTypes, "stars", "sun1")
-	' eg: newPlanet.getInfoFromXML(c_celestialTypes, "planets", "rocky1")
-	Rem
-	
-	Method getInfoFromXML(Conf:String, node:String, value:String)
-		Local sourceNode:TxmlNode = LoadXMLFile(conf)
-		
-		Local searchnode:TxmlNode = xmlGetNode(sourceNode, node)
-		
-		Local children:TList = searchnode.getChildren() 		
-	
-		For Local value1:TxmlNode = EachIn children	' iterate through node values
-			If value1.GetName() = value
-				If value.GetName() = "image"	Then c._image	= TImg.LoadImg(value.GetText()) ' Should be self.setImage(file$)	
-				If value.GetName() = "description" 	Then c._description		= value.GetText()
-				If value.GetName() = "mass" 	Then c._mass	= value.GetText().ToFloat()
-				If value.GetName() = "minscale" Then c._minScale= value.GetText().ToFloat()
-				If value.GetName() = "maxscale" Then c._maxScale= value.GetText().ToFloat()
-				
-				Return				
-			EndIf
-		Next		
-		
-	End Method	
-	
-	EndRem
-
-	Method GetScaleX:Float()
-		Return _scaleX
-	End Method
-
-	Method GetScaleY:Float()
-		Return _scaleY
-	End Method
-	
 	Method GetVel:Double() 
 		If (NOT _xVel or NOT _yVel) or (_xVel = 0 and _yVel = 0) Return 0
 		Return GetSpeed(_xVel, _yVel) 
-	End Method
-	
-	Method GetXVel:Double() 
-		Return _xVel
-	End Method
-	
-	Method GetYVel:Double() 
-		Return _yVel
-	End Method
-	
-	Method GetRotSpd:Float()
-		Return _rotationSpd
-	End Method
-	
-	Method GetSize:Int()
-		Return _size
-	End Method
-	
-	Method GetSystem:TSystem()
-		Return _system
-	End Method
-	
-	Method SetXVel(x:Double) 
-		_xVel = x
-	End Method
-	
-	Method SetYVel(y:Double) 
-		_yVel = y
-	End Method
-	
-	Method SetRotationSpd(r:Float) 
-		_rotationSpd = r
-	End Method
-		
-	Method SetRot(r:Float) 
-		_rotation = r
-	End Method
-	
-	Method SetSystem(s:TSystem)
-		_system = s
-	End Method
-	
-	Method SetOAlpha(a:Float)
-		_alpha = a
-	End Method
-	
-	Method GetOAlpha:Float()
-		Return _alpha
-	End Method
-	
-	Method GetMass:Long() 
-		Return _mass
-	End Method
-	
-	Method GetRot:Float()
-		Return _rotation
-	End Method
-
-	Method GetX:Double() 
-		Return _x
-	End Method
-	
-	Method GetY:Double() 
-		Return _y
-	End Method
-
-	Method GetIntegrity:Float() 
-		Return _integrity
-	End Method
-	
-	Method showsOnMap:Int() 
-		Return isShownOnMap
-	End Method
-	
-	Method SetX(coord:Double) 
-		_x = coord
-	End Method
-	
-	Method SetY(coord:Double) 
-		_y = coord
-	End Method
-	
-	Method SetScaleX(s:Float)
-		_scaleX = s
-	End Method
-	
-	Method SetScaleY(s:Float)
-		_scaleY = s
-	End Method
-
-	Method SetName(s:String) 
-		_name = s
-	End Method
-	
-	Method SetMass(m:Long)
-		_mass = m
-	End Method
-
-	Method SetParentObject(p:TSpaceObject)
-		_parentObject = p
-	End Method
-
-	Method setParent(p:TStellarObject)
-		_parent = p
-	End Method
-	
-	Method GetParent:TStellarObject()
-		Return _parent
-	End Method	
-	
-	Method GetParentObject:TSpaceObject()
-		Return _parentObject
 	End Method
 	
 	Method LoadImage(file:String)
@@ -394,20 +357,5 @@ Type TSpaceObject Abstract
 		EndIf
 	End Method	
 	
-	Method getImage:TImage()
-		Return _image
-	End Method
-	
-	Method setDescription(m:String)
-		_description = m
-	End Method	
-	
-	Method getName:String()
-		Return _name
-	End Method
-	
-	Method SetSize(s:Int)
-		_size=s
-	End Method	
 EndType
 
