@@ -33,10 +33,11 @@ Function SetupTestEnvironment()
 	' assign the ship for the player to control
 	s1.AssignPilot(G_Player) 
 	s1._integrity = 2000
-	Local part1:TParticleGenerator = TParticleGenerator.Create("smoke.png",0,0, TSystem.GetActiveSystem())
-	s1.AddAttachment(part1)
 	
-	rem
+	' create smoke generator for testing
+	'Local part1:TParticleGenerator = TParticleGenerator.Create("smoke.png",0,0, TSystem.GetActiveSystem())
+	's1.AddAttachment(part1)
+	
 	' create AI wingman
 	Local aiWingman:TAIPlayer = TAIPlayer.Create("AI")
 	Local WingmanShip:TShip = TShipModel.BuildShipFromModel("nadia")
@@ -65,7 +66,6 @@ Function SetupTestEnvironment()
 		ai.SetActionMode(TAIPlayer.fl_pursuit)
 		ai.SetAccuracy(Rnd(0, 1))
 	Next
-	endrem
 	
 	G_viewport.CreateMsg("Player ship mass: " + s1.GetMass()) 
 	

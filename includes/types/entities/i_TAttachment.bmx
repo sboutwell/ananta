@@ -22,11 +22,12 @@ rem
 	Attachments are visual add-ons attached to a space object's hull: weapons, engines, etc.
 	Note that TAttachment is used for "visual-only" attachments. All spaceobjects can be attached
 	to another spaceobject as such without being declared as actual attachments.
+	That's why _xOffSet/_yOffSet are TSpaceObject fields and not TAttachment fields
 endrem
 
 Type TAttachment Extends TSpaceObject
 	Method Destroy() 
-			
+		super.Destroy()
 	End Method
 
 	Function Create:TAttachment(parent:TSpaceObject, image:String, x:Float = 0, y:Float = 0, rot:Float = 0, scaleX:Float = 0, scaleY:Float = 0, onTop:Int = True) 
