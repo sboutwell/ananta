@@ -23,16 +23,25 @@ endrem
 ' Notice that TShippart itself is never instantiated when a ship component is created. 
 ' It is only a prototype which is referenced through TComponent
 Type TComponent
+	Global g_nrComponents:Int
 	Field _ShipPart:TShippart 	' the ship part prototype this Component is based on
 	Field _L_Upgrades:TList		' a list holding possible upgrades (not used yet)
 	Field _damage:Float			' damage sustained by this component
 	Field _slot:TSlot			' the slot the component is installed in (if any)
 
+	Method New()
+		g_nrComponents:+1
+	End Method
+	
+	Method Delete()
+		g_nrComponents:-1
+	End Method
+	
 	Method Destroy()
 		_ShipPart = Null
 		If GetSlot() Then GetSlot().Destroy()
 		_slot = Null
-		If _L_Upgrades Then _L_UPgrades.Clear()
+		If _L_Upgrades Then _L_Upgrades.Clear()
 	End Method
 	
 	Method GetSlot:TSlot() 

@@ -10,7 +10,7 @@ Type TPlanet Extends TStellarObject
 	End Method
 	
 	Method Destroy() 
-		
+		'Print"Planet " + _name + " deleted by GC"
 	End Method
 
 	Function createFromProto:TPlanet(x:Long,y:Long,System:TSystem,name:String,planetType:String)
@@ -25,8 +25,8 @@ Type TPlanet Extends TStellarObject
 		pl.canCollide = True
 		pl.isShownOnMap = True
 		
-		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
-		g_L_StellarObjects.AddLast pl											' add the newly created object to the end of the list
+		'If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
+		'g_L_StellarObjects.AddLast pl											' add the newly created object to the end of the list
 		
 		System.AddSpaceObject(pl)		' add the body to System's space objects list
 		
@@ -45,8 +45,8 @@ Type TPlanet Extends TStellarObject
 		pl.canCollide = True
 		pl.isShownOnMap = True
 		
-		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
-		g_L_StellarObjects.AddLast pl											' add the newly created object to the end of the list
+		'If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary
+		'g_L_StellarObjects.AddLast pl											' add the newly created object to the end of the list
 		
 		System.AddSpaceObject(pl)		' add the body to System's space objects list
 		

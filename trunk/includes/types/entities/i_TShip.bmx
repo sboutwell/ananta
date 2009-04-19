@@ -1,6 +1,7 @@
 
 Type TShip Extends TMovingObject
 	Global g_L_Ships:TList					' a list to hold all ships
+	Global g_nrShips:Int = 0
 	
 	Field _hull:THull
 	Field _forwardAcceleration:Float			' maximum forward acceleration (calculated by a routine)
@@ -28,6 +29,7 @@ Type TShip Extends TMovingObject
 	Field _L_EngineEmitters:TList			' engine trail emitters as TParticleGenerator
 	
 	Field _L_Weapons:TList					' list holding all weapons as TComponent
+	Field _L_MiscEquipment:TList			
 	Field _selectedWeaponSlot:TSlot			' the weapon slot currently selected as the active slot
 	Field _selectedWeapon:TWeapon			' ... and the weapon itself in the active slot
 	
@@ -40,10 +42,20 @@ Type TShip Extends TMovingObject
 	
 	Field _pilot:TPilot						' The pilot controlling this ship
 	
+	Method Delete()
+		g_nrShips:-1
+	End Method
+	
+	Method New()
+		g_nrShips:+1
+	End Method
+	
 	Method Destroy() 
 		If _pilot Then _pilot.Kill() 
 		_pilot = Null
 		_hull = Null
+		If _selectedWeaponSlot Then _selectedWeaponSlot.Destroy()
+		
 		_selectedWeaponSlot = Null
 		_selectedWeapon = Null
 		If _L_Engines Then
@@ -66,13 +78,18 @@ Type TShip Extends TMovingObject
 			Next
 			_L_Weapons.Clear()
 		End If
+		If _L_MiscEquipment Then
+			For Local e:TComponent = EachIn _L_MiscEquipment
+				e.Destroy()
+			Next
+			_L_MiscEquipment.Clear()
+		End If
 		
 		If _System Then _System.RemoveSpaceObject(Self)
 		g_L_Ships.Remove(Self) 
 		Super.Destroy()
 	End Method
 
-	
 	Method GetRotAccel:Float()
 		Return _rotAcceleration
 	End Method
@@ -415,16 +432,12 @@ Type TShip Extends TMovingObject
 			If Not _L_Engines Then _L_Engines = CreateList() 
 			_L_Engines.AddLast(comp) 
 			CreateEngineTrailEmitter(comp,slot) ' create particle emitter for this engine
+		Else ' misc equipment
+			If Not _L_MiscEquipment Then _L_MiscEquipment = CreateList()
+			_L_MiscEquipment.AddLast(comp)
 		EndIf
 		 
 		Self.PreCalcPhysics()  	' updates the ship performance after component installation
-		Return result
-	End Method
-		
-	' RemoveComponentFromSlot removes a component from a specified slot.
-	Method RemoveComponentFromSlot:Int(comp:TComponent, slot:TSlot) 
-		Local result:Int = _hull.RemoveComponent(comp, slot) 
-		Self.PreCalcPhysics() 	' updates the ship performance after component removal
 		Return result
 	End Method
 	
@@ -525,6 +538,7 @@ Type TShip Extends TMovingObject
 		sMap.Update()	
 		
 		G_viewport.CreateMsg("Hyperspaced to " + s.getName())
+		GCCollect()
 	End Method
 
 	Function Create:TShip(hullID:String, name:String = "Nameless") 

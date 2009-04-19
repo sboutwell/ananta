@@ -38,17 +38,20 @@ Function SetupTestEnvironment()
 	'Local part1:TParticleGenerator = TParticleGenerator.Create("smoke.png",0,0, TSystem.GetActiveSystem())
 	's1.AddAttachment(part1)
 	
-	' create AI wingman
-	Local aiWingman:TAIPlayer = TAIPlayer.Create("AI")
-	Local WingmanShip:TShip = TShipModel.BuildShipFromModel("nadia")
-	WingmanShip.SetName("AI Ship")
-	WingmanShip.SetCoordinates(250500 + Rand(- 5000, 5000), 250000 + Rand(- 5000, 5000))
-	WingmanShip.SetSystem(TSystem.GetActiveSystem())
-	WingmanShip.AssignPilot(aiWingman)
-	aiWingman.SetTarget(G_player.GetControlledShip())
-	aiWingman.SetActionMode(TAIPlayer.fl_follow)
-	aiWingman.SetAccuracy(Rnd(0, 1))
+	For Local i:Int = 1 To 3
+		' create AI wingman
+		Local aiWingman:TAIPlayer = TAIPlayer.Create("AI")
+		Local WingmanShip:TShip = TShipModel.BuildShipFromModel("nadia")
+		WingmanShip.SetName("AI Ship")
+		WingmanShip.SetCoordinates(250500 + Rand(- 5000, 5000), 250000 + Rand(- 5000, 5000))
+		WingmanShip.SetSystem(TSystem.GetActiveSystem())
+		WingmanShip.AssignPilot(aiWingman)
+		aiWingman.SetTarget(G_player.GetControlledShip())
+		aiWingman.SetActionMode(TAIPlayer.fl_follow)
+		aiWingman.SetAccuracy(Rnd(0, 1))
+	Next
 	
+	rem
 	SeedRnd(millisecs())
 	For local i:Int = 1 To 6
 		' create an AI ship for testing
@@ -66,7 +69,7 @@ Function SetupTestEnvironment()
 		ai.SetActionMode(TAIPlayer.fl_pursuit)
 		ai.SetAccuracy(Rnd(0, 1))
 	Next
-	
+	endrem
 	G_viewport.CreateMsg("Player ship mass: " + s1.GetMass()) 
 	
 	G_viewport.CenterCamera(s1)           		' select the player ship as the object for the camera to follow

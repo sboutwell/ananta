@@ -66,6 +66,7 @@ Include "includes/types/math/i_TValue.bmx"				'Scalars and units (distance, mass
 
 ' Temporary includes for development
 Include "includes/test/f_setupTestEnvironment.bmx"
+Include "includes/test/f_showDebugInfo.bmx"
 
 TColor.LoadAll()      				' load all color info from colors.xml (must be loaded before initializing the viewport)
 G_viewport.InitViewportVariables() 	' load various viewport-related settings from settings.xml and precalc some other values
@@ -110,21 +111,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' draw miscellaneous viewport items needed to be on top (HUD, messages etc)
 	G_viewport.DrawMisc() 
 	
-	
-	' *********** DEBUG INFO ****************
-	G_debugWindow.AddText("FPS: " + G_delta.GetFPS()) 
-	'G_debugWindow.AddText("Asteroids: " + TAsteroid.g_nrAsteroids) 
-	'G_debugWindow.AddText("Ships: " + TShip.g_nrShips) 
-	
-	If G_Player.GetControlledShip() Then
-		G_debugWindow.AddText("Velocity: " + G_Player.GetControlledShip().GetVel()) 
-		If G_Player.GetControlledShip().isWarpDriveOn Then
-			G_debugWindow.AddText("(warpdrive on)") 
-		End If
-		G_debugWindow.AddText("Shields: " + G_Player.GetControlledShip().GetIntegrity()) 
-		'G_Player.GetControlledShip().CalcStopDistance()
-	EndIf
-	' ***************************************
+	ShowDebugInfo()
 	
 	If G_delta._isFrameRateLimited Then
 		G_delta.LimitFPS()        ' limit framerate
