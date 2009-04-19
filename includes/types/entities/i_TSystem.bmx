@@ -49,6 +49,7 @@ Type TSystem Final
 
 	Method GetSpaceObjects:TList() Return _L_SpaceObjects EndMethod
 		
+	
 	' draw every space object in this system
 	Method DrawAllInSystem(vp:TViewport)
 		If Not _L_SpaceObjects Return							' Exit if a body list doesn't exist
@@ -81,7 +82,7 @@ Type TSystem Final
 
 	' placeholder method for procedural planet generation
 	' Matt - in progress...	
-	Method Populate()			
+	Method Populate()		
 		Local verbose:Int = False ' output all the generation stuff to the debuglog
 	
 		Local ONE_AU:Long = 200000

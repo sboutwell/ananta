@@ -22,6 +22,7 @@ endrem
 ' Slots are created when a new ship (hull) is created.
 ' See i_TCommodity_TShippart.bmx
 Type TSlot
+	Global g_nrSlots:Int
 	Field _id:String
 	Field _slottype:String		' type of the slot (rotthruster, thruster, engine, equipment)
 	Field _volume:Float			' volume of the slot in m^3
@@ -33,6 +34,13 @@ Type TSlot
 	
 	Field _xOffSet:Float		' in ase of a visual representation of a component, offset defines the position...
 	Field _yOffSet:Float		' ... relative to the object center
+	
+	Method New()
+		g_nrSlots:+1
+	End Method
+	Method Delete()
+		g_nrSlots:-1
+	End Method
 	
 	Method Destroy()
 		If _L_Components Then

@@ -115,6 +115,15 @@ Type TSpaceObject Abstract
 		_strongestGravSource = Null
 	End Method
 
+	Method RecursiveDestroy()
+		If TShip(Self) TShip(Self).Destroy()
+		If TProjectile(Self) TProjectile(Self).Destroy()
+		If TAsteroid(Self) TAsteroid(Self).Destroy()
+		If TPlanet(Self) TPlanet(Self).Destroy()
+		If TStar(Self) TStar(Self).Destroy()
+		If TParticle(Self) TParticle(Self).Destroy()
+	End Method
+
 	' ****** Getters/Setters *******
 	Method GetScaleX:Float()
 		Return _scaleX
@@ -244,7 +253,7 @@ Type TSpaceObject Abstract
 		part.SetRotationSpd(Self.GetRotSpd() + Rnd(- 10, 10)) 
 		part.isAffectedByGravity = True
 		 
-		Destroy() 
+		RecursiveDestroy() 
 		
 	End Method
 		

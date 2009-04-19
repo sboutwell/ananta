@@ -1,7 +1,7 @@
 Type TStar Extends TStellarObject
 	
 	Method Destroy() 
-		
+		Print "Star " + _name + " GC'd"
 	End Method
 
 	' uses Cairo vector graphics library to generate a star image of a radius supplied by a parameter
@@ -58,8 +58,8 @@ Type TStar Extends TStellarObject
 		st.canCollide = True
 		st.isShownOnMap = True
 
-		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
-		g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list
+		'If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
+		'g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list
 
 		System.AddSpaceObject(st)		' add the body to System's space objects list		
 		Return st		
@@ -77,8 +77,8 @@ Type TStar Extends TStellarObject
 		st.canCollide = True
 		st.isShownOnMap = True
 
-		If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
-		g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list
+		'If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
+		'g_L_StellarObjects.AddLast st									' add the newly created object to the end of the list
 
 		System.AddSpaceObject(st)		' add the body to System's space objects list
 		

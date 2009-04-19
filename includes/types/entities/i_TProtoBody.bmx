@@ -101,7 +101,7 @@ Type TProtoBody
 		
 		target.setSize(CalcImageSize(target._image, False) * target.GetScaleX())
 		
-		If G_Debug Print "Body '"+target.getName()+"' has been populated from prototype "+found.getName()
+		'If G_Debug Print "Body '"+target.getName()+"' has been populated from prototype "+found.getName()
 	End Function
 	
 		

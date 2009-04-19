@@ -191,6 +191,10 @@ Type TSector
 	Field _y:Int
 	Field _isPopulated:Int = False	' flag to indicate if the systems have been created in this sector
 	
+	Method Delete()
+	EndMethod
+
+	
 	Method Forget()
 		_L_systems.Clear()
 		_isPopulated = False
