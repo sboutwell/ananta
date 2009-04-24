@@ -237,8 +237,8 @@ Type THullPrototype Extends THull
 
 				' assign the rest of the slot characteristics to their corresponding fields
 				If value.GetName() = "volume" 	Then slot.SetVolume (value.GetText().ToFloat())
-				If value.GetName() = "exposure" Then slot.SetExposedDir (value.GetText())
-				If value.GetName() = "location" Then slot.SetLocation (value.GetText()) 
+				If value.getName() = "exposure" Then slot.SetExposedDir (value.GetText().ToFloat())
+				If value.getName() = "location" Then slot.SetLocation (value.GetText()) 
 				If value.getName() = "xoffset" Then slot.SetXOffset (value.GetText().ToFloat()) 
 				If value.getName() = "yoffset" Then slot.SetYOffset (value.GetText().ToFloat()) 
 			Next

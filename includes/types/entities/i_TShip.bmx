@@ -159,20 +159,20 @@ Type TShip Extends TMovingObject
 		If _throttlePosition > 0 Then
 			ApplyVerticalImpulse(_throttlePosition * _forwardAcceleration) 
 			' add the engine trail effect
-			If _L_EngineEmitters Then EmitEngineTrail("tail")		
+			If _L_EngineEmitters Then EmitEngineTrail(0)	' tail
 		EndIf
 		If _throttlePosition < 0 Then
 			ApplyVerticalImpulse(_throttlePosition * _reverseAcceleration) 
 			' add the engine trail effect
-			If _L_EngineEmitters Then EmitEngineTrail("nose")		
+			If _L_EngineEmitters Then EmitEngineTrail(180) ' nose
 		EndIf
 		If _transPosition < 0 and _leftAcceleration > 0 Then
 			ApplyHorizontalImpulse(_transPosition * _leftAcceleration)
-			If _L_EngineEmitters Then EmitEngineTrail("left")		
+			If _L_EngineEmitters Then EmitEngineTrail(270)	'left
 		End If
 		If _transPosition > 0 and _rightAcceleration > 0 Then
 			ApplyHorizontalImpulse(_transPosition * _rightAcceleration)
-			If _L_EngineEmitters Then EmitEngineTrail("right")		
+			If _L_EngineEmitters Then EmitEngineTrail(90)	'right
 		End If
 		
 		' firing
@@ -363,10 +363,10 @@ Type TShip Extends TMovingObject
 					If slot.isEngine() Then
 						If component.getType() = "engine" Then
 							Local prop:TPropulsion = TPropulsion(component.GetShipPart()) 
-							If slot.GetExposedDir() = "tail" Then _engineThrust = _engineThrust + prop.GetThrust() 
-							If slot.GetExposedDir() = "nose" Then _reverseThrust = _reverseThrust + prop.GetThrust() 
-							If slot.GetExposedDir() = "left" Then _rightThrust = _rightThrust + prop.GetThrust()
-							If slot.GetExposedDir() = "right" Then _leftThrust = _leftThrust + prop.GetThrust()
+							If slot.GetExposedDir() = 180 Then _engineThrust = _engineThrust + prop.GetThrust() 
+							If slot.GetExposedDir() = 0 Then _reverseThrust = _reverseThrust + prop.GetThrust() 
+							If slot.GetExposedDir() = 270 Then _rightThrust = _rightThrust + prop.GetThrust()
+							If slot.GetExposedDir() = 90 Then _leftThrust = _leftThrust + prop.GetThrust()
 						EndIf
 					EndIf
 					If slot.isRotThruster() Then
@@ -432,70 +432,38 @@ Type TShip Extends TMovingObject
 			If Not _L_Engines Then _L_Engines = CreateList() 
 			_L_Engines.AddLast(comp) 
 			CreateEngineTrailEmitter(comp,slot) ' create particle emitter for this engine
+			AddAttachment(comp,slot.GetXOffset(),slot.GetYOffSet(),slot.GetExposedDir())	' attach engines
 		Else ' misc equipment
 			If Not _L_MiscEquipment Then _L_MiscEquipment = CreateList()
 			_L_MiscEquipment.AddLast(comp)
 		EndIf
-		 
 		Self.PreCalcPhysics()  	' updates the ship performance after component installation
-		Return result
+		Return Result
 	End Method
 	
 	Method CreateEngineTrailEmitter(comp:TComponent, slot:TSlot)
 		If NOT TPropulsion(comp.GetShipPart()) Then Return
 		
-		Local dir:Float = 0
-		If slot.GetExposedDir() = "nose" Then 
-			dir = 180
-		ElseIf slot.GetExposedDir() = "tail" Then 
-			dir = 0
-		Else
-			Return ' do not create an emitter for other thrusters - yet...
-		EndIf
+		Local dir:Float = slot.GetExposedDir()
+		If dir <> 0 And dir <> 180 Then	Return ' do not create an emitter for other thrusters - yet...
 		
 		Local part1:TParticleGenerator = ..
 			TParticleGenerator.Create("trail.png",0,0, TSystem.GetActiveSystem(),0.1,0.5,80,0.03,0,20)
 
-		AddAttachment(part1,slot.GetXOffSet(),slot.GetYOffSet(),dir)
+		AddAttachment(part1,slot.GetXOffset(),slot.GetYOffSet(),DirAdd(dir,180))
 		If Not _L_EngineEmitters Then _L_EngineEmitters = CreateList()
 		_L_EngineEmitters.AddLast(part1)
 		part1.isOn = False
 		
 	End Method
 
-	Method EmitEngineTrail(dir:String = "tail")
+	Method EmitEngineTrail(dir:Float = 180)
 		If not _L_EngineEmitters Then Return
 		Local pg:TParticleGenerator
-		Local iDir:Float = 0
-		If dir = "tail" then iDir = 0
-		If dir = "nose" then iDir = 180
-		
 		For pg = EachIn _L_EngineEmitters
-			If pg.getRotOffset() = iDir Then pg.isOn = True
+			If pg.getRotOffset() = dir Then pg.isOn = True
 		Next
-		' defunct, see CreateEngineTrailEmitter()
-		rem 
-		Local direct:Int = 1	
-		Local rot:Float = 0
-		If dir = "left" Then rot = -90
-		If dir = "right" Then rot = 90											
-
-		If dir = "nose" Then direct = -1 And rot = 180
 		
-		For Local eng:TComponent = EachIn _L_Engines
-			If eng.GetSlot().GetExposedDir() = dir Then
-				Local part:TParticle = TParticle.Create(TImg.LoadImg("trail.png"),  ..
-				_x + eng.GetSlot().GetYOffSet() * Cos(_rotation) + eng.GetSlot().GetXOffSet() * Sin(_rotation),  ..
-				_y + eng.GetSlot().GetYOffSet() * Sin(_rotation) - eng.GetSlot().GetXOffSet() * Cos(_rotation),  ..
-				0.1, 0.03, 0.5, _System) 
-				Local randDir:Float = Rnd(- 2.0, 2.0) 
-				part._xVel = _xVel - 150*direct * Cos(_rotation + randDir) * Abs(_throttlePosition)
-				part._yVel = _yVel - 150*direct * Sin(_rotation + randDir) * Abs(_throttlePosition)
-				part._rotation = _rotation
-				If dir = "nose" Then part._rotation:+180											
-			EndIf
-		Next
-		endrem
 	End Method
 	
 	
@@ -517,7 +485,7 @@ Type TShip Extends TMovingObject
 		SetSystem(s) ' assign the ship's current system
 		s.SetAsActive() ' set as active
 		
-		G_Viewport.CenterCamera(self)
+		G_Viewport.CenterCamera(Self)
 						
 		' position us by the star	
 		Local farthestDistance:Double = 0
