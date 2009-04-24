@@ -53,10 +53,6 @@ Type TComponent Extends TMovingObject
 		Return Null
 	End Method
 	
-	Method AssignSlot(slot:TSlot) 
-		_slot = slot
-	End Method
-	
 	Method GetShipPartMass:Float()
 		Return _ShipPart.GetMass()
 	End Method
@@ -65,7 +61,20 @@ Type TComponent Extends TMovingObject
 		Return _ShipPart
 	End Method
 	
-	Method getType:String() 
+	Method SetSlot(slot:TSlot) 
+		_slot = slot
+	End Method
+	
+	Method SetParticleGenerator(pg:TParticleGenerator)
+		_particleGenerator = pg
+	End Method
+	
+	Method EmitParticles()
+		If Not _particleGenerator Then Return
+		_particleGenerator.isOn = True
+	End Method
+	
+	Method GetType:String() 
 		If TPropulsion(_shipPart) Then Return "engine"
 		If TWeapon(_shipPart) Then Return "weapon"
 		If TFueltank(_shipPart) Then Return "equipment"
