@@ -259,7 +259,7 @@ Type TSpaceObject Abstract
 		
 	' draws the body of the spaceobject
 	Method DrawBody(vp:TViewport, drawAsAttachment:Int = False)
-		If Not _image Then Return	' don't draw if no image is defined
+		'If Not _image Then Return	' don't draw if no image is defined
 		
 		' don't draw the object if it's an attachment 
 		' to another object but the method was NOT called with the drawAsAttachment flag on
@@ -273,31 +273,33 @@ Type TSpaceObject Abstract
 			Next
 		EndIf
 		
-		' ********* preload values that are used more than once
-		Local startX:Int = vp.GetStartX() 
-		Local startY:Int = vp.GetStartY()
-		Local midX:Int = vp.GetMidX()
-		Local midY:Int = vp.GetMidY()
-		' *********
-		Local x:Double = (vp.GetCameraPosition_X() - _x) * G_viewport.GetZoomFactor() + midX + startX
-		Local y:Double = (vp.GetCameraPosition_Y() - _y) * G_viewport.GetZoomFactor() + midY + startY
-		
-		' This commented code block is trying to define if the object will be visible on the screen to avoid
-		' drawing non-visible objects. Not working. So, in the meantime we'll suffer from a performance hit.
-		
-		'Local zoom:Float = viewport.GetZoomFactor()
-		'If x + (_size * (_scaleX * zoom) / 2) < startX Then Return
-		'If x - (_size * (_scaleX * zoom) / 2) > startX + vp.GetWidth() Then Return
-				
-		SetViewport(startX, startY, vp.GetWidth(), vp.GetHeight()) 
-		'SetViewport(0, 0, 800, 600) 
-		SetAlpha _alpha
-		SetRotation _rotation + 90
-		SetBlend ALPHABLEND
-		SetColor 255,255,255
-		SetScale _scaleX * G_viewport.GetZoomFactor(), _scaleY * G_viewport.GetZoomFactor()
-		
-		DrawImage _image, x, y
+		If _image Then
+			' ********* preload values that are used more than once
+			Local startX:Int = vp.GetStartX() 
+			Local startY:Int = vp.GetStartY()
+			Local midX:Int = vp.GetMidX()
+			Local midY:Int = vp.GetMidY()
+			' *********
+			Local x:Double = (vp.GetCameraPosition_X() - _x) * G_viewport.GetZoomFactor() + midX + startX
+			Local y:Double = (vp.GetCameraPosition_Y() - _y) * G_viewport.GetZoomFactor() + midY + startY
+			
+			' This commented code block is trying to define if the object will be visible on the screen to avoid
+			' drawing non-visible objects. Not working. So, in the meantime we'll suffer from a performance hit.
+			
+			'Local zoom:Float = viewport.GetZoomFactor()
+			'If x + (_size * (_scaleX * zoom) / 2) < startX Then Return
+			'If x - (_size * (_scaleX * zoom) / 2) > startX + vp.GetWidth() Then Return
+					
+			SetViewport(startX, startY, vp.GetWidth(), vp.GetHeight()) 
+			'SetViewport(0, 0, 800, 600) 
+			SetAlpha _alpha
+			SetRotation _rotation + 90
+			SetBlend ALPHABLEND
+			SetColor 255,255,255
+			SetScale _scaleX * G_viewport.GetZoomFactor(), _scaleY * G_viewport.GetZoomFactor()
+			
+			DrawImage _image, x, y
+		End If ' if _image
 		
 		' draw top attachments if any
 		If _L_TopAttachments Then

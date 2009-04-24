@@ -26,7 +26,6 @@ Type TShip Extends TMovingObject
 	Field _transPosition:Float = 0			' translation thruster position (left/right)
 	
 	Field _L_Engines:TList					' all ship's engines as TComponent
-	Field _L_EngineEmitters:TList			' engine trail emitters as TParticleGenerator
 	
 	Field _L_Weapons:TList					' list holding all weapons as TComponent
 	Field _L_MiscEquipment:TList			
@@ -63,13 +62,6 @@ Type TShip Extends TMovingObject
 				e.Destroy()
 			Next
 			_L_Engines.Clear()
-		End If
-		
-		If _L_EngineEmitters Then
-			For Local e:TParticleGenerator = EachIn _L_EngineEmitters
-				e.Destroy()
-			Next
-			_L_EngineEmitters.Clear()			
 		End If
 		
 		If _L_Weapons Then
@@ -159,20 +151,20 @@ Type TShip Extends TMovingObject
 		If _throttlePosition > 0 Then
 			ApplyVerticalImpulse(_throttlePosition * _forwardAcceleration) 
 			' add the engine trail effect
-			If _L_EngineEmitters Then EmitEngineTrail(0)	' tail
+			If _L_Engines Then EmitEngineTrail(0)	' tail
 		EndIf
 		If _throttlePosition < 0 Then
 			ApplyVerticalImpulse(_throttlePosition * _reverseAcceleration) 
 			' add the engine trail effect
-			If _L_EngineEmitters Then EmitEngineTrail(180) ' nose
+			If _L_Engines Then EmitEngineTrail(180) ' nose
 		EndIf
 		If _transPosition < 0 and _leftAcceleration > 0 Then
 			ApplyHorizontalImpulse(_transPosition * _leftAcceleration)
-			If _L_EngineEmitters Then EmitEngineTrail(270)	'left
+			If _L_Engines Then EmitEngineTrail(270)	'left
 		End If
 		If _transPosition > 0 and _rightAcceleration > 0 Then
 			ApplyHorizontalImpulse(_transPosition * _rightAcceleration)
-			If _L_EngineEmitters Then EmitEngineTrail(90)	'right
+			If _L_Engines Then EmitEngineTrail(90)	'right
 		End If
 		
 		' firing
@@ -432,7 +424,7 @@ Type TShip Extends TMovingObject
 			If Not _L_Engines Then _L_Engines = CreateList() 
 			_L_Engines.AddLast(comp) 
 			CreateEngineTrailEmitter(comp,slot) ' create particle emitter for this engine
-			AddAttachment(comp,slot.GetXOffset(),slot.GetYOffSet(),slot.GetExposedDir())	' attach engines
+			AddAttachment(comp,slot.GetXOffset(),slot.GetYOffSet(),DirAdd(slot.GetExposedDir(),180))	' attach engines
 		Else ' misc equipment
 			If Not _L_MiscEquipment Then _L_MiscEquipment = CreateList()
 			_L_MiscEquipment.AddLast(comp)
@@ -449,21 +441,17 @@ Type TShip Extends TMovingObject
 		
 		Local part1:TParticleGenerator = ..
 			TParticleGenerator.Create("trail.png",0,0, TSystem.GetActiveSystem(),0.1,0.5,80,0.03,0,20)
-
-		AddAttachment(part1,slot.GetXOffset(),slot.GetYOffSet(),DirAdd(dir,180))
-		If Not _L_EngineEmitters Then _L_EngineEmitters = CreateList()
-		_L_EngineEmitters.AddLast(part1)
-		part1.isOn = False
-		
+		comp.AddAttachment(part1)
+		comp.SetParticleGenerator(part1)
+		part1.isOn = False		
 	End Method
 
 	Method EmitEngineTrail(dir:Float = 180)
-		If not _L_EngineEmitters Then Return
-		Local pg:TParticleGenerator
-		For pg = EachIn _L_EngineEmitters
-			If pg.getRotOffset() = dir Then pg.isOn = True
+		If Not _L_Engines Then Return
+		Local co:TComponent
+		For co = EachIn _L_Engines
+			If co.GetRotOffset() = dir Then co.EmitParticles()
 		Next
-		
 	End Method
 	
 	

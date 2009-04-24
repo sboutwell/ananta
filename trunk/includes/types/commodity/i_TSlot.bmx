@@ -45,7 +45,7 @@ Type TSlot
 	Method Destroy()
 		If _L_Components Then
 			for Local c:TComponent = EachIn _L_Components
-				c.AssignSlot(Null)
+				c.SetSlot(Null)
 				c.Destroy()
 			Next
 			_L_Components.Clear()
@@ -133,7 +133,7 @@ Type TSlot
 		EndIf
 		
 		_L_components.remove(comp) 
-		comp.AssignSlot(Null)   	' tell the component it's no longer installed anywhere
+		comp.SetSlot(Null)   	' tell the component it's no longer installed anywhere
 		Return True ' success
 	End Method
 	
@@ -155,11 +155,11 @@ Type TSlot
 		If compType = "engine" and ..
 			(_slotType = "engine" or _slotType = "rotthruster" or _slotType = "thruster") Then
 			_L_components.AddLast(comp)  ' add the component to the slot
-			comp.assignSlot(Self)  		 ' tell the component that it's installed in this slot
+			comp.SetSlot(Self)  		 ' tell the component that it's installed in this slot
 			Return True
 		Else If compType = _slotType Then
 			_L_components.AddLast(comp)   ' add the component to the slot
-			comp.assignSlot(Self)  		 ' tell the component that it's installed in this slot
+			comp.SetSlot(Self)  		 ' tell the component that it's installed in this slot
 			Return True			
 		End If
 		
