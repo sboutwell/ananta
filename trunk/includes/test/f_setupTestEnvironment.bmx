@@ -43,11 +43,11 @@ Function SetupTestEnvironment()
 		Local aiWingman:TAIPlayer = TAIPlayer.Create("AI")
 		Local WingmanShip:TShip = TShipModel.BuildShipFromModel("nadia")
 		WingmanShip.SetName("AI Ship")
-		WingmanShip.SetCoordinates(250500 + Rand(- 5000, 5000), 250000 + Rand(- 5000, 5000))
+		WingmanShip.SetCoordinates(250000 + Rand(- 2000, 2000), 250000 + Rand(- 2000, 2000))
 		WingmanShip.SetSystem(TSystem.GetActiveSystem())
 		WingmanShip.AssignPilot(aiWingman)
 		aiWingman.SetTarget(G_player.GetControlledShip())
-		aiWingman.SetActionMode(TAIPlayer.fl_follow)
+		'aiWingman.SetActionMode(TAIPlayer.fl_follow)
 		aiWingman.SetAccuracy(Rnd(0, 1))
 	Next
 	

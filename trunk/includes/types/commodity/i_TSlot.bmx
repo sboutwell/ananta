@@ -28,7 +28,7 @@ Type TSlot
 	Field _volume:Float			' volume of the slot in m^3
 	Field _L_components:TList	' list to hold all ship components in this slot
 	Field _location:String		' the location of the slot (internal, external). Internal takes less damage.
-	Field _exposedDir:String	' NULL if the slot is not exposed to space, otherwise dir = left, right, nose or tail)
+	Field _exposedDir:Float		' NULL if the slot is not exposed to space, otherwise 270 = left, 90 = right, 0 = nose or 180 = tail)
 								' Thrusters and engines need to have exposure! Also, weapons in the future need exposure.
 								' Exposed slots take even more damage than external!
 	
@@ -89,7 +89,7 @@ Type TSlot
 		Return _location
 	End Method
 
-	Method GetExposedDir:String()
+	Method GetExposedDir:Float()
 		Return _exposedDir
 	End Method
 
@@ -109,7 +109,7 @@ Type TSlot
 		_location = fl
 	End Method
 
-	Method SetExposedDir(fl:String)
+	Method SetExposedDir(fl:Float)
 		_exposedDir = fl
 	End Method
 	
