@@ -73,7 +73,21 @@ Type TComponent Extends TMovingObject
 		If Not _particleGenerator Then Return
 		_particleGenerator.isOn = True
 	End Method
-	
+
+	Method CreateParticleGenerator()
+		If Not TPropulsion(_shippart) Then Return
+		If Not _slot Then Return
+		
+		Local dir:Float = _slot.GetExposedDir()
+		If _slot.GetType() = "rotthruster" Then Return
+		
+		Local part1:TParticleGenerator = ..
+			TParticleGenerator.Create("trail.png",0,0, TSystem.GetActiveSystem(),0.1,0.5,80,0.03,0,20)
+		AddAttachment(part1) ' attach the generator to this component
+		SetParticleGenerator(part1)
+		part1.isOn = False	' initial state off	
+	End Method
+		
 	Method GetType:String() 
 		If TPropulsion(_shipPart) Then Return "engine"
 		If TWeapon(_shipPart) Then Return "weapon"

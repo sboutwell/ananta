@@ -69,18 +69,18 @@ Copyright 2007, 2008 Jussi Pakkanen
           <transright>
             <type>engine</type>
             <volume>1</volume>
-            <exposure>90</exposure>
+            <exposure>270</exposure>
             <location>external</location>
-	  <xoffset>10</xoffset>
-	  <yoffset>0</yoffset>
+	  <xoffset>12</xoffset>
+	  <yoffset>-2</yoffset>
           </transright>
           <transleft>
             <type>engine</type>
             <volume>1</volume>
-            <exposure>270</exposure>
+            <exposure>90</exposure>
             <location>external</location>
-	  <xoffset>-10</xoffset>
-	  <yoffset>0</yoffset>
+	  <xoffset>-12</xoffset>
+	  <yoffset>-2</yoffset>
           </transleft>
           <mainengineslot1>
             <type>engine</type>

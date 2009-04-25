@@ -101,6 +101,10 @@ Type TSlot
 		Return _yOffSet
 	End Method
 	
+	Method GetType:String()
+		Return _slottype
+	End Method
+	
 	Method SetVolume(fl:float)
 		_volume = fl
 	End Method
