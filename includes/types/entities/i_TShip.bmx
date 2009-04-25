@@ -225,9 +225,24 @@ Type TShip Extends TMovingObject
 		Local relMoveDir:Float = DirAdd(moveDir,-_rotation) ' moving direction in relation to ship's rotation
 		Local relOppDir:Float = DirAdd(relMoveDir,180) ' opposite dir in relation to ship's rotation
 		
+		' take player's attempted thrust into consideration to allow direction change while FBW decelerates
+		Local appliedXAccel:Float = GetCurrentXAcceleration()
+		Local appliedYAccel:Float = GetCurrentYAcceleration()
+		Local appliedDir:Float
+		Local angleDiff:Float
+		If appliedXAccel <> 0 Or appliedYAccel <> 0 Then
+			appliedDir:Float = DirAdd(DirectionTo(0, 0, appliedXAccel, appliedYAccel), - 90)
+			angleDiff:Float = GetAngleDiff(relOppDir, appliedDir)			
+			If angleDiff > - 90 And angleDiff < 90 Then
+				Local adjustedDir:Float = anglediff / 2:Float ' half of the angle difference
+				limitFloat(adjustedDir, - 45, 45)
+				relOppdir = DirAdd(relOppDir, adjustedDir)
+			EndIf
+		EndIf
+		
 		' required acceleration is how much would be needed to get below the speed limit
-		Local requiredXaccel:Float = overSpeed * Sin(relOppDir)
-		Local requiredYaccel:Float = overSpeed * Cos(relOppDir)
+		'Local requiredXaccel:Float = overSpeed * Sin(relOppDir)
+		'Local requiredYaccel:Float = overSpeed * Cos(relOppDir)
 		
 		' ... but the thrusters will not necessarily manage to generate that much opposing thrust, 
 		' so we'll have to calculate how to fire the thrusters in order to decelerate:
