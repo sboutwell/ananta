@@ -81,6 +81,7 @@ Type TParticleGenerator Extends TMovingObject
 	Global _g_L_ParticleGenerators:TList
 	Field _life:Float			' life of the particle in seconds
 	Field _meanVel:Float 		' base velocity of an emitted particle
+	Field _intensity:Float = 1	' emitter intensity 0..1
 	Field _randomDir:Float = 0	' amount of randomness to the direction of the particle
 	Field _randomVel:Float = 0	' amount of randomness to the velocity of the particle
 	Field _particleImg:TImage	' the image that is drawn in place of this particle
@@ -88,6 +89,20 @@ Type TParticleGenerator Extends TMovingObject
 	Field _lastEmit:Int			' last emit in MilliSecs()
 	Field _isPersistent:Int = False ' non-persistent turn themselves off after each emit
 	Field isOn:Int = TRUE		' emitter on/off
+	
+	Method Destroy()
+		TParticleGenerator._g_L_ParticleGenerators.Remove(self)
+		Super.Destroy()
+	End Method
+	Method SetRandomDir(dir:Float)
+		_randomDir = dir
+	End Method
+	Method SetRandomVel(vel:Float)
+		_randomVel = vel
+	End Method
+	Method SetIntensity(in:Float)
+		_intensity = Abs(in)
+	End Method
 	
 	Method Emit(vel:Float = Null) 
 		' discard loose particle generators
@@ -101,27 +116,14 @@ Type TParticleGenerator Extends TMovingObject
 		If MilliSecs() < _lastEmit + _interval Then Return
 		If Not vel Then vel = _meanVel
 				
-		Local part:TParticle = TParticle.Create(_particleImg, _x, _y, _life, _scaleX, _alpha, _System) 
+		Local part:TParticle = TParticle.Create(_particleImg, _x, _y, _life * _intensity, _scaleX, _alpha, _System)
 		Local randDir:Float = Rand(- _randomDir, _randomDir) 
 		Local randVel:Float = Rand(- _randomVel, _randomVel) 
-		part.SetXVel(_xVel - (vel + randVel) * Cos(_rotation + randDir)) 
-		part.SetYVel(_yVel - (vel + randVel) * Sin(_rotation + randDir)) 
+		part.SetXVel(_xVel - (vel + randVel) * Cos(_rotation + randDir) * _intensity)
+		part.SetYVel(_yVel - (vel + randVel) * Sin(_rotation + randDir) * _intensity)
 		part._rotation = _rotation
 		_lastEmit = MilliSecs()
 		if NOT _isPersistent Then isOn = False 	' turn off
-	End Method
-	
-	Method SetRandomDir(dir:Float) 
-		_randomDir = dir
-	End Method
-	
-	Method SetRandomVel(vel:Float) 
-		_randomVel = vel
-	End Method
-	
-	Method Destroy() 
-		TParticleGenerator._g_L_ParticleGenerators.Remove(self)
-		Super.Destroy()
 	End Method
 	
 	Function UpdateAll()

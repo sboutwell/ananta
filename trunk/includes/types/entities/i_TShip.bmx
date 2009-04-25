@@ -19,7 +19,7 @@ Type TShip Extends TMovingObject
 	Field _maxSpeed:Double = 600
 	Field _isSpeedLimited:Int = True			' a flag to indicate if speed limiter is functional
 	Field _isRotationLimited:Int = True		' a flag to indicate if rotation limiter is functional
-	Field _isLimiterOverrided:Int = False	' flag to indicate if speed and rotation limiters are overrided
+	Field isLimiterOverridden:Int = False	' flag to indicate if speed and rotation limiters are overridden
 	
 	Field _throttlePosition:Float = 0		' -1 = full back, +1 = full forward
 	Field _controllerPosition:Float = 0		' -1 = full left, +1 = full right
@@ -158,7 +158,7 @@ Type TShip Extends TMovingObject
 		ApplyRotation(_controllerPosition * _rotAcceleration)
 
 		
-		If GetVel() > _maxSpeed And _isSpeedLimited And Not _isLimiterOverrided Then LimitSpeed()
+		If GetVel() > _maxSpeed And _isSpeedLimited And Not isLimiterOverridden Then LimitSpeed()
 		' apply player input
 		ApplyThrusts()		
 
@@ -180,19 +180,19 @@ Type TShip Extends TMovingObject
 	Method ApplyThrusts()
 		If _throttlePosition > 0 Then
 			ApplyVerticalImpulse(_throttlePosition * _forwardAcceleration) 
-			If _L_Engines Then EmitEngineTrail(0)	' tail
+			If _L_Engines Then EmitEngineTrail(0, _throttlePosition)	' tail
 		EndIf
 		If _throttlePosition < 0 Then
 			ApplyVerticalImpulse(_throttlePosition * _reverseAcceleration) 
-			If _L_Engines Then EmitEngineTrail(180) ' nose
+			If _L_Engines Then EmitEngineTrail(180, _throttlePosition) ' nose
 		EndIf
 		If _transPosition < 0 and _leftAcceleration > 0 Then
 			ApplyHorizontalImpulse(_transPosition * _leftAcceleration)
-			If _L_Engines Then EmitEngineTrail(270)	'left
+			If _L_Engines Then EmitEngineTrail(270, _transPosition)	'left
 		End If
 		If _transPosition > 0 and _rightAcceleration > 0 Then
 			ApplyHorizontalImpulse(_transPosition * _rightAcceleration)
-			If _L_Engines Then EmitEngineTrail(90)	'right
+			If _L_Engines Then EmitEngineTrail(90, _transPosition)	'right
 		End If
 	End Method
 	
@@ -218,7 +218,7 @@ Type TShip Extends TMovingObject
 
 	Method LimitSpeed()
 		If GetVel() <= _maxSpeed Then Return
-		'Local overSpeed:Double = GetVel() - _maxSpeed ' how much we're above speed limit
+		Local overSpeed:Double = GetVel() - _maxSpeed ' how much we're above speed limit
 		Local moveDir:Float = CalcMovingDirection()  ' current moving direction
 		'Local oppDir:Float = DirAdd(moveDir,180)	  ' opposite dir to the moving dir (direction for deceleration)
 		
@@ -247,9 +247,7 @@ Type TShip Extends TMovingObject
 		Local actualXAccel:Float = Tan(relOppDir) * maxYAccel * throttleDir
 		Local actualYAccel:Float = Tan(90:Float - relOppDir) * maxXAccel * transDir
 		
-		
-		
-		
+
 		' stay within limits
 		limitFloat(actualXAccel,-maxXaccel,maxXAccel)
 		limitFloat(actualYAccel,-maxYaccel,maxYAccel)
@@ -259,11 +257,9 @@ Type TShip Extends TMovingObject
 		
 		actualThrottlePos = (actualYAccel/maxYAccel) 
 		actualTransPos = (actualXAccel/maxXaccel)
-		'If actualThrottlePos > 0 And _throttlePosition < 0 Then actualThrottlePos = actualThrottlePos + _throttlePosition
-		'If actualThrottlePos < 0 And _throttlePosition > 0 Then actualThrottlePos = actualThrottlePos - _throttlePosition 
 						
 		limitFloat(actualThrottlePos,-1:Float,1:Float)
-		limitFloat(actualTransPos,-1:Float,1:Float)
+		limitFloat(actualTransPos, - 1:Float, 1:Float)
 
 		G_DebugWindow.addText("throttle : " + actualThrottlePos)
 		G_DebugWindow.addText("trans : " + actualTransPos)
@@ -309,6 +305,13 @@ Type TShip Extends TMovingObject
 		ToggleBoolean(isWarpDriveOn)
 	End Method
 	
+	Method ToggleLimiter()
+		Toggleboolean(isLimiterOverridden)
+		Local status:String = "active"
+		If isLimiterOverridden Then Status = "inactive"
+		G_Viewport.CreateMsg("FBW limiter " + status)
+	End Method
+	
 	' apply acceleration to x and y velocity vectors
 	Method ApplyVerticalImpulse(accel:Float) 
 		Local Ximpulse:Float = accel * (Cos(_rotation)) 
@@ -331,7 +334,7 @@ Type TShip Extends TMovingObject
 	
 	Method ApplyRotation(rotAcceleration:Float)
 		_rotationSpd:+rotAcceleration * G_delta.GetDelta() 
-		If _isRotationLimited And Not _isLimiterOverrided Then ApplyRotationLimiter() 
+		If _isRotationLimited And Not isLimiterOverridden Then ApplyRotationLimiter()
 	EndMethod
 
 	Method ApplyRotationLimiter() 
@@ -486,11 +489,11 @@ Type TShip Extends TMovingObject
 	End Method
 	
 	' calls the engines pointing to the specific direction to emit their particle generators
-	Method EmitEngineTrail(dir:Float = 180)
+	Method EmitEngineTrail(dir:Float = 180, thrust:Float = 1)
 		If Not _L_Engines Then Return
 		Local co:TComponent
 		For co = EachIn _L_Engines
-			If co.GetRotOffset() = dir Then co.EmitParticles()
+			If co.GetRotOffset() = dir Then co.EmitParticles(thrust)
 		Next
 	End Method
 	

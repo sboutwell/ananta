@@ -67,13 +67,14 @@ Type TPlayer Extends TPilot
 			If KeyDown(KEY_COMMA) _controlledShip.SetTrans(-1)
 			If KeyDown(KEY_PERIOD) _controlledShip.SetTrans(1)
 			If KeyDown(KEY_LCONTROL) Or KeyDown(KEY_RCONTROL) Then _controlledShip.isTriggerDown = True
-			If Not KeyDown(KEY_LCONTROL) And Not KeyDown(KEY_RCONTROL) Then _controlledShip.isTriggerDown = False
 			' relase controls if keyboard keys are released
-			If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) 		_controlledShip.SetThrottle(0)
+			If Not KeyDown(KEY_LCONTROL) And Not KeyDown(KEY_RCONTROL) Then _controlledShip.isTriggerDown = False
+			If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) _controlledShip.SetThrottle(0)
 			If Not KeyDown(KEY_RIGHT) And Not KeyDown(KEY_LEFT) _controlledShip.SetController(0) 
 			If Not keydown(KEY_PERIOD) And Not KeyDown(KEY_COMMA) _ControlledSHip.SetTrans(0)
 			
 			If KeyHit(KEY_J) Then _controlledShip.ToggleWarpDrive()
+			If KeyHit(KEY_L) Then _controlledShip.ToggleLimiter()
 		EndIf
 		
 		' misc controls
@@ -233,6 +234,7 @@ Type TAIPlayer Extends TPilot
 			PursueTarget()
 		End If
 
+		If _actionmode = Null Or _actionMode = "" Then Stop()
 	EndMethod
 
 	Method RandomizeTarget()
