@@ -392,6 +392,7 @@ Type TViewport
 		G_DebugWindow.AddText("alt+c                - center starmap")
 		G_debugWindow.AddText("alt+enter            - toggle fullscreen") 
 		G_debugWindow.AddText("h                    - hyperspace to system under mouse")
+		G_debugWindow.AddText("l                    - toggle FBW limiter")
 		G_debugWindow.AddText("PGUP/PGDN            - cycle camera objects")
 		G_debugWindow.AddText("p                    - toggle pause")
 		G_DebugWindow.AddText("ESC                  - exit")

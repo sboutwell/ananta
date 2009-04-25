@@ -69,8 +69,9 @@ Type TComponent Extends TMovingObject
 		_particleGenerator = pg
 	End Method
 	
-	Method EmitParticles()
+	Method EmitParticles(thrust:Float = 1)
 		If Not _particleGenerator Then Return
+		_particleGenerator.SetIntensity(thrust)
 		_particleGenerator.isOn = True
 	End Method
 
