@@ -465,7 +465,7 @@ Type TAIPlayer Extends TPilot
 
 		Local tgt:TShip = TShip(_targetObject)
 		Local tgtStopTime:Float = 0
-		If tgt Then tgtStopTime = CalcStopTime(relVel,Abs(tgt.GetCurrentAcceleration()))
+		If tgt Then tgtStopTime = CalcStopTime(relVel,Abs(tgt.GetCurrentYAcceleration()))
 		If tgtStopTime >= $ffffffff:Double Then tgtStopTime = 0
 
 		' predT is the time in seconds we want to predict the trajectories
@@ -536,7 +536,7 @@ Type TAIPlayer Extends TPilot
 		Local myRot:Float = _controlledShip.GetRot()
 		
 		' target acceleration
-		Local tAccl:Float = TShip(_targetObject).GetCurrentAcceleration()
+		Local tAccl:Float = TShip(_targetObject).GetCurrentYAcceleration()
 		Local tXimpulse:Float = tAccl * Cos(_targetObject.GetRot()) 
 		Local tYimpulse:Float = taccl * Sin(_targetObject.GetRot()) 
 		

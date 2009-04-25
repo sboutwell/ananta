@@ -133,11 +133,19 @@ Type TShip Extends TMovingObject
 	End Method
 	
 	' returns current forward (+) or reverse (-) acceleration depending on throttle position
-	Method GetCurrentAcceleration:Float()
+	Method GetCurrentYAcceleration:Float()
 		Local acc:Float = 0
 		If _throttlePosition < 0 Then acc = _reverseAcceleration
 		If _throttlePosition > 0 Then acc = _forwardAcceleration
 		Return _throttlePosition * acc
+	End Method
+	
+	' returns current right (+) or left (-) acceleration depending on lateral thruster position
+	Method GetCurrentXAcceleration:Float()
+		Local acc:Float = 0
+		If _transPosition  < 0 Then acc = _leftAcceleration 
+		If _transPosition > 0 Then acc = _rightAcceleration
+		Return _transPosition * acc
 	End Method
 	
 	Method Update() 
@@ -147,35 +155,17 @@ Type TShip Extends TMovingObject
 			isTriggerDown = False
 		End If
 
-		' apply forward and reverse thrusts
-		If _throttlePosition > 0 Then
-			ApplyVerticalImpulse(_throttlePosition * _forwardAcceleration) 
-			' add the engine trail effect
-			If _L_Engines Then EmitEngineTrail(0)	' tail
-		EndIf
-		If _throttlePosition < 0 Then
-			ApplyVerticalImpulse(_throttlePosition * _reverseAcceleration) 
-			' add the engine trail effect
-			If _L_Engines Then EmitEngineTrail(180) ' nose
-		EndIf
-		If _transPosition < 0 and _leftAcceleration > 0 Then
-			ApplyHorizontalImpulse(_transPosition * _leftAcceleration)
-			If _L_Engines Then EmitEngineTrail(270)	'left
-		End If
-		If _transPosition > 0 and _rightAcceleration > 0 Then
-			ApplyHorizontalImpulse(_transPosition * _rightAcceleration)
-			If _L_Engines Then EmitEngineTrail(90)	'right
-		End If
-		
-		' firing
-		If isTriggerDown Then FireWeapon() 
-		
-		' apply rotation thrusters
 		ApplyRotation(_controllerPosition * _rotAcceleration)
+
+		
+		If GetVel() > _maxSpeed And _isSpeedLimited And Not _isLimiterOverrided Then LimitSpeed()
+		' apply player input
+		ApplyThrusts()		
 
 		If _controllerPosition = 0 Then ApplyRotKill() 		' if the "joystick" is centered, fire the rotKill thrusters
 
-		If _isSpeedLimited AND Not _isLimiterOverrided Then LimitSpeed()
+		' firing
+		If isTriggerDown Then FireWeapon() 
 		
 		' call update method of TMovingObject
 		Super.Update()
@@ -186,6 +176,25 @@ Type TShip Extends TMovingObject
 
 		If Self._pilot = G_player Then G_DebugWindow.AddText("Max warp ratio: " + CalcWarpValue())
 	EndMethod
+	
+	Method ApplyThrusts()
+		If _throttlePosition > 0 Then
+			ApplyVerticalImpulse(_throttlePosition * _forwardAcceleration) 
+			If _L_Engines Then EmitEngineTrail(0)	' tail
+		EndIf
+		If _throttlePosition < 0 Then
+			ApplyVerticalImpulse(_throttlePosition * _reverseAcceleration) 
+			If _L_Engines Then EmitEngineTrail(180) ' nose
+		EndIf
+		If _transPosition < 0 and _leftAcceleration > 0 Then
+			ApplyHorizontalImpulse(_transPosition * _leftAcceleration)
+			If _L_Engines Then EmitEngineTrail(270)	'left
+		End If
+		If _transPosition > 0 and _rightAcceleration > 0 Then
+			ApplyHorizontalImpulse(_transPosition * _rightAcceleration)
+			If _L_Engines Then EmitEngineTrail(90)	'right
+		End If
+	End Method
 	
 	Method CalcWarpValue:Double()
 		Local gravityCoeff:Double = (_strongestGravity:Double^(1.0:Double/4.0:Double)^2.0:Double)
@@ -209,16 +218,58 @@ Type TShip Extends TMovingObject
 
 	Method LimitSpeed()
 		If GetVel() <= _maxSpeed Then Return
-		Local overSpeed:Double = GetVel() - _maxSpeed
-		Local moveDir:Double = CalcMovingDirection()
-		Local oppDir:Double = DirAdd(moveDir,180)
+		'Local overSpeed:Double = GetVel() - _maxSpeed ' how much we're above speed limit
+		Local moveDir:Float = CalcMovingDirection()  ' current moving direction
+		'Local oppDir:Float = DirAdd(moveDir,180)	  ' opposite dir to the moving dir (direction for deceleration)
 		
-		Local oppositeXimpulse:Double = overSpeed * Cos(oppDir)
-		Local oppositeYimpulse:Double = overSpeed * Sin(oppDir)
-	
+		Local relMoveDir:Float = DirAdd(moveDir,-_rotation) ' moving direction in relation to ship's rotation
+		Local relOppDir:Float = DirAdd(relMoveDir,180) ' opposite dir in relation to ship's rotation
 		
-		_xVel =	_xVel + oppositeXimpulse
-		_yVel =	_yVel + oppositeYimpulse
+		' required acceleration is how much would be needed to get below the speed limit
+		Local requiredXaccel:Float = overSpeed * Sin(relOppDir)
+		Local requiredYaccel:Float = overSpeed * Cos(relOppDir)
+		
+		' ... but the thrusters will not necessarily manage to generate that much opposing thrust, 
+		' so we'll have to calculate how to fire the thrusters in order to decelerate:
+		' -- direction of thrust controller levers
+		Local throttleDir:Float = 1
+		Local transDir:Float = 1
+		If relMoveDir < 90 Or relMoveDir > 270 Then throttleDir = -1
+		If relMoveDir >= 0 And relMoveDir <= 180 Then transDir = -1
+		
+		' -- maximum available thrust acceleration
+		Local maxYAccel:Float = _forwardAcceleration
+		If throttleDir < 0 Then maxYAccel = _reverseAcceleration 
+		Local maxXAccel:Float = _rightAcceleration
+		If transDir < 0 Then maxXAccel = _leftAcceleration
+		
+		' trigonometry for vertical and lateral thrust
+		Local actualXAccel:Float = Tan(relOppDir) * maxYAccel * throttleDir
+		Local actualYAccel:Float = Tan(90:Float - relOppDir) * maxXAccel * transDir
+		
+		
+		
+		
+		' stay within limits
+		limitFloat(actualXAccel,-maxXaccel,maxXAccel)
+		limitFloat(actualYAccel,-maxYaccel,maxYAccel)
+		
+		Local actualThrottlePos:Float = 0
+		Local actualTransPos:Float = 0
+		
+		actualThrottlePos = (actualYAccel/maxYAccel) 
+		actualTransPos = (actualXAccel/maxXaccel)
+		'If actualThrottlePos > 0 And _throttlePosition < 0 Then actualThrottlePos = actualThrottlePos + _throttlePosition
+		'If actualThrottlePos < 0 And _throttlePosition > 0 Then actualThrottlePos = actualThrottlePos - _throttlePosition 
+						
+		limitFloat(actualThrottlePos,-1:Float,1:Float)
+		limitFloat(actualTransPos,-1:Float,1:Float)
+
+		G_DebugWindow.addText("throttle : " + actualThrottlePos)
+		G_DebugWindow.addText("trans : " + actualTransPos)
+		
+		SetThrottle(actualThrottlePos)
+		SetTrans(actualTransPos)
 	End Method
 	
 	Method GetSelectedWeapon:TWeapon()
@@ -338,7 +389,7 @@ Type TShip Extends TMovingObject
 	EndMethod
 	
 	' Precalcphysics calculates ship's performance based on the on-board equipment
-	' Do not call in the main loop.
+	' Do not call in the main loop as it is quite slow.
 	Method PreCalcPhysics() 
 		' reset performance values
 		_mass = 0
@@ -380,7 +431,7 @@ Type TShip Extends TMovingObject
 		' add the hull mass to the ship's total mass
 		_mass = _mass + _hull.GetMass()
 	
-		UpdatePerformance() 
+		UpdatePerformance() ' updates acceleration values 
 	EndMethod
 
 	Method UpdatePerformance() 
@@ -423,8 +474,9 @@ Type TShip Extends TMovingObject
 		If TPropulsion(comp.GetShipPart()) Then
 			If Not _L_Engines Then _L_Engines = CreateList() 
 			_L_Engines.AddLast(comp) 
-			CreateEngineTrailEmitter(comp,slot) ' create particle emitter for this engine
-			AddAttachment(comp,slot.GetXOffset(),slot.GetYOffSet(),DirAdd(slot.GetExposedDir(),180))	' attach engines
+			' create particle generators for engines and attach engines to the ship so the generators will follow
+			comp.CreateParticleGenerator()
+			AddAttachment(comp,slot.GetXOffset(),slot.GetYOffSet(),DirAdd(slot.GetExposedDir(),180),False)
 		Else ' misc equipment
 			If Not _L_MiscEquipment Then _L_MiscEquipment = CreateList()
 			_L_MiscEquipment.AddLast(comp)
@@ -433,19 +485,7 @@ Type TShip Extends TMovingObject
 		Return Result
 	End Method
 	
-	Method CreateEngineTrailEmitter(comp:TComponent, slot:TSlot)
-		If NOT TPropulsion(comp.GetShipPart()) Then Return
-		
-		Local dir:Float = slot.GetExposedDir()
-		If dir <> 0 And dir <> 180 Then	Return ' do not create an emitter for other thrusters - yet...
-		
-		Local part1:TParticleGenerator = ..
-			TParticleGenerator.Create("trail.png",0,0, TSystem.GetActiveSystem(),0.1,0.5,80,0.03,0,20)
-		comp.AddAttachment(part1)
-		comp.SetParticleGenerator(part1)
-		part1.isOn = False		
-	End Method
-
+	' calls the engines pointing to the specific direction to emit their particle generators
 	Method EmitEngineTrail(dir:Float = 180)
 		If Not _L_Engines Then Return
 		Local co:TComponent
@@ -453,7 +493,6 @@ Type TShip Extends TMovingObject
 			If co.GetRotOffset() = dir Then co.EmitParticles()
 		Next
 	End Method
-	
 	
 	Function UpdateAll() 
 		If Not g_L_Ships Then Return
