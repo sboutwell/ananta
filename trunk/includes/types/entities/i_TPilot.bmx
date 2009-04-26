@@ -64,14 +64,16 @@ Type TPlayer Extends TPilot
 			If KeyDown(KEY_DOWN) _controlledShip.SetThrottle(- 1) 
 			If KeyDown(KEY_RIGHT) _controlledShip.SetController(1) 
 			If KeyDown(KEY_LEFT) _controlledShip.SetController(- 1) 	
-			If KeyDown(KEY_COMMA) _controlledShip.SetTrans(-1)
-			If KeyDown(KEY_PERIOD) _controlledShip.SetTrans(1)
+			If Not G_viewport.GetStarMap().IsVisible Then
+				If KeyDown(KEY_A) Then _controlledShip.SetTrans(-1)
+				If KeyDown(KEY_D) Then _controlledShip.SetTrans(1)
+			EndIf
 			If KeyDown(KEY_LCONTROL) Or KeyDown(KEY_RCONTROL) Then _controlledShip.isTriggerDown = True
 			' relase controls if keyboard keys are released
 			If Not KeyDown(KEY_LCONTROL) And Not KeyDown(KEY_RCONTROL) Then _controlledShip.isTriggerDown = False
 			If Not KeyDown(KEY_UP) And Not KeyDown(KEY_DOWN) _controlledShip.SetThrottle(0)
 			If Not KeyDown(KEY_RIGHT) And Not KeyDown(KEY_LEFT) _controlledShip.SetController(0) 
-			If Not keydown(KEY_PERIOD) And Not KeyDown(KEY_COMMA) _ControlledSHip.SetTrans(0)
+			If Not KeyDown(KEY_A) And Not KeyDown(KEY_D) _ControlledSHip.SetTrans(0)
 			
 			If KeyHit(KEY_J) Then _controlledShip.ToggleWarpDrive()
 			If KeyHit(KEY_L) Then _controlledShip.ToggleLimiter()
@@ -186,6 +188,14 @@ Type TAIPlayer Extends TPilot
 	Field _formationXOff:Float = -200
 	Field _formationYOff:Float = 250
 	
+	' getters
+	Method GetTarget:TSpaceObject() Return _targetObject 
+	End Method
+	Method GetTargetX:Double() Return _targetX 
+	EndMethod		
+	Method GetTargetY:Double() Return _targetY 
+	EndMethod		
+	
 	' setters
 	Method SetTarget(obj:TSpaceObject) 
 		_targetObject = obj 
@@ -200,16 +210,12 @@ Type TAIPlayer Extends TPilot
 	Method SetAccuracy(a:Float)
 		_accuracy = a
 	End Method
-	
-	' getters
-	Method GetTarget:TSpaceObject() Return _targetObject 
+	Method SetFormationPosition(x:Float, y:Float)
+		_formationXOff = x
+		_formationYOff = y
 	End Method
-	Method GetTargetX:Double() Return _targetX 
-	EndMethod		
-	Method GetTargetY:Double() Return _targetY 
-	EndMethod		
-	
-	
+
+		
 	' "Think" is the main AI routine to be called every frame
 	Method Think() 
 		If Not _controlledShip Return
@@ -312,6 +318,7 @@ Type TAIPlayer Extends TPilot
 		If distToTgt <= maximumDistance Then 
 			If GetSpeed(Abs(relVelX),Abs(relVelY)) <= Sqr(distToTgt) + 5 Then 
 				_controlledShip.SetThrottle(0)	' cut throttle
+				_controlledShip.SetTrans(0)	' cut throttle
 				_desiredRotation = _targetObject.GetRot()
 				RotateTo(_desiredRotation)
 				Return
@@ -353,6 +360,7 @@ Type TAIPlayer Extends TPilot
 		Else
 			_controlledShip.SetThrottle(0)
 			_controlledShip.SetController(0)
+			_controlledShip.SetTrans(0)
 		EndIf
 	End Method
 	
@@ -426,6 +434,7 @@ Type TAIPlayer Extends TPilot
 		Else
 			_controlledShip.SetThrottle(0)
 			_controlledShip.SetController(0)
+			_controlledShip.SetTrans(0)
 		EndIf
 		
 		self.CalculateAimVector()
@@ -500,6 +509,7 @@ Type TAIPlayer Extends TPilot
 			_controlledShip.SetThrottle(thrust)
 		Else
 			_controlledShip.SetThrottle(0)	' cut throttle
+			_controlledShip.SetTrans(0)
 		EndIf
 
 	End Method
@@ -510,6 +520,7 @@ Type TAIPlayer Extends TPilot
 		If _controlledShip.GetVel() < 2 Then ' don't bother decelerating if we're slow enough
 			_controlledShip.SetThrottle(0)	' cut throttle
 			_controlledShip.SetController(0) ' center stick
+			_controlledShip.SetTrans(0)
 			_wantToStop = False
 			Return	
 		EndIf

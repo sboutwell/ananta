@@ -261,7 +261,6 @@ Type TShip Extends TMovingObject
 		' trigonometry for vertical and lateral thrust
 		Local actualXAccel:Float = Tan(relOppDir) * maxYAccel * throttleDir
 		Local actualYAccel:Float = Tan(90:Float - relOppDir) * maxXAccel * transDir
-		
 
 		' stay within limits
 		limitFloat(actualXAccel,-maxXaccel,maxXAccel)
@@ -276,9 +275,6 @@ Type TShip Extends TMovingObject
 		limitFloat(actualThrottlePos,-1:Float,1:Float)
 		limitFloat(actualTransPos, - 1:Float, 1:Float)
 
-		G_DebugWindow.addText("throttle : " + actualThrottlePos)
-		G_DebugWindow.addText("trans : " + actualTransPos)
-		
 		SetThrottle(actualThrottlePos)
 		SetTrans(actualTransPos)
 	End Method
@@ -342,7 +338,6 @@ Type TShip Extends TMovingObject
 
 		_Xvel:+Ximpulse * G_delta.GetDelta() 
 		_Yvel:+Yimpulse * G_delta.GetDelta()
-		G_DebugWindow.AddText(accel)
 	EndMethod
 	
 	
@@ -567,6 +562,7 @@ Type TShip Extends TMovingObject
 		sh._name = name					' give a name
 		sh.isShownOnMap = True
 		sh.canCollide = True
+		sh.ResetCollisionLevels()
 		sh._integrity = sh._hull.GetMass() 
 		
 		If Not g_L_Ships Then g_L_Ships = CreateList() 

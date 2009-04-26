@@ -97,7 +97,7 @@ Type TStarMap Extends TMiniMap
 		isZooming = False
 	End Method
 	
-	' centers camera to the middle of the active system
+	' centers camera
 	Method Center()
 		If Not TSystem.GetActiveSystem() Then Return
 		Local sys:TSystem = TSystem.GetActiveSystem()
