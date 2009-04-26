@@ -192,6 +192,7 @@ Type TProjectile Extends TParticle	' projectile is a special type of particle
 		part._alphaDelta = alpha / life
 		part.isAffectedByGravity = False
 		part.isShownOnMap = True
+		part.ResetCollisionLevels()
 		part._image = img
 		part._System = System
 		part._size = 2

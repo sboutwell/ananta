@@ -43,6 +43,7 @@ Type TPlanet Extends TStellarObject
 		pl._size = size										' size in pixels
 		pl.hasGravity = True
 		pl.canCollide = True
+		pl.ResetCollisionLevels()
 		pl.isShownOnMap = True
 		
 		'If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()		' create a list if necessary

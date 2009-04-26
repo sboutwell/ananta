@@ -96,7 +96,7 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' update the positions of every moving object (except ships)
 	if Not G_delta.isPaused Then TMovingObject.UpdateAll() 
 
-	' update the positions of every ship and calculate fuel and oxygen consumption
+	' update the positions of every ship
 	if Not G_delta.isPaused Then TShip.UpdateAll()
 
 	' draw the level

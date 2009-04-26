@@ -38,7 +38,7 @@ Function SetupTestEnvironment()
 	'Local part1:TParticleGenerator = TParticleGenerator.Create("smoke.png",0,0, TSystem.GetActiveSystem())
 	's1.AddAttachment(part1)
 	
-	For Local i:Int = 1 To 3
+	For Local i:Int = 1 To 18
 		' create AI wingman
 		Local aiWingman:TAIPlayer = TAIPlayer.Create("AI")
 		Local WingmanShip:TShip = TShipModel.BuildShipFromModel("nadia")
@@ -47,8 +47,9 @@ Function SetupTestEnvironment()
 		WingmanShip.SetSystem(TSystem.GetActiveSystem())
 		WingmanShip.AssignPilot(aiWingman)
 		aiWingman.SetTarget(G_player.GetControlledShip())
-		'aiWingman.SetActionMode(TAIPlayer.fl_follow)
+		aiWingman.SetActionMode(TAIPlayer.fl_follow)
 		aiWingman.SetAccuracy(Rnd(0, 1))
+		aiWingman.SetFormationPosition(Rnd(-400,400),Rnd(50,400))
 	Next
 	
 	rem

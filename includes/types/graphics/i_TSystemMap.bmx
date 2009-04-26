@@ -41,7 +41,7 @@ Type TSystemMap Extends TMiniMap
 			blip.SetBColor(_starColor) 
 		Else If TPlanet(o) Then blip.SetBColor(_planetColor) 
 		Else If TShip(o) Then blip.SetBColor(_ShipColor) 
-		Else If TProjectile(o) Then blip.SetBColor(_ProjColor) 
+		Else If TProjectile(o) Then blip.SetBColor(_ProjColor) ; blip.SetSize(1)
 		Else 
 			blip.SetBColor(_miscColor)  ' none of the above, use default
 		EndIf

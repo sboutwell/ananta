@@ -126,6 +126,8 @@ Type TAsteroid Extends TMovingObject
 		a._y = y
 		a.isShownOnMap = True
 		a.canCollide = True
+		a.ResetCollisionLevels()
+
 		a.isAffectedByGravity = True
 		a._integrity = mass
 		

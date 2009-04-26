@@ -49,6 +49,12 @@ Include "i_TStar.bmx"			'TStar type
 Include "i_TAsteroid.bmx"		'TAsteroid type
 
 Type TSpaceObject Abstract
+	' collision levels for bitmasking _collisionlevel
+	Const c_cllStellar:Int = 1
+	Const c_cllShip:Int = 2
+	Const c_cllProjectile:Int = 4
+	Const c_cllAsteroid:Int = 8
+	
 	Field _image:TImage					' The image to represent the object
 	Field _alpha:Float = 1				' Alpha channel value of the image
 	Field _x:Double, _y:Double			' x-y coordinates of the object
@@ -90,7 +96,8 @@ Type TSpaceObject Abstract
 	Field _strongestGravSource:TSpaceObject	' strongest gravity source is updated for warp drive purposes
 	Field _strongestGravity:Double = 0		' the gravitational acceleration exerted by the strongest gravsource
 
-	Field _collisionLevels:Int[] ' array of integers showing the object levels this object can collide with
+	Field _collisionLevels:Int 		' bitmasked integer showing the object levels this object can collide with
+	Field _myCollisionLevel:Int		' collision level of this object
 	
 	Method Destroy() 
 		If _L_TopAttachments Then
@@ -114,7 +121,7 @@ Type TSpaceObject Abstract
 		_parentObject = Null
 		_strongestGravSource = Null
 	End Method
-
+	
 	Method RecursiveDestroy()
 		If TShip(Self) TShip(Self).Destroy()
 		If TProjectile(Self) TProjectile(Self).Destroy()
@@ -236,6 +243,31 @@ Type TSpaceObject Abstract
 		_size=s
 	End Method	
 	
+	' all objects' collison level defaults are set here. Call from Create()
+	Method ResetCollisionLevels()
+		If TProjectile(Self) Then 
+			_collisionLevels = c_cllStellar + c_cllShip + c_cllAsteroid
+			_mycollisionLevel = c_cllProjectile
+			Return
+		EndIf
+		If TParticle(Self) Then Return
+		If TAsteroid(Self) Then 
+			_collisionLevels = c_cllStellar + c_cllShip + c_cllAsteroid + c_cllProjectile
+			_mycollisionLevel = c_cllAsteroid
+			Return
+		EndIf
+		If TShip(Self) Then 
+			_collisionLevels = c_cllStellar + c_cllAsteroid + c_cllProjectile
+			_mycollisionLevel = c_cllShip
+			Return
+		EndIf
+		If TStellarObject(Self) Then 
+			_collisionLevels = c_cllStellar + c_cllShip + c_cllAsteroid + c_cllProjectile
+			_mycollisionLevel = c_cllStellar
+			Return
+		EndIf
+	End Method
+
 	' make the object take some damage
 	Method SustainDamage(dam:Float) 
 		If _integrity = -1 Then Return		' indestructible	
@@ -254,7 +286,6 @@ Type TSpaceObject Abstract
 		part.isAffectedByGravity = True
 		 
 		RecursiveDestroy() 
-		
 	End Method
 		
 	' draws the body of the spaceobject
