@@ -157,10 +157,14 @@ Type TShip Extends TMovingObject
 
 		ApplyRotation(_controllerPosition * _rotAcceleration)
 
+		'(speed limiting now included in adjustthrusts)
+		'If GetVel() > _maxSpeed And _isSpeedLimited And Not isLimiterOverridden Then LimitSpeed()
 		
-		If GetVel() > _maxSpeed And _isSpeedLimited And Not isLimiterOverridden Then LimitSpeed()
-		' apply player input
+		'' apply player input
+		AdjustThrusts()
 		ApplyThrusts()		
+	
+		
 
 		If _controllerPosition = 0 Then ApplyRotKill() 		' if the "joystick" is centered, fire the rotKill thrusters
 
@@ -177,6 +181,77 @@ Type TShip Extends TMovingObject
 		If Self._pilot = G_player Then G_DebugWindow.AddText("Max warp ratio: " + CalcWarpValue())
 	EndMethod
 	
+	Method AdjustThrusts()
+		Local ax:Float,ay:Float
+		Local a:Float
+		
+		If _throttlePosition<>0
+			ax = Cos( _rotation ) * _maxSpeed * _throttlePosition
+			ay = Sin( _rotation ) * _maxSpeed * _throttlePosition
+		ElseIf GetVel() > _maxSpeed
+			ax = GetXVel() * _maxSpeed / GetVel()
+			ay = GetYVel() * _maxSpeed / GetVel()
+		EndIf
+		If ax<>0 Or ay<>0
+			ax:- GetXVel()
+			ay:- GetYVel()
+			
+			Local a:Float,b:Float,c:Float
+			a = ax*ax + ay*ay
+			b = 2*( ax*GetXVel() + ay*GetYVel() )
+			c = GetXVel() * GetXVel() + GetYVel()*GetYVel() - _maxSpeed*_maxSpeed
+			
+			Local lambda1:Float,lambda2:Float, lambda:Float
+			lambda1 = ( -b + Sqr(b*b - 4*a*c) )/(2*a)
+			lambda2 = ( -b - Sqr(b*b - 4*a*c) )/(2*a)
+			lambda=Min(Max(lambda1,lambda2),1)
+			
+			ax:*lambda
+			ay:*lambda
+			
+			Local dThrottle:Float, dTrans:Float
+			dThrottle = Cos(_rotation)*ax + Sin(_rotation)*ay
+			dTrans = Cos(_rotation)*ay - Sin(_rotation)*ax
+			
+			Local scaleThrottle:Float=1.0,scaleTrans:Float=1.0
+			If dThrottle>0
+				scaleThrottle=Min(dThrottle,_forwardAcceleration)/dThrottle
+			ElseIf dThrottle<0
+				scaleThrottle=-Min(-dThrottle,_reverseAcceleration)/dThrottle
+			EndIf
+			If dTrans>0
+				scaleTrans=Min(dTrans,_rightAcceleration)/dTrans
+			ElseIf dTrans<0
+				scaleTrans=-Min(-dTrans,_leftAcceleration)/dTrans
+			EndIf
+
+
+			Local scale:Float = Min(scaleThrottle,scaleTrans)
+			dThrottle:*scale
+			dTrans:*scale
+
+			If Self=G_Player.GetControlledShip()
+				G_debugWindow.AddText("scaleThrottle: "+scaleThrottle)
+				G_debugWindow.AddText("scaleTrans: "+scaleTrans)
+				G_debugWindow.AddText("scale: "+scale)
+				G_debugWindow.AddText("dThrottle: "+dThrottle)
+				G_debugWindow.AddText("dTrans: "+dTrans)
+			EndIf
+			
+						
+			If dThrottle
+				If dThrottle>0 dThrottle:/_forwardAcceleration Else dThrottle:/_reverseAcceleration
+				SetThrottle dThrottle
+			EndIf
+			If dTrans
+				If dTrans>0 dTrans:/_rightAcceleration Else dTrans:/_leftAcceleration
+				SetTrans dTrans
+			EndIf
+			
+		EndIf
+			
+	EndMethod
+	
 	Method ApplyThrusts()
 		If _throttlePosition > 0 Then
 			ApplyVerticalImpulse(_throttlePosition * _forwardAcceleration) 
@@ -186,11 +261,11 @@ Type TShip Extends TMovingObject
 			ApplyVerticalImpulse(_throttlePosition * _reverseAcceleration) 
 			If _L_Engines Then EmitEngineTrail(180, _throttlePosition) ' nose
 		EndIf
-		If _transPosition < 0 and _leftAcceleration > 0 Then
+		If _transPosition < 0 And _leftAcceleration > 0 Then
 			ApplyHorizontalImpulse(_transPosition * _leftAcceleration)
 			If _L_Engines Then EmitEngineTrail(270, _transPosition)	'left
 		End If
-		If _transPosition > 0 and _rightAcceleration > 0 Then
+		If _transPosition > 0 And _rightAcceleration > 0 Then
 			ApplyHorizontalImpulse(_transPosition * _rightAcceleration)
 			If _L_Engines Then EmitEngineTrail(90, _transPosition)	'right
 		End If
