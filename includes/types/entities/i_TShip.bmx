@@ -185,21 +185,22 @@ Type TShip Extends TMovingObject
 		Local ax:Float,ay:Float
 		Local a:Float
 		
-		If _throttlePosition<>0
+		If _throttlePosition<>0	'if pilot is applying throttle, we want to go as fast as possible in throttle direction
 			ax = Cos( _rotation ) * _maxSpeed * _throttlePosition
 			ay = Sin( _rotation ) * _maxSpeed * _throttlePosition
-		ElseIf GetVel() > _maxSpeed
+		ElseIf GetVel() > _maxSpeed	'if going faster than limit, we want to slow down
 			ax = GetXVel() * _maxSpeed / GetVel()
 			ay = GetYVel() * _maxSpeed / GetVel()
 		EndIf
 		If ax<>0 Or ay<>0
-			ax:- GetXVel()
+			ax:- GetXVel()	'subtract current velocity from desired velocity to get change vector
 			ay:- GetYVel()
 			
+			'solve quadratic equation to find what proportion of thrust we can apply without going over limit
 			Local a:Float,b:Float,c:Float
 			a = ax*ax + ay*ay
 			b = 2*( ax*GetXVel() + ay*GetYVel() )
-			c = GetXVel() * GetXVel() + GetYVel()*GetYVel() - _maxSpeed*_maxSpeed
+			c = GetXVel() * GetXVel() + GetYVel()*GetYVel() - _maxSpeed * _maxSpeed
 			
 			Local lambda1:Float,lambda2:Float, lambda:Float
 			lambda1 = ( -b + Sqr(b*b - 4*a*c) )/(2*a)
@@ -209,11 +210,18 @@ Type TShip Extends TMovingObject
 			ax:*lambda
 			ay:*lambda
 			
+			'work out what throttle and trans corresponds to this acceleration
 			Local dThrottle:Float, dTrans:Float
 			dThrottle = Cos(_rotation)*ax + Sin(_rotation)*ay
 			dTrans = Cos(_rotation)*ay - Sin(_rotation)*ax
 			
-			Local scaleThrottle:Float=1.0,scaleTrans:Float=1.0
+			'multiply amounts by a big number to make up for the fact that this isn't all being applied this frame
+			'(this should have some clever maths, but that would require knowing a lot about the timing code)
+			dThrottle:*100
+			dTrans:*100
+			
+			'work out if we need to scale down the throttles to get them within the levels allowed by the engines
+			Local scaleThrottle:Float=1.0, scaleTrans:Float=1.0
 			If dThrottle>0
 				scaleThrottle=Min(dThrottle,_forwardAcceleration)/dThrottle
 			ElseIf dThrottle<0
@@ -225,20 +233,22 @@ Type TShip Extends TMovingObject
 				scaleTrans=-Min(-dTrans,_leftAcceleration)/dTrans
 			EndIf
 
+			dThrottle:*scaleThrottle
+			dTrans:*scaleTrans
 
-			Local scale:Float = Min(scaleThrottle,scaleTrans)
-			dThrottle:*scale
-			dTrans:*scale
-
+			Rem
 			If Self=G_Player.GetControlledShip()
 				G_debugWindow.AddText("scaleThrottle: "+scaleThrottle)
 				G_debugWindow.AddText("scaleTrans: "+scaleTrans)
-				G_debugWindow.AddText("scale: "+scale)
 				G_debugWindow.AddText("dThrottle: "+dThrottle)
 				G_debugWindow.AddText("dTrans: "+dTrans)
+				G_debugWindow.AddText("ax: "+ax)
+				G_debugWindow.AddText("ay: "+ay)
+				G_debugWindow.Addtext("dp: "+(Cos(_rotation)*getxvel()+Sin(_rotation)*getyvel())/getvel())
 			EndIf
+			EndRem
 			
-						
+				
 			If dThrottle
 				If dThrottle>0 dThrottle:/_forwardAcceleration Else dThrottle:/_reverseAcceleration
 				SetThrottle dThrottle
