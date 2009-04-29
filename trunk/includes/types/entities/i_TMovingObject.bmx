@@ -45,7 +45,6 @@ Type TMovingObject Extends TSpaceObject Abstract
 		' do a preliminary circle-to-circle collision detection
 		If canCollide And gs.canCollide Then
 			If _myCollisionLevel & gs._collisionLevels Or gs._myCollisionLevel & _collisionLevels Then
-		
 				Local collisionDistance:Double = Self.GetSize() / 2 + gs.GetSize() / 2
 				If Dist < collisionDistance Then
 					CollideWith(gs, Dist, collisionDistance) 
