@@ -161,7 +161,7 @@ Type TShip Extends TMovingObject
 		'If GetVel() > _maxSpeed And _isSpeedLimited And Not isLimiterOverridden Then LimitSpeed()
 		
 		'' apply player input
-		AdjustThrusts()
+		If _isSpeedLimited And Not isLimiterOverridden Then AdjustThrusts()
 		ApplyThrusts()		
 	
 		

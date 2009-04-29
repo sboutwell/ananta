@@ -56,6 +56,7 @@ Type TStar Extends TStellarObject
 				
 		st.hasGravity = True
 		st.canCollide = True
+		st.ResetCollisionLevels()
 		st.isShownOnMap = True
 
 		'If Not g_L_StellarObjects Then g_L_StellarObjects = CreateList()	' create a list if necessary
