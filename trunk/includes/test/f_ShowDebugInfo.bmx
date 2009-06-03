@@ -1,6 +1,6 @@
 Function ShowDebugInfo()
 	' *********** DEBUG INFO ****************
-	G_debugWindow.AddText("FPS: " + G_delta.GetFPS()) 
+	G_debugWindow.addText("FPS: " + G_timer.GetFPS()) 
 	'G_debugWindow.AddText("Asteroids: " + TAsteroid.g_nrAsteroids) 
 	'G_debugWindow.AddText("Ships: " + TShip.g_nrShips) 
 	

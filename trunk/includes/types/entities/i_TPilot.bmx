@@ -84,7 +84,7 @@ Type TPlayer Extends TPilot
 			G_viewport.ShowInstructions()
 		End If
 		
-		If KeyHit(KEY_P) Then G_Delta.TogglePause()
+		If KeyHit(KEY_P) Then G_timer.TogglePause()
 		
 		If KeyHit(KEY_G) Then G_viewport.GetStarMap().ToggleVisibility()
 		
@@ -220,7 +220,7 @@ Type TAIPlayer Extends TPilot
 	Method Think() 
 		If Not _controlledShip Return
 		
-		If Not G_Delta.isPaused Then CalcReactionTimer()
+		If Not G_timer.isPaused Then CalcReactionTimer()
 		'G_DebugWindow.AddText("Timer: " + _reactionTimer)
 		
 		If Not _targetObject Or _targetObject.GetIntegrity() <= 0 Then 
@@ -266,7 +266,7 @@ Type TAIPlayer Extends TPilot
 	End Method
 	
 	Method CalcReactionTimer()
-		_reactionTimer :- G_Delta.GetDelta()
+		_reactionTimer :- G_timer.GetTimeStep()
 		If _reactionTimer <= 0 Then 
 			_reactionTimer = Rnd(_reactions/2,1.0+_reactions)
 			RandomizeDeviations()
@@ -614,7 +614,7 @@ Type TAIPlayer Extends TPilot
 	Method RotateTo(heading:Float, aggressiveMode:Int = False, accurateMode:Int = False) 
 		Local diff:Float = GetAngleDiff(_controlledShip.GetRot(),heading)  ' returns degrees between current and desired rotation
 		' if we're "close enough" to the desired rotation (take the rot thrust performance into account)...
-		If (Not aggressiveMode and Not accurateMode) And Abs(diff) < 1 + _controlledShip.GetRotAccel() * G_delta.GetDelta() * 2 Then
+		If (Not aggressiveMode and Not accurateMode) And Abs(diff) < 1 + _controlledShip.GetRotAccel() * G_timer.GetTimeStep() * 2 Then
 			_controlledShip.SetController(0)  	 					'... center the joystick...
 			Return  												' ... and return with no further action
 		EndIf

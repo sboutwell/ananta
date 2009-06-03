@@ -18,18 +18,24 @@ This file is part of Ananta.
 Copyright 2007, 2008 Jussi Pakkanen
 endrem
 
-' deltatimer and FPS calculation/limiting
-Type TDelta
-	Field _time:Double
+' timing and FPS calculation/limiting
+Type TGameTimer
+	' timing stuff
+	Field _timestep:Double = 1000 / 60 ' 60 fps in millisecs
+	Field _t:Double = 0	' current time
+	Field _dt:Double = 0 ' elapsed frame time
+	Field _accumulator:Double = 0
+	Field _tween:Double = 0
+	Field _newTime:Double = 0 ' time in the beginning of the frame
 	Field _maxdt:Float
+
+	' FPS stuff
 	Field _FrameCounter:Int
 	Field _isFrameRateLimited:Int
 	Field _TargetFPS:Int
 	Field _TargetDelta:Double
 	Field _CurrentFPS:Int
 	Field _FPSTime:Double
-	Field _currentDelta:Double
-	Field _isFirstRound:Int = True
 	Field _timeCompression:Double = 1
 	Field isPaused:Int = False
 	
@@ -37,74 +43,73 @@ Type TDelta
 	Method GetTimeCompression:Double() Return _timeCompression EndMethod
 	Method SetTimeCompression(t:Double) _timeCompression = t EndMethod
 	
-	' If compression = False, the returned delta is not affected by time compression.
+	' If compression = False, the returned timestep is not affected by time compression.
 	' Useful for GUI related timing (zooming, scrolling etc)
-	Method GetDelta:Double(compression:Int = True) 
-		If compression = True Then Return (G_timestep * _timeCompression) / 1000:Double
-		Return G_timestep / 1000:Double
+	Method GetTimeStep:Double(compression:Int = True) 
+		If compression = True Then Return (_timestep * _timeCompression) / 1000:Double
+		Return _timestep / 1000:Double ' return in seconds
 	EndMethod
 	
 	Method TogglePause()
 		ToggleBoolean(isPaused)
 	End Method
 	
-	Method FixedCalc()
-		G_newTime = MilliSecs()
-		G_dt = G_newTime - G_t
-		G_t = G_newTime
-		If G_dt > 250 Then G_dt = 250 ' cap to 250ms
+	Method HasEnoughAccumulatedTime:Int()
+		 Return _accumulator >= _timestep
+	End Method
 	
-		G_execution_time:+ G_dt ' accumulate 
-		
+	Method Decrement()
+		_accumulator :- _timestep
+	End Method
+	
+	Method CalcTween()
+		_tween = _accumulator / _timestep
 	End Method
 	
 	' calculates the new delta value based on the timestamp recorded on the previous frame
 	Method Calc() 
-		FixedCalc()
+		_newTime = MilliSecs()
+		_dt = _newTime - _t
+		_t = _newTime
+		If _dt > _maxdt Then _dt = _maxdt ' cap to 250ms
+	
+		_accumulator:+ _dt ' store remaining time in accumulator
 		
+		CalcFPS()
 		
-		Local newTime:Double = MilliSecs() 
-		If newTime - _time > _maxdt Then _time = _maxdt
-		_currentDelta = (newTime - _time) / 1000.0
-		
-		' cap the delta to maxdt milliseconds to avoid time skipping when alt-tabbing etc
-		If _currentDelta > _maxdt / 1000.0 Then _currentDelta = _maxdt / 1000.0
-		
-		_time = newTime
-		
-		' calc FPS
+		If isPaused Then 
+			_t = MilliSecs()
+		End If						
+	End Method
+	
+	Method CalcFPS()
 		_FrameCounter:+1
-		If _FPSTime < _time
+		If _FPSTime < _t
 			_CurrentFPS = _FrameCounter' <- Frames/Sec
 			_FrameCounter = 0
-			_FPSTime = _time + 1000	'Update once per second
+			_FPSTime = _t + 1000	'Update once per second
 		EndIf
-
-		If isPaused Then 
-			_time = Millisecs()
-			Return
-		End If						
 	End Method
 	
 	Method LimitFPS() 
 		If Not _isFrameRateLimited Then Return
-		Delay(_targetDelta * 1000.0 - (MilliSecs() - _time)) 
+		Delay(_targetDelta * 1000.0 - (MilliSecs() - _t)) 
 	End Method
 	
 	Method isFrameRateLimited:Int() 
 		Return _isFrameRateLimited
 	End Method
 	
-	Function Create:TDelta(target:Int, isLimited:Int = True, maxi:Float = 500) 
-		Local delta:TDelta = New TDelta
-		delta._time = MilliSecs() 
-		delta._maxdt = maxi
-		delta._TargetFPS = target
-		delta._TargetDelta = 1.0 / delta._TargetFPS
-		delta._CurrentFPS = delta._TargetFPS
-		delta._FPSTime = delta._time + 1000
-		delta._FrameCounter = delta._TargetFPS
-		delta._isFrameRateLimited = isLimited
-		Return delta
+	Function Create:TGameTimer(target:Int, isLimited:Int = True, maxi:Float = 500) 
+		Local timer:TGameTimer = New TGameTimer
+		timer._t = MilliSecs() 
+		timer._maxdt = maxi
+		timer._TargetFPS = target
+		timer._TargetDelta = 1.0 / timer._TargetFPS
+		timer._CurrentFPS = timer._TargetFPS
+		timer._FPSTime = timer._t + 1000
+		timer._FrameCounter = timer._TargetFPS
+		timer._isFrameRateLimited = isLimited
+		Return timer
 	End Function
 End Type

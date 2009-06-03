@@ -29,8 +29,8 @@ Type TParticle Extends TMovingObject
 	
 	Method Update() 
 		If _system <> TSystem.GetActiveSystem() Then Destroy() ' discard particles in another systems
-		_life:-1:Float * G_delta.GetDelta()      			 ' decrement life by 1 frame worth of seconds
-		_alpha:-_alphaDelta * G_delta.GetDelta()     ' decrement alpha by alphaDelta
+		_life:-1:Float * G_timer.GetTimeStep()      	' decrement life by 1 frame worth of seconds
+		_alpha:-_alphaDelta * G_timer.GetTimeStep()     ' decrement alpha by alphaDelta
 		Super.Update()   ' call Update() of TMovingObject
 		If _life <= 0 Then Destroy() 
 	End Method

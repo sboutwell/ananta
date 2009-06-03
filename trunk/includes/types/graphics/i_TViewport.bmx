@@ -209,7 +209,7 @@ Type TViewport
 		
 		' draw some miscellaneous information
 		DrawText "Hold F1 for controls", GetResX() - 190, GetResY()-25
-		If G_Delta.isPaused Then 
+		If G_timer.isPaused Then 
 			SetColor(255,128,50)
 			DrawText "*** Paused ***", GetMidX() - 120, _marginalTop + 5
 		End If
@@ -356,14 +356,14 @@ Type TViewport
 
 	
 	Method ZoomIn() 
-		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(False) 
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False) 
+		_zoomFactor:+_zoomFactor * _zoomAmount * G_timer.GetTimeStep(False) 
+		_zoomAmount = _zoomAmount + _zoomStep * G_timer.GetTimeStep(False)
 		_isZooming = True
 	End Method
 	
 	Method ZoomOut() 
-		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(False) 
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False) 
+		_zoomFactor:-_zoomFactor * _zoomAmount * G_timer.GetTimeStep(False)
+		_zoomAmount = _zoomAmount + _zoomStep * G_timer.GetTimeStep(False)
 		_isZooming = True
 	End Method
 	

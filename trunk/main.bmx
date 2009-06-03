@@ -61,7 +61,7 @@ Include "includes/types/graphics/i_TSystemMap.bmx"		'System map extended of TMin
 Include "includes/types/graphics/i_TStarMap.bmx"		'Star map extended of TMinimap
 Include "includes/types/graphics/i_TColor.bmx"			'A structure-like type to map color names to their RGB values
 Include "includes/types/graphics/i_TMedia.bmx"			'Type that loads and holds media files
-Include "includes/types/i_TDelta.bmx"					'Delta timer
+Include "includes/types/i_TGameTimer.bmx"				'timing and FPS stuff
 Include "includes/types/math/i_TValue.bmx"				'Scalars and units (distance, mass, etc)
 
 ' Temporary includes for development
@@ -82,11 +82,10 @@ G_Universe.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the ga
 
 SetupTestEnvironment()
 
-G_t = MilliSecs() ' fixed rate timer
 ' Main loop
 While Not KeyHit(KEY_ESCAPE) And Not AppTerminate() 
-	' calculate the deltatimer (alters global variable G_delta)
-	G_delta.Calc() 
+	' calculate the frame update timer
+	G_timer.Calc() 
 	
 	' checks for keypresses (or other control inputs) and applies their actions
 	G_player.GetInput()
@@ -95,23 +94,23 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	TAIPlayer.UpdateAllAI() 
 	
 	' fixed update loop
-	While G_execution_time >= G_timestep
+	While G_timer.HasEnoughAccumulatedTime() ' loop if accumulator has more than timestep millisecs in it
 
 		' update the positions of every moving object (except ships)
-		If Not G_delta.isPaused Then TMovingObject.UpdateAll() 
+		If Not G_timer.isPaused Then TMovingObject.UpdateAll() 
 
 		' update the positions of every ship
-		If Not G_delta.isPaused Then TShip.UpdateAll()
+		If Not G_timer.isPaused Then TShip.UpdateAll()
 
 		' update particles 
-		If Not G_delta.isPaused Then TParticle.UpdateAll()
+		If Not G_timer.isPaused Then TParticle.UpdateAll()
 
-		G_execution_time:- G_timestep
+		G_timer.Decrement() ' consume accumulated time
 	Wend
 
-	' calculate the remainder for tweening
-	G_tween = G_execution_time / G_timestep
-
+	' calculate the remainder for motion tweening
+	G_timer.CalcTween()
+	
 	' draw the level
 	G_viewport.DrawLevel()
 	 
@@ -123,8 +122,8 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	
 	ShowDebugInfo()
 	
-	If G_delta._isFrameRateLimited Then
-		G_delta.LimitFPS()        ' limit framerate
+	If G_timer._isFrameRateLimited Then
+		G_timer.LimitFPS()        ' limit framerate
 		Flip(1) 
 	Else
 		Flip(0) 
