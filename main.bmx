@@ -82,28 +82,38 @@ G_Universe.LoadGalaxy(TMedia.g_mediaPath + "galaxy.png")	' load and parse the ga
 
 SetupTestEnvironment()
 
+G_t = MilliSecs() ' fixed rate timer
 ' Main loop
 While Not KeyHit(KEY_ESCAPE) And Not AppTerminate() 
 	' calculate the deltatimer (alters global variable G_delta)
 	G_delta.Calc() 
 	
 	' checks for keypresses (or other control inputs) and applies their actions
-	G_Player.GetInput()
-	
+	G_player.GetInput()
+
 	' Update every AI pilot and apply their control inputs to their controlled ships
 	TAIPlayer.UpdateAllAI() 
+	
+	' fixed update loop
+	While G_execution_time >= G_timestep
 
-	' update the positions of every moving object (except ships)
-	if Not G_delta.isPaused Then TMovingObject.UpdateAll() 
+		' update the positions of every moving object (except ships)
+		If Not G_delta.isPaused Then TMovingObject.UpdateAll() 
 
-	' update the positions of every ship
-	if Not G_delta.isPaused Then TShip.UpdateAll()
+		' update the positions of every ship
+		If Not G_delta.isPaused Then TShip.UpdateAll()
+
+		' update particles 
+		If Not G_delta.isPaused Then TParticle.UpdateAll()
+
+		G_execution_time:- G_timestep
+	Wend
+
+	' calculate the remainder for tweening
+	G_tween = G_execution_time / G_timestep
 
 	' draw the level
 	G_viewport.DrawLevel()
-	
-	' update and draw particles 
-	if not G_delta.isPaused Then TParticle.UpdateAndDrawAll()
 	 
 	' draw each object in the currently active System
 	TSystem.GetActiveSystem().DrawAllInSystem(G_viewport) ' seeing as G_viewport is a global, do we really need to pass it?
@@ -119,7 +129,6 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	Else
 		Flip(0) 
 	EndIf
-	
 	
 	
 	' clear the whole viewport backbuffer
