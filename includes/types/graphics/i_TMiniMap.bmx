@@ -106,13 +106,13 @@ Type TMiniMap
 	' scrolls the minimap along x-axis
 	Method scrollX(speed:Double = 1) 
 		Local speedMultiplier:Double = (_scrollspeed / _zoomFactor)
-		_cameraX = _cameraX + (speedMultiplier:Double * speed:Double) * G_delta.GetDelta(False) 	' delta not affected by time compression 
+		_cameraX = _cameraX + (speedMultiplier:Double * speed:Double) * G_timer.GetTimeStep(False) 	' not affected by time compression 
 	End Method
 	
 	' scrolls the minimap along y-axis
 	Method scrollY(speed:Double = 1) 
 		Local speedMultiplier:Double = (_scrollspeed / _zoomFactor)
-		_cameraY = _cameraY + (speedMultiplier:Double * speed:Double) * G_delta.GetDelta(False) 	' delta not affected by time compression 
+		_cameraY = _cameraY + (speedMultiplier:Double * speed:Double) * G_timer.GetTimeStep(False) 	' not affected by time compression 
 	End Method
 	
 	Method getBlipUnderMouse:TMapBlip(within:Int=4)
@@ -284,8 +284,8 @@ Type TMiniMap
 		' Todo: create another field for "default persistency" so TMinimap handles switching persistency on/off itself.
 		isPersistent = False
 		isZooming = True
-		_zoomFactor:+_zoomFactor * _zoomAmount * G_delta.GetDelta(False)  	' false in delta means zoom speed will not be affected by time compression
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False)  ' add to the zoom rate acceleration
+		_zoomFactor:+_zoomFactor * _zoomAmount * G_timer.GetTimeStep(False)  	' false means zoom speed will not be affected by time compression
+		_zoomAmount = _zoomAmount + _zoomStep * G_timer.GetTimeStep(False)  ' add to the zoom rate acceleration
 		If _maxZoom And _zoomFactor > _maxZoom Then 	' zoom limit reached
 			_zoomFactor = _maxZoom
 			StopZoom()
@@ -296,8 +296,8 @@ Type TMiniMap
 		If Not isVisible Then Return
 		isPersistent = False
 		isZooming = True
-		_zoomFactor:-_zoomFactor * _zoomAmount * G_delta.GetDelta(False)  ' false in delta means zoom speed will not be affected by time compression
-		_zoomAmount = _zoomAmount + _zoomStep * G_delta.GetDelta(False)  ' add to the zoom rate acceleration
+		_zoomFactor:-_zoomFactor * _zoomAmount * G_timer.GetTimeStep(False)  ' false in delta means zoom speed will not be affected by time compression
+		_zoomAmount = _zoomAmount + _zoomStep * G_timer.GetTimeStep(False)  ' add to the zoom rate acceleration
 		If _minZoom And _zoomFactor < _minZoom Then 	' zoom limit reached
 			_zoomFactor = _minZoom
 			StopZoom()

@@ -62,7 +62,7 @@ Type TMessageWindow
 			line.Draw(_x, _y + (15.0 * lineNr * _fontScale)) 
 			If _fadeEnabled And lineNr = 0 Then line.IncrementAge()  	' increase the age of the oldest line only (and only if fadeEnabled = true)
 			If line.GetAge() > _timeToLive Then ' start fading out the line
-				line.SetLineAlpha(line.GetLineAlpha() - _fadeFactor * G_delta.GetDelta()) 
+				Line.SetLineAlpha(Line.GetLineAlpha() - _fadeFactor * G_timer.GetTimeStep()) 
 				If line.GetLinealpha() <= 0 Then
 					_L_MessageLines.RemoveFirst	' remove the line if it has completely faded out
 					_nrLines = _nrLines - 1
@@ -138,7 +138,7 @@ Type TMessageLine
 	
 	' Add to the age of the line
 	Method IncrementAge() 
-		_age = _age + 1 * G_delta.GetDelta() 
+		_age = _age + 1 * G_Timer.GetTimeStep() 
 	End Method
 	
 	Method GetAge:Int()

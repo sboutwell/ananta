@@ -38,8 +38,8 @@ Type TMovingObject Extends TSpaceObject Abstract
 			Local aY:Double = a * (Sin(dirToGravSource)) 
 	
 			' add to the velocity of the space object
-			_Xvel:+aX * G_delta.GetDelta() 
-			_Yvel:+aY * G_delta.GetDelta() 
+			_Xvel:+aX * G_timer.GetTimeStep() 
+			_Yvel:+aY * G_timer.GetTimeStep()
 		EndIf
 
 		' do a preliminary circle-to-circle collision detection
@@ -209,8 +209,8 @@ Type TMovingObject Extends TSpaceObject Abstract
 	
 	' Update the position of the moving object. warpvalue is given when a ship's warp drive's on
 	Method UpdatePosition(warpValue:Float = 1.0) 
-		_x = _x + _xVel * G_delta.GetDelta() * warpValue
-		_y = _y + _yVel * G_delta.GetDelta() * warpValue
+		_x = _x + _xVel * G_timer.GetTimeStep() * warpValue
+		_y = _y + _yVel * G_timer.GetTimeStep() * warpValue
 	End Method
 	
 	Method Update() 
@@ -225,7 +225,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		EndIf
 		
 		' rotate the object
-		_rotation:+_rotationSpd * G_delta.GetDelta() 
+		_rotation:+_rotationSpd * G_Timer.GetTimeStep() 
 		If _rotation < 0 _rotation:+360
 		If _rotation>=360 _rotation:-360
 		

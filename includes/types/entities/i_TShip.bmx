@@ -425,34 +425,34 @@ Type TShip Extends TMovingObject
 		Local Ximpulse:Float = accel * (Cos(_rotation)) 
 		Local Yimpulse:Float = accel * (Sin(_rotation)) 
 
-		_Xvel:+Ximpulse * G_delta.GetDelta() 
-		_Yvel:+Yimpulse * G_delta.GetDelta()
+		_Xvel:+Ximpulse * G_timer.GetTimeStep() 
+		_Yvel:+Yimpulse * G_timer.GetTimeStep()
 	EndMethod
 	
 	Method ApplyHorizontalImpulse(accel:Float) 
 		Local Ximpulse:Float = accel * (Cos(_rotation + 90)) 
 		Local Yimpulse:Float = accel * (Sin(_rotation + 90)) 
 
-		_Xvel:+Ximpulse * G_delta.GetDelta() 
-		_Yvel:+Yimpulse * G_delta.GetDelta()
+		_Xvel:+Ximpulse * G_timer.GetTimeStep() 
+		_Yvel:+Yimpulse * G_timer.GetTimeStep()
 	EndMethod
 	
 	
 	
 	Method ApplyRotation(rotAcceleration:Float)
-		_rotationSpd:+rotAcceleration * G_delta.GetDelta() 
+		_rotationSpd:+rotAcceleration * G_timer.GetTimeStep() 
 		If _isRotationLimited And Not isLimiterOverridden Then ApplyRotationLimiter()
 	EndMethod
 
 	Method ApplyRotationLimiter() 
 		If _rotationSpd > _maxRotationSpd Then	' we're rotating too fast to the RIGHT...
-			_rotationSpd:-_rotAcceleration * G_delta.GetDelta()  		' ... so slow down the rotation by firing the LEFT thruster
+			_rotationSpd:-_rotAcceleration * G_timer.GetTimeStep()  		' ... so slow down the rotation by firing the LEFT thruster
 			' if the rotation speed is now _under_ the limit, set the rotation speed _to_ the limit
 			If _rotationSpd < _maxRotationSpd Then _rotationSpd = _maxRotationSpd
 		EndIf
 
 		If _rotationSpd < -_maxRotationSpd Then	' we're rotating too fast to the LEFT
-			_rotationSpd:+_rotAcceleration * G_delta.GetDelta() 		' ... so slow down the rotation by firing the RIGHT thruster
+			_rotationSpd:+_rotAcceleration * G_timer.GetTimeStep() 		' ... so slow down the rotation by firing the RIGHT thruster
 			' if the rotation speed is now _under_ the limit, set the rotation speed _to_ the limit
 			If _rotationSpd > - _maxRotationSpd Then _rotationSpd = -_maxRotationSpd
 		EndIf
@@ -461,9 +461,9 @@ Type TShip Extends TMovingObject
 	' rotkill is a "rotation damper" that fires when the controller is centered
 	Method ApplyRotKill() 
 		If _rotationSpd = 0.0 Then Return
-		If _rotationSpd < 0 Then _rotationSpd:+(_rotKillPercentage * _rotAcceleration * G_delta.GetDelta()) 
-		If _rotationSpd > 0 Then _rotationSpd:-(_rotKillPercentage * _rotAcceleration * G_delta.GetDelta()) 
-		If Abs(_rotationSpd) <= _rotAcceleration * G_delta.GetDelta() Then
+		If _rotationSpd < 0 Then _rotationSpd:+(_rotKillPercentage * _rotAcceleration * G_timer.GetTimeStep()) 
+		If _rotationSpd > 0 Then _rotationSpd:-(_rotKillPercentage * _rotAcceleration * G_timer.GetTimeStep()) 
+		If Abs(_rotationSpd) <= _rotAcceleration * G_Timer.GetTimeStep() Then
 			_rotationSpd = 0.0	' Halt the rotation altogether if rotation speed is less than one impulse of the thruster
 		EndIf
 	EndMethod

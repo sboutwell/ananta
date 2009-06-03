@@ -34,16 +34,10 @@ Global G_player:TPlayer
 ' universe is 'global'... huh? ;)
 Global G_Universe:TUni
 
-' Global delta timer instance
-Global G_delta:TDelta = TDelta.Create(XMLGetSingleValue(c_SettingsFile,  ..
+' Global timer instance
+Global G_timer:TGameTimer = TGameTimer.Create(XMLGetSingleValue(c_SettingsFile,  ..
 	"settings/graphics/framerate").ToInt(),  ..
 	XMLGetSingleValue(c_settingsFile, "settings/graphics/limitframerate").ToInt(),  ..
 	XMLGetSingleValue(c_settingsFile, "settings/graphics/maxdelta").ToInt()) 
-G_delta.SetTimeCompression(1)
+G_timer.SetTimeCompression(1)
 
-' fixed rate globals
-Local frequency:Int = 60 ' times per second
-Global G_timestep:Double = 1000 / frequency ' millisecs
-Global G_t:Double , G_dt:Double, G_execution_time:Double = 0
-Global G_tween:Double
-Global G_newTime:Double
