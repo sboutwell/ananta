@@ -41,7 +41,8 @@ Type TParticle Extends TMovingObject
 		Super.Destroy()
 	End Method
 			
-	Function UpdateAndDrawAll() 
+			
+	Function UpdateAll() 
 		TParticleGenerator.UpdateAll()
 		If Not g_L_Particles Then Return
 		For Local p:TParticle = EachIn g_L_Particles

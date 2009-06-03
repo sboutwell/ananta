@@ -40,16 +40,29 @@ Type TDelta
 	' If compression = False, the returned delta is not affected by time compression.
 	' Useful for GUI related timing (zooming, scrolling etc)
 	Method GetDelta:Double(compression:Int = True) 
-		If compression = True Then Return _currentDelta * _timeCompression
-		Return _currentDelta
+		If compression = True Then Return (G_timestep * _timeCompression) / 1000:Double
+		Return G_timestep / 1000:Double
 	EndMethod
 	
 	Method TogglePause()
 		ToggleBoolean(isPaused)
 	End Method
 	
+	Method FixedCalc()
+		G_newTime = MilliSecs()
+		G_dt = G_newTime - G_t
+		G_t = G_newTime
+		If G_dt > 250 Then G_dt = 250 ' cap to 250ms
+	
+		G_execution_time:+ G_dt ' accumulate 
+		
+	End Method
+	
 	' calculates the new delta value based on the timestamp recorded on the previous frame
 	Method Calc() 
+		FixedCalc()
+		
+		
 		Local newTime:Double = MilliSecs() 
 		If newTime - _time > _maxdt Then _time = _maxdt
 		_currentDelta = (newTime - _time) / 1000.0
