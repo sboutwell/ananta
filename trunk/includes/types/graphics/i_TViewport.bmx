@@ -356,14 +356,14 @@ Type TViewport
 
 	
 	Method ZoomIn() 
-		_zoomFactor:+_zoomFactor * _zoomAmount * G_timer.GetTimeStep(False) 
-		_zoomAmount = _zoomAmount + _zoomStep * G_timer.GetTimeStep(False)
+		_zoomFactor:+_zoomFactor * _zoomAmount / G_timer.GetFPS() /10:Double 
+		_zoomAmount = _zoomAmount + _zoomStep / G_timer.GetFPS()  /10:Double
 		_isZooming = True
 	End Method
 	
 	Method ZoomOut() 
-		_zoomFactor:-_zoomFactor * _zoomAmount * G_timer.GetTimeStep(False)
-		_zoomAmount = _zoomAmount + _zoomStep * G_timer.GetTimeStep(False)
+		_zoomFactor:-_zoomFactor * _zoomAmount / G_timer.GetFPS() /10:Double 
+		_zoomAmount = _zoomAmount + _zoomStep / G_timer.GetFPS() /10:Double 
 		_isZooming = True
 	End Method
 	
