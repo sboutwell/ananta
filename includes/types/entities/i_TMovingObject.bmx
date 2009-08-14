@@ -71,7 +71,7 @@ Type TMovingObject Extends TSpaceObject Abstract
 		' Return if the MOVING object we're colliding with hasn't been updated yet
 		' This check ensures that collisions between moving objects are checked only after both
 		' objects' positions have been updated. Failure to do so will lead to a double collision response.
-		If Not obj.isUpdated And TMovingObject(obj) Then Return
+		'If Not obj.isUpdated And TMovingObject(obj) Then Return
 		
 		' check for projectile collision
 		Local proj:TProjectile = TProjectile(Self) 

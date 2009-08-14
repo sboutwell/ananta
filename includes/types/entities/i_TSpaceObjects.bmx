@@ -75,6 +75,10 @@ Type TSpaceObject Abstract
 	Field isUpdated:Int = False			' a flag to indicate if this object has been updated during the frame
 	Field _integrity:Float = -1			' the amount of damage the object can handle, -1 for indestructible
 	Field _description:String			' a description of the body (planet with high winds, asteroidal body, etc)
+
+	' positional information for motion interpolation (tweening)
+	Field _prevX:Double, _prevY:Double	' previous coordinates
+	Field _prevRot:Float				' previous rotation
 	
 	' used for TSystem.drawSystemQuickly()
 	Field _parent:TStellarObject
@@ -92,7 +96,6 @@ Type TSpaceObject Abstract
 	Field _yOffset:Float = 0			' y-position of the attachment compared to the y of the parent
 	Field _rotationOffset:Float 		' rotation compared to the parent rotation
 	
-	' these fields would probably be more appropriate in TMovingObject, but they're here for optimization purposes (to get rid of the need for type casting)
 	Field _strongestGravSource:TSpaceObject	' strongest gravity source is updated for warp drive purposes
 	Field _strongestGravity:Double = 0		' the gravitational acceleration exerted by the strongest gravsource
 
@@ -168,6 +171,16 @@ Type TSpaceObject Abstract
 	Method GetY:Double() 
 		Return _y
 	End Method
+	Method GetPrevX:Double() 
+		Return _prevX
+	End Method
+	Method GetPrevY:Double() 
+		Return _prevY
+	End Method
+	Method GetPrevRot:Float()
+		Return _prevrot
+	End Method
+	
 	Method GetIntegrity:Float() 
 		Return _integrity
 	End Method

@@ -21,7 +21,7 @@ endrem
 ' timing and FPS calculation/limiting
 Type TGameTimer
 	' timing stuff
-	Field _timestep:Double = 1000 / 60 ' 60 fps in millisecs
+	Field _timestep:Double = 1000 / 20 ' 20 fps in millisecs
 	Field _t:Double = 0	' current time
 	Field _dt:Double = 0 ' elapsed frame time
 	Field _accumulator:Double = 0
