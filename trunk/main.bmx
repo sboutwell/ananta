@@ -87,15 +87,15 @@ While Not KeyHit(KEY_ESCAPE) And Not AppTerminate()
 	' calculate the frame update timer
 	G_timer.Calc() 
 	
-	' checks for keypresses (or other control inputs) and applies their actions
-	G_player.GetInput()
-
-	' Update every AI pilot and apply their control inputs to their controlled ships
-	TAIPlayer.UpdateAllAI() 
-	
 	' fixed update loop
 	While G_timer.HasEnoughAccumulatedTime() ' loop if accumulator has more than timestep millisecs in it
 
+		' checks for keypresses (or other control inputs) and applies their actions
+		G_player.GetInput()
+		
+		' Update every AI pilot And apply their control inputs To their controlled ships
+		TAIPlayer.UpdateAllAI()
+		
 		' update the positions of every moving object (except ships)
 		If Not G_timer.isPaused Then TMovingObject.UpdateAll() 
 
