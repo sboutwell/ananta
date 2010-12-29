@@ -21,12 +21,12 @@ Copyright 2007, 2008 Jussi Pakkanen
 -->
 
 <settings>
-  <debug>1</debug>
+  <debug>0</debug>
   <!-- debug mode on = 1 / off = 0 -->
   <graphics>
     <!-- graphics-related settings -->
     <!-- graphics renderer (opengl/directx) -->
-    <renderer>opengl</renderer>
+    <renderer>directx</renderer>
     <!-- framerate limited yes = 1 / no = 0 -->
     <limitframerate>0</limitframerate>
     <!--Max framerate if limited-->
@@ -36,8 +36,8 @@ Copyright 2007, 2008 Jussi Pakkanen
     <!-- meaning the simulation will actually pause after maxdelta amount of time has passed since the last physics iteration -->
     <maxdelta>500</maxdelta>
     <resolution>
-      <x>1400</x>
-      <y>1100</y>
+      <x>1024</x>
+      <y>768</y>
     </resolution>
     <!-- 16 or 32 for fullscreen, 0 for windowed -->
     <bitdepth>0</bitdepth>    
